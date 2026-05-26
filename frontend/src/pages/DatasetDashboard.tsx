@@ -136,12 +136,11 @@ export default function DatasetDashboard() {
 
       <WorkflowTabs active={tab} onChange={setTab} maxUnlocked={maxUnlocked} />
 
-      {tab === "overview" && (
+      <div className={tab === "overview" ? "block" : "hidden"}>
         <motion.div
           key="overview"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
         >
           <motion.div className="grid lg:grid-cols-2 gap-6 mb-6">
             <HealthScoreCard health={analysis.health} />
@@ -173,9 +172,9 @@ export default function DatasetDashboard() {
             </button>
           </motion.div>
         </motion.div>
-      )}
+      </div>
 
-      {tab === "configure" && (
+      <div className={tab === "configure" ? "block" : "hidden"}>
         <motion.div key="configure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
           {!session?.problem_detection ? (
             <TargetSelector
@@ -213,9 +212,9 @@ export default function DatasetDashboard() {
             </>
           )}
         </motion.div>
-      )}
+      </div>
 
-      {tab === "studio" && (
+      <div className={tab === "studio" ? "block" : "hidden"}>
         <motion.div key="studio" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {session?.target_column ? (
             <PredictionStudio datasetId={datasetId} />
@@ -228,9 +227,9 @@ export default function DatasetDashboard() {
             </motion.div>
           )}
         </motion.div>
-      )}
+      </div>
 
-      {tab === "preprocess" && (
+      <div className={tab === "preprocess" ? "block" : "hidden"}>
         <motion.div key="preprocess" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
           {session?.status !== "preprocessed" ? (
             <>
@@ -262,9 +261,9 @@ export default function DatasetDashboard() {
             </>
           )}
         </motion.div>
-      )}
+      </div>
 
-      {tab === "arena" && (
+      <div className={tab === "arena" ? "block" : "hidden"}>
         <motion.div key="arena" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {session?.status === "preprocessed" || session?.status === "trained" ? (
             <>
@@ -287,9 +286,9 @@ export default function DatasetDashboard() {
             </motion.div>
           )}
         </motion.div>
-      )}
+      </div>
 
-      {tab === "insights" && (
+      <div className={tab === "insights" ? "block" : "hidden"}>
         <motion.div key="insights" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {session?.status === "trained" && session.training_result?.best_model ? (
             <ExplainabilityPanel
@@ -307,7 +306,7 @@ export default function DatasetDashboard() {
             </motion.div>
           )}
         </motion.div>
-      )}
+      </div>
 
       <DatasetChat datasetId={datasetId} filename={analysis.filename} />
     </div>
