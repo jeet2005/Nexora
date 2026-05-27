@@ -19,7 +19,7 @@ def _pdf_text(value: Any) -> str:
     """Keep report text compatible with built-in PDF fonts."""
     text = str(value)
     replacements = {
-        "×": "x",
+        "x": "x",
         "·": "-",
         "—": "-",
         "–": "-",
@@ -39,32 +39,30 @@ def _pdf_text(value: Any) -> str:
 class NexoraReport(FPDF):
     """Custom PDF with Nexora branding."""
 
-    DARK_BG = (12, 18, 32)        # #0c1220
-    SURFACE = (15, 23, 42)        # #0f172a
-    CYAN = (34, 211, 238)         # #22d3ee
-    AMBER = (251, 191, 36)        # #fbbf24
-    SLATE_300 = (203, 213, 225)
-    SLATE_400 = (148, 163, 184)
-    SLATE_500 = (100, 116, 139)
+    BG = (250, 250, 249)          # #fafaf9 (nexora-bg)
+    TEXT = (23, 21, 20)           # #171514 (nexora-dark)
+    ACCENT = (147, 201, 152)      # #93C998 (nexora-accent)
+    SECONDARY = (122, 179, 127)   # #7ab37f (nexora-accent-dark)
+    MUTED = (120, 113, 108)       # #78716c (neutral warm gray)
     WHITE = (255, 255, 255)
-    GREEN = (52, 211, 153)
-    RED = (248, 113, 113)
+    GREEN = (122, 179, 127)
+    RED = (239, 68, 68)
 
     def __init__(self):
         super().__init__(orientation="P", unit="mm", format="A4")
         self.set_auto_page_break(auto=True, margin=20)
-        self.set_fill_color(*self.DARK_BG)
+        self.set_fill_color(*self.BG)
 
     def header(self):
-        self.set_fill_color(*self.DARK_BG)
+        self.set_fill_color(*self.BG)
         self.rect(0, 0, 210, 297, "F")
         self.set_font("Helvetica", "B", 8)
-        self.set_text_color(*self.CYAN)
+        self.set_text_color(*self.TEXT)
         self.cell(0, 8, "NEXORA AI", align="L")
-        self.set_text_color(*self.SLATE_500)
+        self.set_text_color(*self.MUTED)
         self.set_font("Helvetica", "", 7)
         self.cell(0, 8, f"Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}", align="R", new_x="LMARGIN", new_y="NEXT")
-        self.set_draw_color(*self.CYAN)
+        self.set_draw_color(*self.ACCENT)
         self.set_line_width(0.3)
         self.line(10, self.get_y(), 200, self.get_y())
         self.ln(4)
@@ -72,15 +70,15 @@ class NexoraReport(FPDF):
     def footer(self):
         self.set_y(-15)
         self.set_font("Helvetica", "", 7)
-        self.set_text_color(*self.SLATE_500)
+        self.set_text_color(*self.MUTED)
         self.cell(0, 8, f"Page {self.page_no()}/{{nb}}", align="C")
 
     def section_title(self, title: str):
         self.ln(6)
         self.set_font("Helvetica", "B", 14)
-        self.set_text_color(*self.CYAN)
+        self.set_text_color(*self.TEXT)
         self.cell(0, 10, _pdf_text(title), new_x="LMARGIN", new_y="NEXT")
-        self.set_draw_color(*self.CYAN)
+        self.set_draw_color(*self.ACCENT)
         self.set_line_width(0.4)
         self.line(10, self.get_y(), 80, self.get_y())
         self.ln(4)
@@ -88,22 +86,22 @@ class NexoraReport(FPDF):
     def sub_title(self, title: str):
         self.ln(3)
         self.set_font("Helvetica", "B", 11)
-        self.set_text_color(*self.AMBER)
+        self.set_text_color(*self.SECONDARY)
         self.cell(0, 8, _pdf_text(title), new_x="LMARGIN", new_y="NEXT")
         self.ln(2)
 
     def body_text(self, text: str):
         self.set_font("Helvetica", "", 9)
-        self.set_text_color(*self.SLATE_300)
+        self.set_text_color(*self.TEXT)
         self.multi_cell(0, 5, _pdf_text(text))
         self.ln(2)
 
     def metric_row(self, label: str, value: str, highlight: bool = False):
         self.set_font("Helvetica", "", 9)
-        self.set_text_color(*self.SLATE_400)
+        self.set_text_color(*self.MUTED)
         self.cell(60, 6, _pdf_text(label), new_x="END")
         self.set_font("Helvetica", "B", 10)
-        self.set_text_color(*(self.GREEN if highlight else self.WHITE))
+        self.set_text_color(*(self.GREEN if highlight else self.TEXT))
         self.cell(0, 6, _pdf_text(value), new_x="LMARGIN", new_y="NEXT")
 
     def add_base64_image(self, b64_str: str, w: int = 180):
@@ -136,27 +134,27 @@ def _generate_report(
     # ── Cover Title ──
     pdf.ln(20)
     pdf.set_font("Helvetica", "B", 28)
-    pdf.set_text_color(*NexoraReport.WHITE)
+    pdf.set_text_color(*NexoraReport.TEXT)
     pdf.cell(0, 14, "Predictive Analytics", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "B", 28)
-    pdf.set_text_color(*NexoraReport.CYAN)
+    pdf.set_text_color(*NexoraReport.ACCENT)
     pdf.cell(0, 14, "Intelligence Report", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(8)
 
     pdf.set_font("Helvetica", "", 11)
-    pdf.set_text_color(*NexoraReport.SLATE_400)
+    pdf.set_text_color(*NexoraReport.MUTED)
     pdf.cell(0, 8, _pdf_text(f"Dataset: {dataset_info.get('filename', 'Unknown')}"), align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.cell(0, 7, _pdf_text(f"{dataset_info.get('rows', 0):,} rows x {dataset_info.get('columns', 0)} columns"), align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.cell(0, 7, _pdf_text(f"Target: {dataset_info.get('target_column', 'N/A')} ({dataset_info.get('problem_type', 'N/A')})"), align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
-    pdf.set_draw_color(*NexoraReport.CYAN)
+    pdf.set_draw_color(*NexoraReport.ACCENT)
     pdf.set_line_width(0.2)
     pdf.line(60, pdf.get_y(), 150, pdf.get_y())
     pdf.ln(6)
 
     pdf.set_font("Helvetica", "", 8)
-    pdf.set_text_color(*NexoraReport.SLATE_500)
+    pdf.set_text_color(*NexoraReport.MUTED)
     pdf.cell(0, 6, "Powered by Nexora AI - Autonomous Predictive Analytics Platform", align="C", new_x="LMARGIN", new_y="NEXT")
 
     # ── Step-by-Step Guide (for beginners) ──
@@ -243,14 +241,14 @@ def _generate_report(
 
         # Table header
         pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*NexoraReport.CYAN)
+        pdf.set_text_color(*NexoraReport.ACCENT)
         col_w = [10, 65, 30, 30, 25, 30]
         headers = ["#", "Model", "Family", metric_label, "Time", "Speed"]
         for h, w in zip(headers, col_w):
             pdf.cell(w, 6, _pdf_text(h), new_x="END")
         pdf.ln()
 
-        pdf.set_draw_color(*NexoraReport.SLATE_500)
+        pdf.set_draw_color(*NexoraReport.ACCENT)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
         pdf.ln(1)
 
@@ -258,7 +256,7 @@ def _generate_report(
             if pdf.get_y() > 260:
                 pdf.add_page()
             pdf.set_font("Helvetica", "", 7)
-            pdf.set_text_color(*(NexoraReport.AMBER if i == 0 else NexoraReport.SLATE_300))
+            pdf.set_text_color(*(NexoraReport.SECONDARY if i == 0 else NexoraReport.TEXT))
             pdf.cell(col_w[0], 5, str(i + 1), new_x="END")
             pdf.cell(col_w[1], 5, _pdf_text(str(m.get("model_name", ""))[:35]), new_x="END")
             pdf.cell(col_w[2], 5, _pdf_text(str(m.get("family", ""))), new_x="END")
@@ -284,7 +282,7 @@ def _generate_report(
         if importances:
             pdf.sub_title("Feature Importance Ranking")
             pdf.set_font("Helvetica", "B", 8)
-            pdf.set_text_color(*NexoraReport.CYAN)
+            pdf.set_text_color(*NexoraReport.ACCENT)
             pdf.cell(10, 6, "#", new_x="END")
             pdf.cell(70, 6, "Feature", new_x="END")
             pdf.cell(40, 6, "Mean |SHAP|", new_x="END")
@@ -293,7 +291,7 @@ def _generate_report(
 
             for i, feat in enumerate(importances[:15]):
                 pdf.set_font("Helvetica", "", 7)
-                pdf.set_text_color(*(NexoraReport.GREEN if i < 3 else NexoraReport.SLATE_300))
+                pdf.set_text_color(*(NexoraReport.GREEN if i < 3 else NexoraReport.TEXT))
                 pdf.cell(10, 5, str(i + 1), new_x="END")
                 pdf.cell(70, 5, _pdf_text(str(feat["feature"])[:40]), new_x="END")
                 pdf.cell(40, 5, f"{feat['importance']:.6f}", new_x="END")
