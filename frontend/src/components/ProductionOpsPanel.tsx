@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   AlertCircle,
@@ -41,7 +41,7 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
     [selectedModelIds, status]
   );
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!ready) return;
     const [batchData, deploymentData] = await Promise.all([
       getBatchPredictions(datasetId),
@@ -49,11 +49,11 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
     ]);
     setBatches(batchData);
     setDeployments(deploymentData);
-  };
+  }, [datasetId, ready]);
 
   useEffect(() => {
     load().catch(() => undefined);
-  }, [datasetId, ready]);
+  }, [load]);
 
   const submitBatch = async () => {
     if (!file) return;

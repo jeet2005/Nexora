@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -23,7 +23,7 @@ export default function DatasetHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       setItems(await getDatasetHistory(includeArchived));
@@ -33,11 +33,11 @@ export default function DatasetHistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [includeArchived]);
 
   useEffect(() => {
     load();
-  }, [includeArchived]);
+  }, [load]);
 
   const toggleArchive = async (item: DatasetHistoryItem) => {
     await archiveDataset(item.dataset_id, !item.archived);
