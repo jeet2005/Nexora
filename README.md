@@ -8,7 +8,7 @@ An autonomous predictive analytics platform that profiles datasets, builds optim
 [![Frontend CI](https://github.com/jeet2005/Nexora/actions/workflows/ci-frontend.yml/badge.svg?branch=main)](https://github.com/jeet2005/Nexora/actions/workflows/ci-frontend.yml)
 [![GitHub stars](https://img.shields.io/github/stars/jeet2005/Nexora?style=social)](https://github.com/jeet2005/Nexora/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/jeet2005/Nexora)](https://github.com/jeet2005/Nexora/issues)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=jeet2005/Nexora)](https://github.com/jeet2005/Nexora/network/alerts)
+[![Dependabot alerts](https://img.shields.io/dependabot/alerts?host=github&repo=jeet2005/Nexora&logo=dependabot&logoColor=white)](https://github.com/jeet2005/Nexora/network/alerts)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Made with FastAPI](https://img.shields.io/badge/Made%20with-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
