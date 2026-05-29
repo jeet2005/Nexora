@@ -12,7 +12,15 @@ An autonomous predictive analytics platform that profiles datasets, builds optim
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Made with FastAPI](https://img.shields.io/badge/Made%20with-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-5C9E48?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![XGBoost](https://img.shields.io/badge/XGBoost-1A4B8D?logo=xgboost&logoColor=white)](https://xgboost.ai/)
+[![LightGBM](https://img.shields.io/badge/LightGBM-00A8A1?logo=lightgbm&logoColor=white)](https://lightgbm.ai/)
+[![CatBoost](https://img.shields.io/badge/CatBoost-1F8E4B?logo=catboost&logoColor=white)](https://catboost.ai/)
+[![SHAP](https://img.shields.io/badge/SHAP-FF6F00?logo=shap&logoColor=white)](https://github.com/slundberg/shap)
 [![React](https://img.shields.io/badge/Frontend-React-61dafb?logo=react&logoColor=white)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Recharts](https://img.shields.io/badge/Recharts-181717?logo=recharts&logoColor=white)](https://recharts.org/)
 
 ---
 
