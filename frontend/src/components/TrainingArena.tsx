@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Zap, Play, Loader2, Cpu, AlertCircle } from "lucide-react";
 import {
   getRegistryStats,
+  getTimingEstimates,
   getTraining,
   startTraining,
   startTrainingWithConfig,
@@ -10,6 +11,7 @@ import {
 } from "../api/client";
 import type { ModelResult, RegistryStats, TrainingResult } from "../types/training";
 import type { WsTrainingEvent } from "../types/training";
+import { formatDuration } from "../utils/formatDuration";
 import {
   Bar,
   BarChart,
@@ -49,6 +51,9 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
   const [, setTotal] = useState(0);
   const [result, setResult] = useState<TrainingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [expectedTotalSec, setExpectedTotalSec] = useState<number | null>(null);
+  const [elapsedSec, setElapsedSec] = useState(0);
+  const [remainingSec, setRemainingSec] = useState<number | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   const metricLabel = problemType === "regression" ? "R²" : "Accuracy";
@@ -63,7 +68,10 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
       }
       if (data.job?.status === "running") setRunning(true);
     });
-  }, [datasetId, onComplete]);
+    getTimingEstimates(datasetId, { maxModels: trainingConfig?.maxModels ?? 100 })
+      .then((t) => setExpectedTotalSec(t.benchmark_sec))
+      .catch(() => undefined);
+  }, [datasetId, onComplete, trainingConfig?.maxModels]);
 
   const connectWs = useCallback(() => {
     if (wsRef.current) wsRef.current.close();
@@ -80,6 +88,9 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
         setTotal(data.total_models ?? 0);
         setRunning(true);
         setProgress(0);
+        setElapsedSec(0);
+        setRemainingSec(data.expected_total_sec ?? expectedTotalSec);
+        if (data.expected_total_sec) setExpectedTotalSec(data.expected_total_sec);
       }
       if (data.event === "model_started") {
         setCurrent({
@@ -92,6 +103,8 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
         setCompleted(data.completed_count ?? 0);
         setFailed(data.failed_count ?? 0);
         setProgress(((data.index ?? 0) / (data.total ?? 1)) * 100);
+        if (data.elapsed_sec != null) setElapsedSec(data.elapsed_sec);
+        if (data.estimated_remaining_sec != null) setRemainingSec(data.estimated_remaining_sec);
         if (data.leaderboard) setLeaderboard(data.leaderboard as ModelResult[]);
       }
       if (data.event === "training_complete" && data.summary) {
@@ -200,6 +213,11 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                 {registry
                   ? `${registry.total}+ models in registry · ${problemType === "classification" ? registry.classification : registry.regression} for this task`
                   : "Loading model registry…"}
+                {expectedTotalSec != null && !running && (
+                  <span className="block text-xs text-emerald-600 mt-1">
+                    Expected benchmark time: ~{formatDuration(expectedTotalSec)}
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -234,6 +252,12 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
               </span>
               <span className="text-gray-400">
                 {completed} ok · {failed} failed
+                {running && remainingSec != null && (
+                  <> · ~{formatDuration(remainingSec)} left</>
+                )}
+                {running && elapsedSec > 0 && (
+                  <> · {formatDuration(elapsedSec)} elapsed</>
+                )}
               </span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">

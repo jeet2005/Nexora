@@ -8,8 +8,8 @@ import type { ConfigureTargetResponse, ProblemType } from "../types/pipeline";
 const PROBLEM_TYPES: { value: ProblemType; label: string; disabled?: boolean }[] = [
   { value: "classification", label: "Classification" },
   { value: "regression", label: "Regression" },
-  { value: "time_series", label: "Time Series (use Exploration Modes)", disabled: true },
-  { value: "clustering", label: "Clustering (use Exploration Modes)", disabled: true },
+  { value: "time_series", label: "Time Series → Exploration Modes (Overview)", disabled: true },
+  { value: "clustering", label: "Clustering → Exploration Modes (Overview)", disabled: true },
 ];
 
 interface Props {

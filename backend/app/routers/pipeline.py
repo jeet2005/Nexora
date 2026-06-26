@@ -14,11 +14,13 @@ from app.models.schemas import (
     PreprocessResult,
     PreprocessStep,
     ProblemDetection,
+    TimingEstimatesResponse,
 )
 from app.services.dataset_store import load_analysis, load_dataframe
 from app.services.insights_engine import generate_insights
 from app.services.preprocessing_engine import PreprocessingConfig, preprocess
 from app.services.problem_detector import detect_problem_type, suggest_feature_columns
+from app.services.timing_estimator import estimate_all
 from app.services.session_store import (
     load_processed_df,
     load_session,
@@ -36,6 +38,27 @@ def _require_dataset(dataset_id: str):
     if not analysis or df is None:
         raise HTTPException(status_code=404, detail="Dataset not found.")
     return analysis, df
+
+
+@router.get("/{dataset_id}/timing-estimates", response_model=TimingEstimatesResponse)
+async def get_timing_estimates(
+    dataset_id: str,
+    max_models: int | None = None,
+    production_model_count: int = 2,
+):
+    _, df = _require_dataset(dataset_id)
+    session = load_session(dataset_id)
+    problem_type = (session.problem_type if session else None) or "classification"
+    if problem_type not in ("classification", "regression"):
+        problem_type = "classification"
+    return TimingEstimatesResponse(
+        **estimate_all(
+            df,
+            problem_type=problem_type,
+            max_models=max_models,
+            production_model_count=production_model_count,
+        )
+    )
 
 
 @router.get("/{dataset_id}/session")
@@ -59,10 +82,10 @@ async def configure_target(dataset_id: str, body: ConfigureTargetRequest):
     problem_type = body.problem_type or detection_raw["problem_type"]
     if problem_type not in ("classification", "regression"):
         detail = (
-            "Dedicated time-series forecasting is not available yet. Select a numeric or categorical "
-            "prediction target; date columns can still be used as inputs."
+            "Time-series forecasting runs in Exploration Modes on the Overview tab. "
+            "Select a numeric or categorical prediction target here for supervised models."
             if problem_type == "time_series"
-            else "Clustering does not produce a saved prediction receipt yet. Select a classification or regression target."
+            else "Clustering runs in Exploration Modes. Select a classification or regression target for Prediction Studio."
         )
         raise HTTPException(status_code=400, detail=detail)
     detection_raw["problem_type"] = problem_type

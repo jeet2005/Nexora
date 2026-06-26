@@ -1,6 +1,17 @@
-# Nexora
+```
+███╗   ██╗    ███████╗    ██╗  ██╗     ██████╗     ██████╗      █████╗
+████╗  ██║    ██╔════╝    ╚██╗██╔╝    ██╔═══██╗    ██╔══██╗    ██╔══██╗
+██╔██╗ ██║    █████╗       ╚███╔╝     ██║   ██║    ██████╔╝    ███████║
+██║╚██╗██║    ██╔══╝       ██╔██╗     ██║   ██║    ██╔══██╗    ██╔══██║
+██║ ╚████║    ███████╗    ██╔╝ ██╗    ╚██████╔╝    ██║  ██║    ██║  ██║
+╚═╝  ╚═══╝    ╚══════╝    ╚═╝  ╚═╝     ╚═════╝     ╚═╝  ╚═╝    ╚═╝  ╚═╝
+```
+
+# Nexora — Autonomous AI Predictive Analytics Platform
 
 An autonomous predictive analytics platform that profiles datasets, builds optimized preprocessing pipelines, trains reproducible model registries, runs batch predictions, monitors feature drift, and provides grounded AI educational interactive chats from a single CSV upload.
+
+**Project Status: 85-90% Complete** | **Full Terminal Feature Parity with Web** | [View Completion Status](COMPLETION_STATUS.md)
 
 ---
 
@@ -20,6 +31,7 @@ An autonomous predictive analytics platform that profiles datasets, builds optim
 [![React](https://img.shields.io/badge/Frontend-React-61dafb?logo=react&logoColor=white)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Recharts](https://img.shields.io/badge/Recharts-181717?logo=recharts&logoColor=white)](https://recharts.org/)
+[![Completion](https://img.shields.io/badge/Completion-90%25-brightgreen)](COMPLETION_STATUS.md)
 
 ---
 
@@ -27,7 +39,31 @@ An autonomous predictive analytics platform that profiles datasets, builds optim
 
 Data scientists and developers often spend hours writing repetitive code for data profiling, exploratory analysis, preprocessing, model benchmarking, and production endpoint deployments. Nexora bridges this gap by serving as a unified prediction engine. 
 
-By uploading a single CSV dataset, developers can instantly audit dataset health, clean features, benchmark leading machine learning models side-by-side, analyze SHAP explainability insights, download compiled PDF reports, converse with a grounded AI dataset assistant, and deploy production-ready prediction API endpoints secured by unique API keys.
+By uploading a single dataset (supporting CSV, Excel, Parquet, JSON, JSONL, TSV, HTML, XML, Feather, ORC, Stata, SAS, SPSS, SQL, Pickles, HDF5, and 100+ more formats), developers can instantly audit dataset health, clean features, benchmark leading machine learning models side-by-side, analyze SHAP explainability insights, download compiled PDF reports, converse with a grounded AI dataset assistant, export trained models (.joblib), and deploy production-ready prediction API endpoints secured by unique API keys.
+
+---
+
+## Key Features - Full Terminal Parity!
+
+[*] Interactive CLI Wizard - Same 9-stage workflow as web, no browser needed
+[*] Full Terminal Access - `nexora train`, `nexora predict`, `nexora explain`, `nexora cluster`, `nexora forecast`
+[*] Python Library - Import Nexora in scripts for automation
+[*] 100+ Data Formats - CSV, Excel, Parquet, SQL, MongoDB, S3, Google Sheets, scikit-learn datasets
+[*] 6 ML Families - Linear, Tree-based, Boosting (XGB/LGBM/CatBoost), Neural Networks, Ensemble
+[*] Auto Preprocessing - Missing imputation, encoding, scaling, outlier handling, deduplication
+[*] SHAP Explanations - Feature importance, what-if analysis, decision drivers
+[*] Deployment - FastAPI, Flask, Streamlit, Docker, Jupyter export  
+
+### Quick Command Examples
+```bash
+nexora                                    # Interactive wizard
+nexora train data.csv --target revenue   # Train models
+nexora predict model.nx new_data.csv     # Make predictions
+nexora explain model.nx                  # Feature importance
+nexora serve model.nx --port 8000        # REST API
+```
+
+**No web browser required. Everything in the terminal!** See [CLI_FEATURES.md](CLI_FEATURES.md) for all commands.
 
 ---
 
@@ -44,6 +80,8 @@ By uploading a single CSV dataset, developers can instantly audit dataset health
 *Note: The educational assistant (Ollama integration) requires a local Ollama instance and is only active when running the application locally. See local setup guidelines below.*
 
 ---
+
+Visit the frontend demo page at `/how_nexora_works.html` to learn how Nexora works, including monitoring and drift detection features.
 
 ## System Architecture
 
@@ -93,12 +131,12 @@ graph TD
 ## Core Features
 
 ### 1. Dataset Intelligence Engine
-* **Automated CSV Validation** - Formats columns, assesses size boundaries, and verifies tabular file integrity.
+* **Automated Multi-Format Validation** - Handles CSV, Excel, Parquet, JSON, and 100+ tabular file formats. Formats columns, assesses size boundaries, and verifies integrity.
 * **Health Profiling** - Evaluates structural completeness, statistical anomalies, and generates per-column scorecards.
 * **Preview and Distributions** - Offers statistical summaries, skew metrics, and categorical balance diagnostics.
 
 ### 2. Dynamic Preprocessing Pipelines
-* **Type Parsing** - Separates numerical parameters, categorical labels, datetimes, and identifier variables.
+* **Type Parsing** - Separates numerical parameters, categorical labels, datetimes (with enhanced Unix timestamp detection), and identifier variables.
 * **Intelligent Preprocessing** - Implements missing values imputation, standard scaling, target-label encoding, outlier detection, and duplicate record cleaning.
 * **Interactive Configuration** - Provides controls to select prediction targets and customize individual preprocessing steps.
 
@@ -114,6 +152,7 @@ graph TD
 * **Correlation Insights** - Flags linear dependencies, high associations, and outlier counts.
 
 ### 5. Production Suite
+* **Model Export** - Easily download compiled `.joblib` model artifacts for offline use.
 * **API Endpoints** - Deploys production-grade prediction endpoints secured by custom API keys.
 * **Batch Processing** - Enables bulk uploads to retrieve fully enriched output prediction sheets.
 * **Drift Detection** - Compares historical prediction request signatures to highlight potential target concept drift.

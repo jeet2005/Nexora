@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Database, Rows3, Columns3, Copy } from "lucide-react";
@@ -10,23 +10,25 @@ import PredictionSuggestions from "../components/PredictionSuggestions";
 import ColumnProfiles from "../components/ColumnProfiles";
 import DataPreviewTable from "../components/DataPreviewTable";
 import MissingValuesChart from "../components/MissingValuesChart";
-import DatasetCharts from "../components/DatasetCharts";
 import ModelReadinessPanel from "../components/ModelReadinessPanel";
 import WorkflowTabs, { type WorkflowTab } from "../components/WorkflowTabs";
 import TargetSelector from "../components/TargetSelector";
 import ProblemTypeCard from "../components/ProblemTypeCard";
-import PreprocessPanel from "../components/PreprocessPanel";
-import InsightsPanel from "../components/InsightsPanel";
-import TrainingArena from "../components/TrainingArena";
-import ExplainabilityPanel from "../components/ExplainabilityPanel";
-import ExperimentPanel from "../components/ExperimentPanel";
-import ExplorationModesPanel from "../components/ExplorationModesPanel";
 import DatasetChat from "../components/DatasetChat";
 import AdvancedSettings, { DEFAULT_CONFIG, type AdvancedConfig } from "../components/AdvancedSettings";
-import PredictionStudio from "../components/PredictionStudio";
-import NumericTrendsChart from "../components/NumericTrendsChart";
-import CategoricalDistributionChart from "../components/CategoricalDistributionChart";
-import DataQualityChart from "../components/DataQualityChart";
+import TabLoader from "../components/TabLoader";
+
+const DatasetCharts = lazy(() => import("../components/DatasetCharts"));
+const NumericTrendsChart = lazy(() => import("../components/NumericTrendsChart"));
+const CategoricalDistributionChart = lazy(() => import("../components/CategoricalDistributionChart"));
+const DataQualityChart = lazy(() => import("../components/DataQualityChart"));
+const ExplorationModesPanel = lazy(() => import("../components/ExplorationModesPanel"));
+const PredictionStudio = lazy(() => import("../components/PredictionStudio"));
+const PreprocessPanel = lazy(() => import("../components/PreprocessPanel"));
+const InsightsPanel = lazy(() => import("../components/InsightsPanel"));
+const TrainingArena = lazy(() => import("../components/TrainingArena"));
+const ExperimentPanel = lazy(() => import("../components/ExperimentPanel"));
+const ExplainabilityPanel = lazy(() => import("../components/ExplainabilityPanel"));
 
 export default function DatasetDashboard() {
   const { datasetId } = useParams<{ datasetId: string }>();
@@ -139,29 +141,33 @@ export default function DatasetDashboard() {
 
       <WorkflowTabs active={tab} onChange={setTab} maxUnlocked={maxUnlocked} />
 
-      <div className={tab === "overview" ? "block" : "hidden"}>
-        <motion.div
-          key="overview"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+      {tab === "overview" && (
+        <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <motion.div className="grid lg:grid-cols-2 gap-6 mb-6">
             <HealthScoreCard health={analysis.health} />
             <MissingValuesChart profiles={analysis.column_profiles} />
           </motion.div>
 
-          <DatasetCharts analysis={analysis} />
+          <Suspense fallback={<TabLoader label="Loading charts…" />}>
+            <DatasetCharts analysis={analysis} />
+          </Suspense>
 
           <motion.div className="grid lg:grid-cols-2 gap-6 mb-6">
-            <NumericTrendsChart analysis={analysis} />
-            <CategoricalDistributionChart analysis={analysis} />
+            <Suspense fallback={<TabLoader label="Loading trends…" />}>
+              <NumericTrendsChart analysis={analysis} />
+              <CategoricalDistributionChart analysis={analysis} />
+            </Suspense>
           </motion.div>
 
           <motion.div className="mb-6">
-            <DataQualityChart analysis={analysis} />
+            <Suspense fallback={<TabLoader label="Loading quality chart…" />}>
+              <DataQualityChart analysis={analysis} />
+            </Suspense>
           </motion.div>
 
-          <ExplorationModesPanel datasetId={datasetId} analysis={analysis} />
+          <Suspense fallback={<TabLoader label="Loading exploration modes…" />}>
+            <ExplorationModesPanel datasetId={datasetId} analysis={analysis} />
+          </Suspense>
 
           <motion.div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-6 mb-6">
             <ModelReadinessPanel findings={analysis.model_eligibility ?? []} />
@@ -175,7 +181,11 @@ export default function DatasetDashboard() {
           <DataPreviewTable preview={analysis.preview} totalRows={analysis.rows} />
 
           <motion.div className="mt-6">
-            <AdvancedSettings config={advancedConfig} onChange={setAdvancedConfig} />
+            <AdvancedSettings
+              config={advancedConfig}
+              onChange={setAdvancedConfig}
+              datasetId={datasetId}
+            />
           </motion.div>
 
           <motion.div className="mt-8 flex justify-center">
@@ -184,9 +194,9 @@ export default function DatasetDashboard() {
             </button>
           </motion.div>
         </motion.div>
-      </div>
+      )}
 
-      <div className={tab === "configure" ? "block" : "hidden"}>
+      {tab === "configure" && (
         <motion.div key="configure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
           {!session?.problem_detection ? (
             <TargetSelector
@@ -224,12 +234,14 @@ export default function DatasetDashboard() {
             </>
           )}
         </motion.div>
-      </div>
+      )}
 
-      <div className={tab === "studio" ? "block" : "hidden"}>
+      {tab === "studio" && (
         <motion.div key="studio" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {session?.target_column ? (
-            <PredictionStudio datasetId={datasetId} />
+            <Suspense fallback={<TabLoader label="Loading Prediction Studio…" />}>
+              <PredictionStudio datasetId={datasetId} />
+            </Suspense>
           ) : (
             <motion.div className="glass p-6 text-center text-gray-400">
               <p className="mb-4">Select a prediction target first.</p>
@@ -239,9 +251,9 @@ export default function DatasetDashboard() {
             </motion.div>
           )}
         </motion.div>
-      </div>
+      )}
 
-      <div className={tab === "preprocess" ? "block" : "hidden"}>
+      {tab === "preprocess" && (
         <motion.div key="preprocess" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
           {session?.status !== "preprocessed" ? (
             <>
@@ -252,7 +264,9 @@ export default function DatasetDashboard() {
                 />
               )}
               {session?.target_column ? (
-                <PreprocessPanel datasetId={datasetId} onComplete={handlePreprocessed} />
+                <Suspense fallback={<TabLoader label="Loading pipeline…" />}>
+                  <PreprocessPanel datasetId={datasetId} onComplete={handlePreprocessed} />
+                </Suspense>
               ) : (
                 <motion.div className="glass p-6 text-center text-gray-400">
                   <p className="mb-4">Configure a prediction target first.</p>
@@ -264,7 +278,11 @@ export default function DatasetDashboard() {
             </>
           ) : (
             <>
-              {session.preprocess_result && <InsightsPanel result={session.preprocess_result} />}
+              {session.preprocess_result && (
+                <Suspense fallback={<TabLoader label="Loading insights…" />}>
+                  <InsightsPanel result={session.preprocess_result} />
+                </Suspense>
+              )}
               <motion.div className="mt-8 flex justify-center">
                 <button type="button" onClick={() => setTab("arena")} className="btn-primary">
                   Open Optional Comparison Arena
@@ -273,12 +291,12 @@ export default function DatasetDashboard() {
             </>
           )}
         </motion.div>
-      </div>
+      )}
 
-      <div className={tab === "arena" ? "block" : "hidden"}>
+      {tab === "arena" && (
         <motion.div key="arena" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {session?.status === "preprocessed" || session?.status === "trained" ? (
-            <>
+            <Suspense fallback={<TabLoader label="Loading training arena…" />}>
               <TrainingArena
                 datasetId={datasetId}
                 problemType={session.problem_type ?? "classification"}
@@ -288,7 +306,7 @@ export default function DatasetDashboard() {
               <motion.div className="mt-6">
                 <ExperimentPanel datasetId={datasetId} />
               </motion.div>
-            </>
+            </Suspense>
           ) : (
             <motion.div className="glass p-6 text-center text-gray-400">
               <p className="mb-4">Complete preprocessing before training models.</p>
@@ -298,17 +316,19 @@ export default function DatasetDashboard() {
             </motion.div>
           )}
         </motion.div>
-      </div>
+      )}
 
-      <div className={tab === "insights" ? "block" : "hidden"}>
+      {tab === "insights" && (
         <motion.div key="insights" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {session?.status === "trained" && session.training_result?.best_model ? (
-            <ExplainabilityPanel
-              datasetId={datasetId}
-              problemType={session.problem_type ?? "classification"}
-              bestModelId={session.training_result.best_model.model_id}
-              bestModelName={session.training_result.best_model.model_name}
-            />
+            <Suspense fallback={<TabLoader label="Loading explainability…" />}>
+              <ExplainabilityPanel
+                datasetId={datasetId}
+                problemType={session.problem_type ?? "classification"}
+                bestModelId={session.training_result.best_model.model_id}
+                bestModelName={session.training_result.best_model.model_name}
+              />
+            </Suspense>
           ) : (
             <motion.div className="glass p-6 text-center text-gray-400">
               <p className="mb-4">Complete model training to unlock explainability insights.</p>
@@ -318,7 +338,7 @@ export default function DatasetDashboard() {
             </motion.div>
           )}
         </motion.div>
-      </div>
+      )}
 
       <DatasetChat datasetId={datasetId} filename={analysis.filename} />
     </div>

@@ -14,7 +14,7 @@ from app.models.schemas import (
 )
 from app.services.dataset_analyzer import analyze_dataset
 from app.services.dataset_store import load_analysis, save_dataset
-from app.services.dataset_validator import DatasetValidationError, load_csv
+from app.services.dataset_validator import DatasetValidationError, load_dataframe
 from app.services.history_service import delete_dataset, list_history, set_archived
 
 logger = logging.getLogger(__name__)
@@ -53,9 +53,9 @@ async def upload_dataset(file: UploadFile = File(...)):
         )
 
     try:
-        df = load_csv(content, file.filename)
+        df = load_dataframe(content, file.filename)
     except DatasetValidationError as e:
-        logger.warning(f"CSV validation error: {e.message}")
+        logger.warning(f"Dataset validation error: {e.message}")
         raise HTTPException(status_code=400, detail=e.message) from e
     except Exception as e:
         logger.error(f"Error processing file: {e}", exc_info=True)

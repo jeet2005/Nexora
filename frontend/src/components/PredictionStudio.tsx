@@ -11,14 +11,18 @@ import {
   Play,
   SlidersHorizontal,
   TriangleAlert,
+  Download,
 } from "lucide-react";
 import {
   explainPrediction,
   getProductionModels,
+  getTimingEstimates,
   runProductionPrediction,
   trainProductionModels,
+  downloadModel,
   type PredictionExplainResponse,
 } from "../api/client";
+import { formatDuration } from "../utils/formatDuration";
 import type {
   DeployableModelOption,
   PredictionInputField,
@@ -48,6 +52,7 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
   const [predicting, setPredicting] = useState(false);
   const [explaining, setExplaining] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [trainEstimateSec, setTrainEstimateSec] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -67,10 +72,22 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
       })
       .catch((err: unknown) => setError(apiError(err, "Could not load model choices.")))
       .finally(() => setLoading(false));
+    getTimingEstimates(datasetId, { productionModelCount: 2 })
+      .then((t) => {
+        if (alive) setTrainEstimateSec(t.production_train_sec);
+      })
+      .catch(() => undefined);
     return () => {
       alive = false;
     };
   }, [datasetId]);
+
+  useEffect(() => {
+    if (!selected.length) return;
+    getTimingEstimates(datasetId, { productionModelCount: selected.length })
+      .then((t) => setTrainEstimateSec(t.production_train_sec))
+      .catch(() => undefined);
+  }, [datasetId, selected.length]);
 
   const displayedModels = useMemo(
     () => (showAll ? available : available.filter((model) => model.recommended).slice(0, 8)),
@@ -266,6 +283,11 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
               </>
             )}
           </button>
+          {trainEstimateSec != null && selected.length > 0 && !training && (
+            <p className="text-xs text-gray-400 text-center mt-2">
+              Expected training time: ~{formatDuration(trainEstimateSec)}
+            </p>
+          )}
         </div>
 
         <div className="glass p-6">
@@ -331,6 +353,7 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
 
       {receipt && (
         <PredictionResultView
+          datasetId={datasetId}
           receipt={receipt}
           explanation={explanation}
           explaining={explaining}
@@ -380,11 +403,13 @@ function InputField({
 }
 
 function PredictionResultView({
+  datasetId,
   receipt,
   explanation,
   explaining,
   onExplain,
 }: {
+  datasetId: string;
   receipt: PredictionReceipt;
   explanation: PredictionExplainResponse | null;
   explaining: boolean;
@@ -428,8 +453,20 @@ function PredictionResultView({
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
         {receipt.predictions.map((output) => (
           <div key={output.model_id} className="border border-gray-100 rounded-xl p-4">
-            <p className="text-sm text-gray-800 truncate">{output.model_name}</p>
-            <p className="text-xs text-gray-400 mt-1">{output.family}</p>
+            <div className="flex justify-between items-start">
+              <div className="min-w-0">
+                <p className="text-sm text-gray-800 truncate pr-2">{output.model_name}</p>
+                <p className="text-xs text-gray-400 mt-1">{output.family}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => downloadModel(datasetId, output.model_id)}
+                className="text-gray-400 hover:text-emerald-600 transition-colors flex-shrink-0"
+                title="Download Model (.joblib)"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            </div>
             <p className="text-2xl text-emerald-700 font-mono mt-3">{renderValue(output.prediction)}</p>
             <div className="flex gap-3 mt-3 text-xs text-gray-500">
               <span className="inline-flex items-center gap-1">

@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings2, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { Settings2, ChevronDown, ChevronUp, Info, Clock } from "lucide-react";
+import { getTimingEstimates, type TimingEstimates } from "../api/client";
+import { formatDuration } from "../utils/formatDuration";
 
 export interface AdvancedConfig {
   testSplit: number;
@@ -23,10 +25,19 @@ const DEFAULTS: AdvancedConfig = {
 interface Props {
   config: AdvancedConfig;
   onChange: (config: AdvancedConfig) => void;
+  datasetId?: string;
 }
 
-export default function AdvancedSettings({ config, onChange }: Props) {
+export default function AdvancedSettings({ config, onChange, datasetId }: Props) {
   const [open, setOpen] = useState(false);
+  const [timing, setTiming] = useState<TimingEstimates | null>(null);
+
+  useEffect(() => {
+    if (!datasetId) return;
+    getTimingEstimates(datasetId, { maxModels: config.maxModels })
+      .then(setTiming)
+      .catch(() => setTiming(null));
+  }, [datasetId, config.maxModels]);
 
   const update = <K extends keyof AdvancedConfig>(key: K, value: AdvancedConfig[K]) => {
     onChange({ ...config, [key]: value });
@@ -195,6 +206,23 @@ export default function AdvancedSettings({ config, onChange }: Props) {
                   />
                 </button>
               </div>
+
+              {/* Expected timing */}
+              {timing && (
+                <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 flex items-start gap-2">
+                  <Clock className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <div className="text-xs text-emerald-800 space-y-1">
+                    <p>
+                      Benchmark (~{timing.benchmark_model_count} models):{" "}
+                      <span className="font-mono font-medium">{formatDuration(timing.benchmark_sec)}</span>
+                    </p>
+                    <p className="text-emerald-600">
+                      Preprocess ~{formatDuration(timing.preprocess_sec)} · Production train ~
+                      {formatDuration(timing.production_train_sec)}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Reset */}
               <button

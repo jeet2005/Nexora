@@ -167,7 +167,7 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
                       </p>
                     </div>
                     <a
-                      href={`${baseApi}${batch.download_url.replace(/^\/api/, "")}`}
+                      href={baseApi.endsWith("/api") ? `${baseApi.replace(/\/api$/, "")}${batch.download_url}` : `${baseApi}${batch.download_url}`}
                       className="p-2 rounded-lg text-emerald-700 hover:bg-emerald-50"
                       title="Download predictions"
                     >
@@ -216,11 +216,11 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
                   </div>
                   <div className="mt-2 flex gap-2">
                     <code className="flex-1 text-[11px] bg-white rounded p-2 overflow-hidden text-ellipsis">
-                      {deployment.predict_url}
+                      {deployment.predict_url.replace("http://127.0.0.1:8000/api", baseApi)}
                     </code>
                     <button
                       type="button"
-                      onClick={() => navigator.clipboard.writeText(deployment.predict_url)}
+                      onClick={() => navigator.clipboard.writeText(deployment.predict_url.replace("http://127.0.0.1:8000/api", baseApi))}
                       className="p-2 rounded-lg text-gray-500 hover:bg-white"
                       title="Copy URL"
                     >

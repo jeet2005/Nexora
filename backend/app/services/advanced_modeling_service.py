@@ -163,6 +163,12 @@ def _freq_offset(freq: str):
     return pd.DateOffset(months=1)
 
 
+def _grouper_freq(frequency: str) -> str:
+    """Map user-facing frequency codes to pandas Grouper aliases."""
+    mapping = {"D": "D", "W": "W", "M": "ME"}
+    return mapping.get(frequency, frequency)
+
+
 def run_time_series(
     dataset_id: str,
     date_column: str,
@@ -177,9 +183,17 @@ def run_time_series(
         raise ValueError("Date and target columns must exist in the dataset.")
 
     series = df[[date_column, target_column]].copy()
-    series[date_column] = pd.to_datetime(
-        series[date_column], errors="coerce", format="mixed"
-    )
+    if pd.api.types.is_numeric_dtype(series[date_column]):
+        # Try seconds first, if they are huge it will be out of bounds for 's' usually, or we can check magnitude
+        # But pandas unit='s' works for both if we are careful, actually unit='ms' or 's'
+        if series[date_column].mean() > 946684800000:
+            series[date_column] = pd.to_datetime(series[date_column], unit="ms", errors="coerce")
+        else:
+            series[date_column] = pd.to_datetime(series[date_column], unit="s", errors="coerce")
+    else:
+        series[date_column] = pd.to_datetime(
+            series[date_column], errors="coerce", format="mixed"
+        )
     series[target_column] = pd.to_numeric(series[target_column], errors="coerce")
     series = series.dropna().sort_values(date_column)
     if len(series) < 6:
@@ -187,24 +201,12 @@ def run_time_series(
             "At least six dated numeric observations are required for forecasting."
         )
 
-    if frequency == "D":
-        grouped = (
-            series.groupby(pd.Grouper(key=date_column, freq="D"))[target_column]
-            .mean()
-            .dropna()
-        )
-    elif frequency == "W":
-        grouped = (
-            series.groupby(pd.Grouper(key=date_column, freq="W"))[target_column]
-            .mean()
-            .dropna()
-        )
-    else:
-        grouped = (
-            series.groupby(pd.Grouper(key=date_column, freq="M"))[target_column]
-            .mean()
-            .dropna()
-        )
+    grouper = _grouper_freq(frequency)
+    grouped = (
+        series.groupby(pd.Grouper(key=date_column, freq=grouper))[target_column]
+        .mean()
+        .dropna()
+    )
     if len(grouped) < 6:
         raise ValueError(
             "Not enough observations remain after grouping by the selected frequency."

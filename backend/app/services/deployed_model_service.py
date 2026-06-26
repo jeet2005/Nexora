@@ -41,7 +41,7 @@ from app.models.schemas import (
 )
 from app.services.dataset_analyzer import _infer_datetime, _is_id_like
 from app.services.dataset_store import load_dataframe
-from app.services.dataset_validator import load_csv
+from app.services.dataset_validator import load_dataframe as parse_dataframe
 from app.services.experiment_service import create_experiment
 from app.services.model_registry import ModelSpec, get_models_for_problem
 from app.services.session_store import load_session
@@ -78,6 +78,13 @@ def _status_path(dataset_id: str) -> Path:
 
 def _artifact_path(dataset_id: str, model_id: str) -> Path:
     return _models_dir(dataset_id) / f"{model_id}.joblib"
+
+
+def model_artifact_path(dataset_id: str, model_id: str) -> Path:
+    path = _artifact_path(dataset_id, model_id)
+    if not path.exists():
+        raise ValueError("Model artifact not found.")
+    return path
 
 
 def _batches_dir(dataset_id: str) -> Path:
@@ -149,8 +156,8 @@ def list_deployable_models(dataset_id: str) -> dict[str, Any]:
         if column != target and _is_id_like(df[column])
     ]
     limitations = [
-        "Dedicated time-series forecasting is not available yet; date columns are converted into usable calendar inputs.",
-        "Clustering is exploratory and is not available for saved prediction receipts yet.",
+        "Time-series forecasting runs in Exploration Modes; date columns here become calendar features for supervised models.",
+        "Clustering runs in Exploration Modes and does not produce saved prediction receipts.",
     ]
     if excluded_ids:
         limitations.insert(
@@ -351,7 +358,7 @@ def run_batch_prediction(
     filename: str,
     model_ids: list[str] | None = None,
 ) -> dict[str, Any]:
-    df = load_csv(content, filename)
+    df = parse_dataframe(content, filename)
     _, target, problem_type = _require_prediction_context(dataset_id)
     status = load_production_status(dataset_id)
     if not status or not status.models:
@@ -1008,7 +1015,7 @@ def _deployment_public(record: dict[str, Any]) -> ModelDeployment:
         active=bool(record.get("active", True)),
         created_at=record["created_at"],
         last_used_at=record.get("last_used_at"),
-        predict_url=f"{settings.public_api_url.rstrip('/')}/predict/{deployment_id}",
+        predict_url=f"{settings.public_api_url.rstrip('/')}/api/predict/{deployment_id}",
         api_key_preview=record.get("api_key_preview"),
     )
 

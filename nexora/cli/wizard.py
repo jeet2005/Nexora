@@ -903,17 +903,11 @@ def _stage_export(report, data_path: Path) -> None:
         report.to_pdf(pdf_path)
         console.print(f"[green]✓ PDF report:[/green] {pdf_path}")
 
-    # Code generation
+    # Export Python code only
     if Confirm.ask("Generate standalone Python code?", default=False):
         code_path = data_path.with_suffix(".py")
         report.save_code(code_path)
         console.print(f"[green]✓ Python code:[/green] {code_path}")
-
-    # FastAPI
-    if Confirm.ask("Generate FastAPI deployment code?", default=False):
-        api_path = data_path.parent / "api.py"
-        report.save_fastapi(api_path)
-        console.print(f"[green]✓ FastAPI app:[/green] {api_path}")
 
     # Model pickle
     if Confirm.ask("Export model pickle (.pkl)?", default=False):

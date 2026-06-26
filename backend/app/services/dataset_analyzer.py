@@ -33,12 +33,22 @@ def _is_id_like(series: pd.Series) -> bool:
 def _infer_datetime(series: pd.Series) -> bool:
     if pd.api.types.is_datetime64_any_dtype(series):
         return True
+    
+    sample = series.dropna().head(20)
+    if len(sample) == 0:
+        return False
+
     if series.dtype == object:
-        sample = series.dropna().head(20)
-        if len(sample) == 0:
-            return False
         parsed = pd.to_datetime(sample, errors="coerce", format="mixed")
         return parsed.notna().mean() > 0.8
+        
+    if pd.api.types.is_numeric_dtype(series):
+        # Check if values look like Unix timestamps (seconds or milliseconds)
+        # 946684800 = 2000-01-01, 2524608000 = 2050-01-01 (in seconds)
+        is_seconds = sample.between(946684800, 2524608000).mean() > 0.8
+        is_ms = sample.between(946684800000, 2524608000000).mean() > 0.8
+        return is_seconds or is_ms
+
     return False
 
 
@@ -278,24 +288,34 @@ def _model_eligibility(
         )
 
     date_columns = [profile.name for profile in profiles if profile.is_datetime]
+    numeric_columns = [profile.name for profile in profiles if profile.is_numeric]
+    ts_targets = [c for c in numeric_columns if c not in date_columns]
+    ts_eligible = bool(date_columns and ts_targets)
     time_reason = (
-        "Date columns can be used as prediction inputs, but dedicated sequence forecasting is not implemented yet."
-        if date_columns
-        else "No date/time column was detected, and dedicated sequence forecasting is not implemented yet."
+        f"Use Exploration Modes with date column "
+        f"({date_columns[0]}) and numeric target for trend forecasting."
+        if ts_eligible
+        else (
+            "Add a date/time column and numeric metric column to run forecasting in Exploration Modes."
+            if not date_columns
+            else "Add a numeric metric column alongside the detected date column for forecasting."
+        )
     )
     findings.append(
         ModelEligibilityFinding(
             task="time-series forecasting",
-            eligible=False,
+            eligible=ts_eligible,
             reason=time_reason,
-            target_candidates=date_columns,
+            target_candidates=ts_targets[:5] if ts_eligible else date_columns,
+            model_examples=["Linear trend forecast"] if ts_eligible else [],
         )
     )
     findings.append(
         ModelEligibilityFinding(
             task="clustering",
-            eligible=False,
-            reason="Prediction Studio currently saves supervised prediction models only.",
+            eligible=True,
+            reason="Run K-Means segmentation in Exploration Modes on the Overview tab.",
+            model_examples=["K-Means"],
         )
     )
     return findings

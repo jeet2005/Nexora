@@ -79,6 +79,29 @@ export async function runPreprocess(datasetId: string, options?: PreprocessOptio
   return data;
 }
 
+export interface TimingEstimates {
+  preprocess_sec: number;
+  benchmark_sec: number;
+  benchmark_model_count: number;
+  benchmark_per_model_avg_sec: number;
+  production_train_sec: number;
+  time_series_sec: number;
+  clustering_sec: number;
+}
+
+export async function getTimingEstimates(
+  datasetId: string,
+  options?: { maxModels?: number; productionModelCount?: number }
+) {
+  const { data } = await api.get<TimingEstimates>(`/datasets/${datasetId}/timing-estimates`, {
+    params: {
+      max_models: options?.maxModels ?? null,
+      production_model_count: options?.productionModelCount ?? 2,
+    },
+  });
+  return data;
+}
+
 export async function checkHealth() {
   const { data } = await api.get<{ status: string }>("/health");
   return data;
@@ -364,6 +387,19 @@ export async function explainPrediction(
   return data;
 }
 
+export async function downloadModel(datasetId: string, modelId: string) {
+  const response = await api.get(`/datasets/${datasetId}/production/models/${modelId}/download`, {
+    responseType: 'blob'
+  });
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `${modelId}.joblib`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 export interface ModelDeployment {
   deployment_id: string;
   dataset_id: string;
@@ -445,5 +481,15 @@ export async function runTimeSeries(
     periods: body.periods,
     frequency: body.frequency,
   });
+  return data;
+}
+
+export async function getTimeSeries(datasetId: string) {
+  const { data } = await api.get<TimeSeriesResult | null>(`/datasets/${datasetId}/time-series`);
+  return data;
+}
+
+export async function getClustering(datasetId: string) {
+  const { data } = await api.get<ClusteringResult | null>(`/datasets/${datasetId}/clustering`);
   return data;
 }

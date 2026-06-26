@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Cog, Loader2, Play, AlertCircle } from "lucide-react";
-import { runPreprocess } from "../api/client";
+import { Cog, Loader2, Play, AlertCircle, Clock } from "lucide-react";
+import { getTimingEstimates, runPreprocess } from "../api/client";
 import type { PreprocessResponse } from "../types/pipeline";
+import { formatDuration } from "../utils/formatDuration";
 import PreprocessSteps from "./PreprocessSteps";
 
 interface Props {
@@ -14,6 +15,13 @@ export default function PreprocessPanel({ datasetId, onComplete }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scaling, setScaling] = useState<"standard" | "minmax" | "none">("standard");
+  const [expectedSec, setExpectedSec] = useState<number | null>(null);
+
+  useEffect(() => {
+    getTimingEstimates(datasetId)
+      .then((t) => setExpectedSec(t.preprocess_sec))
+      .catch(() => undefined);
+  }, [datasetId]);
 
   const handleRun = async () => {
     setLoading(true);
@@ -54,6 +62,12 @@ export default function PreprocessPanel({ datasetId, onComplete }: Props) {
           </h3>
           <p className="text-sm text-gray-500">
             Missing values · encoding · scaling · outliers · duplicates
+            {expectedSec != null && (
+              <span className="block text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Expected runtime: ~{formatDuration(expectedSec)}
+              </span>
+            )}
           </p>
         </div>
       </div>

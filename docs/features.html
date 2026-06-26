@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nexora Package - 100 Features</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f8fafc;
+    }
+    
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    .stat-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat {
+      flex: 1;
+      min-width: 100px;
+      text-align: center;
+    }
+
+    .stat-n {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .stat-l {
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      background: #f1f5f9;
+    }
+
+    .tab.active {
+      background: #7c6af7;
+      color: white;
+      border-color: #7c6af7;
+    }
+
+    .cnt {
+      background: rgba(0,0,0,0.1);
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+    
+    .tab.active .cnt {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .panel {
+      display: none;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .panel.show {
+      display: block;
+    }
+
+    .section-head {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 24px 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .section-head:first-child {
+      margin-top: 0;
+    }
+
+    .feat {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-items: flex-start;
+    }
+
+    .feat:hover {
+      border-color: #7c6af7;
+      background: #f8faff;
+    }
+
+    .feat-num {
+      font-family: monospace;
+      color: #94a3b8;
+      font-size: 14px;
+      padding-top: 4px;
+    }
+
+    .feat-main {
+      flex: 1;
+    }
+
+    .feat-sig {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 15px;
+      color: #0f172a;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .feat-desc {
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+
+    .feat-detail {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      color: #059669;
+      background: #ecfdf5;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .feat.open .feat-detail {
+      display: block;
+    }
+
+    .feat-tag {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .t-entry { background: #dbeafe; color: #1e40af; }
+    .t-exit { background: #ffedd5; color: #9a3412; }
+    .t-both { background: #f3e8ff; color: #6b21a8; }
+    .t-ctrl { background: #fce7f3; color: #9d174d; }
+    .t-cli { background: #e0e7ff; color: #3730a3; }
+
+    .chevron {
+      color: #cbd5e1;
+      font-size: 20px;
+      transition: transform 0.2s;
+    }
+
+    .feat.open .chevron {
+      transform: rotate(90deg);
+    }
+
+    .str { color: #22c55e; }
+    .kw { color: #3b82f6; font-weight: bold; }
+    .acc { color: #7c6af7; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h2 class="sr-only">Nexora package — 100 features across all entry points, exit points, and controls</h2>
+
+<div class="stat-bar">
+  <div class="stat"><div class="stat-n">15</div><div class="stat-l">Entry points</div></div>
+  <div class="stat"><div class="stat-n">10</div><div class="stat-l">Run modes</div></div>
+  <div class="stat"><div class="stat-n">18</div><div class="stat-l">Report outputs</div></div>
+  <div class="stat"><div class="stat-n">11</div><div class="stat-l">Code gen</div></div>
+  <div class="stat"><div class="stat-n">10</div><div class="stat-l">Preprocessing</div></div>
+  <div class="stat"><div class="stat-n">10</div><div class="stat-l">Analysis</div></div>
+  <div class="stat"><div class="stat-n">9</div><div class="stat-l">Production</div></div>
+  <div class="stat"><div class="stat-n">10</div><div class="stat-l">CLI</div></div>
+  <div class="stat"><div class="stat-n" style="color:#7c6af7">103</div><div class="stat-l">Total</div></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('entry', this)">Entry points<span class="cnt">15</span></div>
+  <div class="tab" onclick="switchTab('run', this)">Run modes<span class="cnt">10</span></div>
+  <div class="tab" onclick="switchTab('report', this)">Report.*<span class="cnt">18</span></div>
+  <div class="tab" onclick="switchTab('code', this)">Code gen<span class="cnt">11</span></div>
+  <div class="tab" onclick="switchTab('pre', this)">Preprocessing<span class="cnt">10</span></div>
+  <div class="tab" onclick="switchTab('analysis', this)">Analysis<span class="cnt">10</span></div>
+  <div class="tab" onclick="switchTab('prod', this)">Production<span class="cnt">9</span></div>
+  <div class="tab" onclick="switchTab('cli', this)">CLI<span class="cnt">10</span></div>
+</div>
+
+<div id="panel-entry" class="panel show"><div class="feat-list">
+<div class="section-head">File-based</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">01</span><div class="feat-main"><div class="feat-sig">Nexora(<span class="str">"data.csv"</span>, target=<span class="str">"col"</span>)</div><div class="feat-desc">Primary entry — CSV file path, auto-detects delimiter and encoding</div><div class="feat-detail"># nx = Nexora("sales.csv", target="revenue")<br># nx = Nexora("data.csv")  # target optional for profiling only</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">02</span><div class="feat-main"><div class="feat-sig">Nexora(<span class="str">"data.xlsx"</span>, sheet=<span class="str">"Sheet1"</span>)</div><div class="feat-desc">Excel files — specify sheet name or index, multi-sheet aware</div><div class="feat-detail"># nx = Nexora("report.xlsx", sheet="Q3_Data")<br># nx = Nexora("report.xlsx", sheet=0)</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">03</span><div class="feat-main"><div class="feat-sig">Nexora(<span class="str">"data.parquet"</span>)</div><div class="feat-desc">Parquet files — fast read for large datasets, schema-aware</div><div class="feat-detail"># nx = Nexora("data.parquet", target="churn")</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">04</span><div class="feat-main"><div class="feat-sig">Nexora(<span class="str">"data.json"</span>)</div><div class="feat-desc">JSON and JSONL files — flattens nested structures automatically</div><div class="feat-detail"># nx = Nexora("events.json")  # auto-flattens nested keys</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="section-head">In-memory</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">05</span><div class="feat-main"><div class="feat-sig">Nexora(df, target=<span class="str">"col"</span>)</div><div class="feat-desc">Pandas DataFrame — pass existing df directly, no file needed</div><div class="feat-detail"># nx = Nexora(my_dataframe, target="price")</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">06</span><div class="feat-main"><div class="feat-sig">Nexora(X, y)</div><div class="feat-desc">NumPy arrays — X features matrix, y target vector</div><div class="feat-detail"># nx = Nexora(X_array, y_array)<br># nx = Nexora(X, y, feature_names=["f1","f2"])</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">07</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">from_clipboard</span>()</div><div class="feat-desc">Paste CSV data from clipboard — great for quick experiments</div><div class="feat-detail"># Copy CSV from Excel → nx = Nexora.from_clipboard(target="sales")</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="section-head">Remote sources</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">08</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">from_url</span>(<span class="str">"https://..."</span>)</div><div class="feat-desc">Download CSV/JSON from any public URL, auto-parse</div><div class="feat-detail"># nx = Nexora.from_url("https://data.gov/dataset.csv", target="col")</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">09</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">from_sql</span>(query, conn)</div><div class="feat-desc">Run a SQL query, load result into Nexora — any SQLAlchemy engine</div><div class="feat-detail"># nx = Nexora.from_sql("SELECT * FROM orders WHERE yr=2024", engine)</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">10</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">from_postgres</span>(uri, table)</div><div class="feat-desc">Direct PostgreSQL connection — pass connection string and table name</div><div class="feat-detail"># nx = Nexora.from_postgres("postgresql://user:pw@host/db", "customers")</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">11</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">from_mongodb</span>(uri, collection)</div><div class="feat-desc">MongoDB collection — queries, flattens documents into tabular form</div><div class="feat-detail"># nx = Nexora.from_mongodb("mongodb://localhost", "db.orders")</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">12</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">from_s3</span>(bucket, key)</div><div class="feat-desc">AWS S3 bucket — reads CSV/Parquet directly from cloud storage</div><div class="feat-detail"># nx = Nexora.from_s3("my-bucket", "data/sales_2024.csv")</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">13</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">from_google_sheets</span>(sheet_id)</div><div class="feat-desc">Google Sheets via Sheets API — reads live sheet data</div><div class="feat-detail"># nx = Nexora.from_google_sheets("1BxiMV...spreadsheetId")</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">14</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">from_sklearn</span>(<span class="str">"iris"</span>)</div><div class="feat-desc">Built-in sklearn toy datasets — great for tutorials, demos, benchmarks</div><div class="feat-detail"># nx = Nexora.from_sklearn("iris")<br># nx = Nexora.from_sklearn("boston")  # regression</div></div><span class="feat-tag t-entry">entry</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">15</span><div class="feat-main"><div class="feat-sig">Nexora.<span class="acc">load</span>(<span class="str">"nexora_session.nx"</span>)</div><div class="feat-desc">Reload a saved Nexora session — resume from exactly where you left off</div><div class="feat-detail"># report.save("session.nx") → later → nx = Nexora.load("session.nx")</div></div><span class="feat-tag t-both">entry/exit</span><span class="chevron">›</span></div>
+</div></div>
+
+<div id="panel-run" class="panel"><div class="feat-list">
+<div class="section-head">Core modes</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">16</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">run</span>()</div><div class="feat-desc">Full auto-pilot — profile, preprocess, train 256+ models, rank, generate code</div><div class="feat-detail"># report = nx.run()  # everything, default settings<br># report = nx.run(target="price", task="regression")</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">17</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">quick</span>()</div><div class="feat-desc">30-second speed mode — top 10 models only, no deep tuning</div><div class="feat-detail"># report = nx.quick()  # great for initial exploration<br># trains: XGB, LGBM, CatBoost, RF, ET, GBM, LR, Ridge, SVR, KNN</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">18</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">deep</span>()</div><div class="feat-desc">Exhaustive mode — all 256+ models, stacking ensembles, full HPO</div><div class="feat-detail"># report = nx.deep()  # may take hours on large data<br># report = nx.deep(time_limit=3600)  # 1 hour cap</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">19</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">profile</span>()</div><div class="feat-desc">Dataset analysis only — no training. Health score, types, distributions</div><div class="feat-detail"># profile = nx.profile()  # returns NexoraProfile object<br># profile.print()  # pretty table output</div></div><span class="feat-tag t-both">→ profile</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">20</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">preprocess</span>()</div><div class="feat-desc">Run preprocessing pipeline only — returns cleaned DataFrame</div><div class="feat-detail"># clean_df = nx.preprocess()  # get cleaned data back<br># nx.preprocess(save="clean_data.csv")  # auto-save</div></div><span class="feat-tag t-both">→ DataFrame</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">21</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">train</span>(models=[<span class="str">"XGBoost"</span>])</div><div class="feat-desc">Train specific models only — skip profiling, use existing preprocessing</div><div class="feat-detail"># report = nx.train(["XGBoost", "LightGBM", "CatBoost"])</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+<div class="section-head">Specialized modes</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">22</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">tune</span>(<span class="str">"XGBRegressor"</span>)</div><div class="feat-desc">Deep hyperparameter tuning for one specific model — Optuna under the hood</div><div class="feat-detail"># report = nx.tune("XGBRegressor", n_trials=200)<br># returns best params + code with those exact params</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">23</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">compare</span>(df2, target)</div><div class="feat-desc">Train on df1, evaluate on df2 — useful for time-split validation</div><div class="feat-detail"># report = nx.compare(holdout_df, target="churn")  # train/holdout split</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">24</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">run</span>(task=<span class="str">"time_series"</span>)</div><div class="feat-desc">Time-series mode — detects datetime index, uses Prophet, ARIMA, Transformer</div><div class="feat-detail"># report = nx.run(task="time_series", date_col="date", horizon=30)</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">25</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">run</span>(task=<span class="str">"clustering"</span>)</div><div class="feat-desc">Unsupervised mode — no target needed, finds natural groupings in data</div><div class="feat-detail"># report = nx.run(task="clustering")  # auto-selects k<br># report = nx.run(task="clustering", n_clusters=5)</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+</div></div>
+
+<div id="panel-report" class="panel"><div class="feat-list">
+<div class="section-head">Core outputs</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">26</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">leaderboard</span></div><div class="feat-desc">DataFrame of all 256+ models ranked by metric — sortable, filterable</div><div class="feat-detail"># report.leaderboard  # pandas DataFrame<br># report.leaderboard.head(10)  # top 10<br># report.leaderboard.to_csv("results.csv")</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">27</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">best_model</span></div><div class="feat-desc">Name of the winning model as a string</div><div class="feat-detail"># report.best_model  → "XGBRegressor"</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">28</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">best_score</span></div><div class="feat-desc">Best metric value (R², accuracy, F1 — auto-selected by task type)</div><div class="feat-detail"># report.best_score  → 0.942<br># report.best_score_label  → "R²"</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">29</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">predict</span>(new_df)</div><div class="feat-desc">Batch predictions using the best model — returns DataFrame with confidence</div><div class="feat-detail"># out = report.predict(new_customers)<br># out["price_predicted"], out["confidence"], out["model_used"]</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">30</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">predict_proba</span>(new_df)</div><div class="feat-desc">Class probabilities for classification — one column per class</div><div class="feat-detail"># proba = report.predict_proba(test_df)<br># proba["prob_0"], proba["prob_1"]  # for binary</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="section-head">Explanation outputs</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">31</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">explain</span>()</div><div class="feat-desc">SHAP feature importance — ranked bar chart + values</div><div class="feat-detail"># report.explain()  # prints ranked feature importance<br># report.explain(plot=True)  # matplotlib bar chart</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">32</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">explain</span>(in_words=<span class="kw">True</span>)</div><div class="feat-desc">LLM-powered plain English explanation of what's driving predictions</div><div class="feat-detail"># report.explain(in_words=True)<br># → "Region is the strongest predictor, explaining 38% of variance..."</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">33</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">ask</span>(<span class="str">"why is accuracy low?"</span>)</div><div class="feat-desc">Natural language Q&A about your model and data — powered by LLM</div><div class="feat-detail"># report.ask("which features should I drop?")<br># report.ask("why is the model worse on weekends?")</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">34</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">what_if</span>(feature=<span class="str">"price"</span>, value=<span class="acc">50</span>)</div><div class="feat-desc">What-if scenario analysis — change one feature, see predicted impact</div><div class="feat-detail"># report.what_if(feature="discount_pct", value=20)<br># → "Changing discount_pct to 20 increases predicted revenue by 12.3%"</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="section-head">Export outputs</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">35</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">to_html</span>(<span class="str">"report.html"</span>)</div><div class="feat-desc">Full interactive HTML report — leaderboard, charts, explanations, code</div><div class="feat-detail"># report.to_html("my_analysis.html")  # opens in browser</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">36</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">to_pdf</span>(<span class="str">"report.pdf"</span>)</div><div class="feat-desc">PDF export — shareable with non-technical stakeholders</div><div class="feat-detail"># report.to_pdf("stakeholder_report.pdf")</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">37</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">notebook</span>(<span class="str">"analysis.ipynb"</span>)</div><div class="feat-desc">Generate a complete Jupyter notebook — all steps, all code, all charts</div><div class="feat-detail"># report.notebook("explore.ipynb")  # auto-opens if Jupyter detected</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">38</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">dashboard</span>()</div><div class="feat-desc">Launch a local Streamlit dashboard — live interactive exploration</div><div class="feat-detail"># report.dashboard()  # starts on localhost:8501</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">39</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">save</span>(<span class="str">"session.nx"</span>)</div><div class="feat-desc">Save entire Nexora session to disk — resume later with Nexora.load()</div><div class="feat-detail"># report.save("my_session.nx")  # saves model + preprocessing + config</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">40</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">save_model</span>(<span class="str">"model.pkl"</span>)</div><div class="feat-desc">Export trained model as pickle — use without Nexora in production</div><div class="feat-detail"># report.save_model("xgb_model.pkl")  # standalone sklearn-compatible</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">41</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">summary</span>()</div><div class="feat-desc">Print a concise terminal summary — best model, score, top features</div><div class="feat-detail"># report.summary()  # pretty-printed to terminal<br># Best: XGBRegressor | R²=0.942 | 18 features | 12,847 rows</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">42</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">drift</span>(new_df)</div><div class="feat-desc">Feature drift detection — compares new data against training distribution</div><div class="feat-detail"># alert = report.drift(july_data)<br># alert.changed  → ["discount_pct", "region"]</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">43</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">profile</span></div><div class="feat-desc">Full dataset profile object — column types, health score, missing, outliers</div><div class="feat-detail"># report.profile.health_score  → 91<br># report.profile.columns  → DataFrame with per-column stats</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+</div></div>
+
+<div id="panel-code" class="panel"><div class="feat-list">
+<div class="section-head">Python scripts</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">44</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code</span></div><div class="feat-desc">Best model code — complete, copy-paste Python with YOUR preprocessing baked in</div><div class="feat-detail"># print(report.code)  # full standalone script<br># includes: imports, preprocessing, model with tuned params, train/test split</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">45</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_for</span>(<span class="str">"LGBMRegressor"</span>)</div><div class="feat-desc">Get code for any model in the leaderboard — not just the winner</div><div class="feat-detail"># print(report.code_for("RandomForestRegressor"))<br># print(report.code_for("CatBoostClassifier"))</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">46</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">save_code</span>(<span class="str">"model.py"</span>)</div><div class="feat-desc">Write the generated code to a .py file — runs immediately with no edits</div><div class="feat-detail"># report.save_code("production_model.py")<br># report.save_code("lgbm_model.py", model="LGBMRegressor")</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="section-head">Deployment wrappers</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">47</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_fastapi</span>(<span class="str">"app.py"</span>)</div><div class="feat-desc">Full FastAPI endpoint — POST /predict ready to deploy, with Pydantic schema</div><div class="feat-detail"># report.code_fastapi("api.py")<br># generates: endpoint, input schema, model loading, health check route</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">48</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_streamlit</span>(<span class="str">"app.py"</span>)</div><div class="feat-desc">Streamlit app — interactive UI to upload CSV and get predictions</div><div class="feat-detail"># report.code_streamlit("demo.py")  # then: streamlit run demo.py</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">49</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_flask</span>(<span class="str">"app.py"</span>)</div><div class="feat-desc">Flask REST endpoint — lightweight alternative to FastAPI</div><div class="feat-detail"># report.code_flask("flask_api.py")<br># generates: /predict POST route + /health GET route</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">50</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_docker</span>(<span class="str">"."</span>)</div><div class="feat-desc">Dockerfile + requirements.txt — production-ready container in one command</div><div class="feat-detail"># report.code_docker("./deploy/")  # writes Dockerfile + requirements.txt<br># then: docker build . && docker run -p 8000:8000 nexora-model</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">51</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_notebook</span>(<span class="str">"explore.ipynb"</span>)</div><div class="feat-desc">Jupyter notebook — every step in cells with markdown explanations between them</div><div class="feat-detail"># report.code_notebook("analysis.ipynb")  # fully executable notebook</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">52</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_mlflow</span>(<span class="str">"train.py"</span>)</div><div class="feat-desc">MLflow tracking integration — experiment logging, model registry, run tracking</div><div class="feat-detail"># report.code_mlflow("tracked_train.py")<br># generates model training + mlflow.log_metric() + mlflow.sklearn.log_model()</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">53</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_pipeline</span>(<span class="str">"pipe.py"</span>)</div><div class="feat-desc">sklearn Pipeline object — preprocessing + model in one .fit()/.predict() call</div><div class="feat-detail"># report.code_pipeline("pipeline.py")<br># Pipeline([("preprocessor", ...), ("model", XGBRegressor(...))])</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">54</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">code_all</span>(<span class="str">"./output/"</span>)</div><div class="feat-desc">Generate all code variants at once — model.py, api.py, Dockerfile, notebook</div><div class="feat-detail"># report.code_all("./deploy/")<br># writes: model.py, fastapi_app.py, Dockerfile, requirements.txt, explore.ipynb</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+</div></div>
+
+<div id="panel-pre" class="panel"><div class="feat-list">
+<div class="section-head">Encoding & scaling</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">55</span><div class="feat-main"><div class="feat-sig">nx.run(encode=<span class="str">"auto"</span>)</div><div class="feat-desc">Auto-detect best encoding per column — label for tree models, OHE for linear</div><div class="feat-detail"># encode="auto" | "onehot" | "label" | "target" | "frequency"</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">56</span><div class="feat-main"><div class="feat-sig">nx.run(scale=<span class="str">"auto"</span>)</div><div class="feat-desc">Feature scaling strategy — auto skips scaling for tree models</div><div class="feat-detail"># scale="auto" | "standard" | "minmax" | "robust" | "none"</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="section-head">Missing values & outliers</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">57</span><div class="feat-main"><div class="feat-sig">nx.run(handle_missing=<span class="str">"auto"</span>)</div><div class="feat-desc">Missing value strategy — auto uses median for numeric, mode for categorical</div><div class="feat-detail"># handle_missing="auto" | "mean" | "median" | "mode" | "knn" | "drop"</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">58</span><div class="feat-main"><div class="feat-sig">nx.run(outliers=<span class="str">"auto"</span>)</div><div class="feat-desc">Outlier handling — detect and optionally remove or cap extreme values</div><div class="feat-detail"># outliers="auto" | "iqr" | "zscore" | "isolation_forest" | "none"</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="section-head">Feature engineering</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">59</span><div class="feat-main"><div class="feat-sig">nx.run(feature_selection=<span class="kw">True</span>)</div><div class="feat-desc">Auto feature selection — removes low-variance, highly correlated, low-importance columns</div><div class="feat-detail"># nx.run(feature_selection=True, selection_method="variance")<br># methods: "variance" | "correlation" | "importance" | "rfe"</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">60</span><div class="feat-main"><div class="feat-sig">nx.run(feature_engineering=<span class="kw">True</span>)</div><div class="feat-desc">Auto feature creation — polynomial, interaction terms, datetime decomposition</div><div class="feat-detail"># nx.run(feature_engineering=True)<br># creates: col_squared, col1*col2, date→day/month/year/dayofweek</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">61</span><div class="feat-main"><div class="feat-sig">nx.run(balance=<span class="str">"smote"</span>)</div><div class="feat-desc">Class imbalance handling — SMOTE, ADASYN, or random under/oversampling</div><div class="feat-detail"># balance="smote" | "adasyn" | "undersample" | "oversample" | "none"</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">62</span><div class="feat-main"><div class="feat-sig">nx.run(text_cols=[<span class="str">"description"</span>])</div><div class="feat-desc">NLP preprocessing for text columns — TF-IDF or embedding vectorization</div><div class="feat-detail"># nx.run(text_cols=["review"], text_method="tfidf")<br># text_method="tfidf" | "bow" | "embedding"</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">63</span><div class="feat-main"><div class="feat-sig">nx.run(drop=[<span class="str">"id"</span>, <span class="str">"name"</span>])</div><div class="feat-desc">Explicit column drops — tell Nexora what to ignore before training</div><div class="feat-detail"># nx.run(drop=["customer_id", "email", "created_at"])</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">64</span><div class="feat-main"><div class="feat-sig">nx.run(metric=<span class="str">"f1"</span>)</div><div class="feat-desc">Custom scoring metric for ranking models — override the auto-selected default</div><div class="feat-detail"># metric="r2"|"rmse"|"mae"|"accuracy"|"f1"|"auc"|"logloss"|"custom"</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+</div></div>
+
+<div id="panel-analysis" class="panel"><div class="feat-list">
+<div class="section-head">Interpretability</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">65</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">shap_values</span>()</div><div class="feat-desc">Raw SHAP values DataFrame — per-row feature contributions</div><div class="feat-detail"># sv = report.shap_values()  # returns DataFrame shape (n_rows, n_features)<br># use for custom SHAP plots</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">66</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">partial_dependence</span>(<span class="str">"price"</span>)</div><div class="feat-desc">PDP plot — how predictions change as one feature varies across its range</div><div class="feat-detail"># report.partial_dependence("discount_pct")  # prints PDP + chart</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">67</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">interaction</span>(<span class="str">"f1"</span>, <span class="str">"f2"</span>)</div><div class="feat-desc">Feature interaction heatmap — SHAP interaction values between two features</div><div class="feat-detail"># report.interaction("region", "product_category")</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">68</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">sensitivity</span>(<span class="str">"discount"</span>)</div><div class="feat-desc">Sensitivity analysis — how much does prediction change per unit of feature change?</div><div class="feat-detail"># report.sensitivity("price")  # shows ∂prediction/∂feature</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="section-head">Model diagnostics</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">69</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">residuals</span>()</div><div class="feat-desc">Residual plot for regression — actual vs predicted, error distribution</div><div class="feat-detail"># report.residuals()  # prints plot + heteroscedasticity test</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">70</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">confusion_matrix</span>()</div><div class="feat-desc">Confusion matrix for classification — per-class precision, recall, F1</div><div class="feat-detail"># report.confusion_matrix()  # heatmap + classification_report</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">71</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">roc_curve</span>()</div><div class="feat-desc">ROC/AUC curve — works for binary and multi-class (one-vs-rest)</div><div class="feat-detail"># report.roc_curve()  # plots + prints AUC score</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">72</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">learning_curve</span>()</div><div class="feat-desc">Bias-variance diagnostic — performance vs training size, detects overfit</div><div class="feat-detail"># report.learning_curve()  # train/val curves across dataset sizes</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">73</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">calibration_curve</span>()</div><div class="feat-desc">Probability calibration — are confidence scores well-calibrated?</div><div class="feat-detail"># report.calibration_curve()  # reliability diagram + Brier score</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">74</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">error_analysis</span>()</div><div class="feat-desc">Where does the model fail? Finds segments with highest error rates</div><div class="feat-detail"># report.error_analysis()<br># → "Model performs worst when region='North' and quarter=Q4"</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+</div></div>
+
+<div id="panel-prod" class="panel"><div class="feat-list">
+<div class="section-head">Monitoring</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">75</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">drift</span>(new_df, threshold=<span class="acc">0.1</span>)</div><div class="feat-desc">Detect feature distribution shift — PSI and KS test per column</div><div class="feat-detail"># alert = report.drift(new_data, threshold=0.1)<br># alert.drifted_features, alert.severity, alert.recommendation</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">76</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">monitor</span>(new_df)</div><div class="feat-desc">Full monitoring report — drift + prediction distribution + data quality</div><div class="feat-detail"># report.monitor(july_data).to_html("july_monitor.html")</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">77</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">retrain</span>(new_df)</div><div class="feat-desc">Retrain best model on new data — same config, same preprocessing pipeline</div><div class="feat-detail"># updated_report = report.retrain(new_data)<br># keeps same model class, refits from scratch on new data</div></div><span class="feat-tag t-both">→ report</span><span class="chevron">›</span></div>
+<div class="section-head">Serving & deployment</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">78</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">serve</span>(port=<span class="acc">8000</span>)</div><div class="feat-desc">Start a local prediction API in one line — FastAPI server, /predict endpoint</div><div class="feat-detail"># report.serve()  # starts on :8000<br># curl -X POST /predict -d '{"feature1": 10, "feature2": "A"}'</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">79</span><div class="feat-main"><div class="feat-sig">nx.<span class="acc">compare_runs</span>(r1, r2)</div><div class="feat-desc">Compare two Nexora reports side by side — performance, features, drift</div><div class="feat-detail"># Nexora.compare_runs(may_report, june_report)<br># shows: model change, score delta, feature importance shift</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">80</span><div class="feat-main"><div class="feat-sig">report.<span class="acc">version</span></div><div class="feat-desc">Report metadata — timestamp, git hash, data hash, model version string</div><div class="feat-detail"># report.version  → {"timestamp": "2026-06-10", "model": "XGBRegressor", "score": 0.942}</div></div><span class="feat-tag t-exit">exit</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">81</span><div class="feat-main"><div class="feat-sig">nx.run(time_limit=<span class="acc">60</span>)</div><div class="feat-desc">Hard time limit — trains as many models as possible in N seconds</div><div class="feat-detail"># nx.run(time_limit=60)   # 1-minute production constraint<br># nx.run(time_limit=3600) # 1 hour for overnight runs</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">82</span><div class="feat-main"><div class="feat-sig">nx.run(n_jobs=<span class="acc">-1</span>)</div><div class="feat-desc">Parallel training — use all CPU cores, or specify exact count</div><div class="feat-detail"># nx.run(n_jobs=-1)  # all cores<br># nx.run(n_jobs=4)   # exactly 4 cores</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">83</span><div class="feat-main"><div class="feat-sig">nx.run(verbose=<span class="kw">True</span>)</div><div class="feat-desc">Progress output — live model training updates, leaderboard refreshing in terminal</div><div class="feat-detail"># nx.run(verbose=True)   # tqdm progress bar per model<br># nx.run(verbose=False)  # silent mode for production scripts</div></div><span class="feat-tag t-ctrl">control</span><span class="chevron">›</span></div>
+</div></div>
+
+<div id="panel-cli" class="panel"><div class="feat-list">
+<div class="section-head">Core commands</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">84</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">train</span> data.csv --target price</div><div class="feat-desc">Full training from terminal — runs nx.run() and saves results</div><div class="feat-detail"># nexora train sales.csv --target revenue --metric r2<br># nexora train data.csv --target churn --task classification</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">85</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">profile</span> data.csv</div><div class="feat-desc">Dataset health report in terminal — no training, instant analysis</div><div class="feat-detail"># nexora profile customers.csv<br># nexora profile data.csv --export profile.html</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">86</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">quick</span> data.csv --target col</div><div class="feat-desc">30-second fast mode from terminal — top 10 models, instant leaderboard</div><div class="feat-detail"># nexora quick sales.csv --target revenue</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">87</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">predict</span> model.nx new_data.csv</div><div class="feat-desc">Batch predictions from CLI — load session, predict, save output CSV</div><div class="feat-detail"># nexora predict session.nx july_customers.csv --output july_preds.csv</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">88</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">serve</span> model.nx --port 8000</div><div class="feat-desc">Start prediction API from CLI — no Python code needed to deploy</div><div class="feat-detail"># nexora serve session.nx --port 8000 --host 0.0.0.0</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="section-head">Code & report generation</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">89</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">codegen</span> model.nx --type fastapi</div><div class="feat-desc">Generate deployment code from CLI — writes files to current directory</div><div class="feat-detail"># nexora codegen session.nx --type fastapi --out ./deploy/<br># --type: script | fastapi | flask | streamlit | docker | notebook</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">90</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">report</span> model.nx --format html</div><div class="feat-desc">Generate full HTML/PDF report from saved session</div><div class="feat-detail"># nexora report session.nx --format html --out report.html<br># nexora report session.nx --format pdf --out report.pdf</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">91</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">drift</span> model.nx new_data.csv</div><div class="feat-desc">Run drift check from CLI — prints alert table to terminal</div><div class="feat-detail"># nexora drift session.nx july_data.csv --threshold 0.1</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">92</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">compare</span> r1.nx r2.nx</div><div class="feat-desc">Compare two sessions in terminal — score delta, model change, feature shift</div><div class="feat-detail"># nexora compare may_session.nx june_session.nx</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">93</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">clean</span> data.csv --target price</div><div class="feat-desc">Preprocess only — output cleaned CSV without training any models</div><div class="feat-detail"># nexora clean raw_data.csv --target revenue --out clean_data.csv</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="section-head">Utility</div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">94</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">models</span></div><div class="feat-desc">List all 256+ available models with categories and requirements</div><div class="feat-detail"># nexora models --category boosting<br># nexora models --task regression</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+<div class="feat" onclick="toggle(this)"><span class="feat-num">95</span><div class="feat-main"><div class="feat-sig">nexora <span class="acc">config</span> --set llm_provider ollama</div><div class="feat-desc">Global config — set LLM provider, default metric, parallelism, output dir</div><div class="feat-detail"># nexora config --set llm_provider ollama<br># nexora config --show</div></div><span class="feat-tag t-cli">CLI</span><span class="chevron">›</span></div>
+</div></div>
+
+<script>
+  function switchTab(panelId, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + panelId).classList.add('show');
+  }
+
+  function toggle(el) {
+    el.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>

@@ -375,7 +375,7 @@ def _grounded_reply(dataset_id: str, message: str) -> str | None:
             return (
                 f"For target `{choices['target_column']}`, {choices['eligibility_reason']} "
                 f"Suggested starting models: {', '.join(recommended)}. "
-                f"Not available here: dedicated time-series forecasting and clustering receipts."
+                f"Time-series forecasting and clustering run in Exploration Modes on the Overview tab."
             )
         states = []
         for finding in analysis.model_eligibility:

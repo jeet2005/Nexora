@@ -207,6 +207,16 @@ class RegistryStatsResponse(BaseModel):
     family_count: int
 
 
+class TimingEstimatesResponse(BaseModel):
+    preprocess_sec: int
+    benchmark_sec: int
+    benchmark_model_count: int
+    benchmark_per_model_avg_sec: float
+    production_train_sec: int
+    time_series_sec: int
+    clustering_sec: int
+
+
 class DeployableModelOption(BaseModel):
     model_id: str
     model_name: str

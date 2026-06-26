@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     app_name: str = "Nexora API"
     debug: bool = True
     upload_dir: Path = Path("uploads")
-    max_upload_mb: int = 100
+    max_upload_mb: int = 512
     max_rows_preview: int = 50
     cors_origins: list[str] = [
         "http://localhost:5173",

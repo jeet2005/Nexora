@@ -53,4 +53,8 @@ export interface WsTrainingEvent {
   registry_total?: number;
   summary?: Record<string, unknown>;
   job?: TrainingJob;
+  expected_total_sec?: number;
+  expected_per_model_sec?: number;
+  elapsed_sec?: number;
+  estimated_remaining_sec?: number;
 }

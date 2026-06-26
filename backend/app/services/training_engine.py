@@ -23,6 +23,7 @@ from sklearn.model_selection import cross_val_score, train_test_split
 
 from app.config import settings
 from app.services.model_registry import ModelSpec, filter_models, get_models_for_problem
+from app.services.timing_estimator import estimate_model_seconds
 
 warnings.filterwarnings("ignore")
 
@@ -174,6 +175,11 @@ def run_training(
     use_cv = n < 5000
     results: list[dict] = []
     total = len(specs)
+    per_model_estimates = [
+        estimate_model_seconds(spec, n, len(feature_cols), use_cv) for spec in specs
+    ]
+    expected_total_sec = max(5, int(round(sum(per_model_estimates))))
+    training_started_at = time.perf_counter()
     test_split = test_split if test_split is not None else settings.train_test_split
     cv_folds = cv_folds if cv_folds is not None else settings.cv_folds
     timeout_sec = timeout_sec if timeout_sec is not None else settings.model_timeout_sec
@@ -186,6 +192,10 @@ def run_training(
                 "total_models": total,
                 "registry_total": len(all_specs),
                 "problem_type": problem_type,
+                "expected_total_sec": expected_total_sec,
+                "expected_per_model_sec": round(
+                    expected_total_sec / max(total, 1), 1
+                ),
                 "config": {
                     "test_split": test_split,
                     "cv_folds": cv_folds,
@@ -235,6 +245,10 @@ def run_training(
         ]
 
         if on_progress:
+            elapsed = round(time.perf_counter() - training_started_at, 2)
+            completed_count = i + 1
+            avg_per_model = elapsed / max(completed_count, 1)
+            remaining = max(0, int(round(avg_per_model * (total - completed_count))))
             on_progress(
                 {
                     "event": "model_completed",
@@ -246,6 +260,9 @@ def run_training(
                     "failed_count": sum(
                         1 for r in results if r["status"] != "completed"
                     ),
+                    "elapsed_sec": elapsed,
+                    "estimated_remaining_sec": remaining,
+                    "expected_total_sec": expected_total_sec,
                 }
             )
 

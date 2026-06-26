@@ -38,6 +38,7 @@ from app.services.deployed_model_service import (
     list_deployable_models,
     list_deployments,
     load_production_status,
+    model_artifact_path,
     predict_deployment,
     run_batch_prediction,
     run_saved_prediction,
@@ -144,6 +145,19 @@ async def download_batch_predictions(dataset_id: str, batch_id: str):
         path=str(path),
         media_type="text/csv",
         filename=f"nexora_batch_{batch_id}.csv",
+    )
+
+
+@router.get("/datasets/{dataset_id}/production/models/{model_id}/download")
+async def download_trained_model(dataset_id: str, model_id: str):
+    try:
+        path = model_artifact_path(dataset_id, model_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    return FileResponse(
+        path=str(path),
+        media_type="application/octet-stream",
+        filename=f"{model_id}.joblib",
     )
 
 
