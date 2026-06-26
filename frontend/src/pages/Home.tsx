@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, Radar, PieChart, Pie, Cell, Legend,
-  LineChart, Line, AreaChart, Area,
+  AreaChart, Area,
 } from 'recharts';
 
 /* ──────────────────────────── DATA ──────────────────────────── */
@@ -122,6 +122,39 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* ═══════════════ LIVE DEPLOYMENTS ═══════════════ */}
+      <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-4">Live Deployments</h2>
+        <p className="text-center text-nexora-dark/60 max-w-2xl mx-auto mb-10">
+          Nexora is deployed and accessible right now. Try the live application or explore the API documentation.
+        </p>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { title: 'Frontend Web App', url: 'https://nexoraprediction.netlify.app/', host: 'Netlify', desc: 'Full React dashboard with dataset upload, training, predictions, and reports.' },
+            { title: 'Backend API', url: 'https://nexora-360r.onrender.com/', host: 'Render', desc: 'FastAPI backend with WebSocket streams, model training, and prediction endpoints.' },
+            { title: 'API Documentation', url: 'https://nexora-360r.onrender.com/docs', host: 'Render', desc: 'Interactive Swagger UI with all endpoints, schemas, and request examples.' },
+          ].map((dep, i) => (
+            <motion.a
+              key={i}
+              href={dep.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ y: -4 }}
+              className="glass p-6 rounded-2xl border border-nexora-border hover:shadow-card transition-all block"
+            >
+              <h3 className="font-semibold text-nexora-dark mb-2">{dep.title}</h3>
+              <p className="text-sm text-nexora-dark/60 leading-relaxed mb-3">{dep.desc}</p>
+              <span className="inline-block px-3 py-1 text-xs font-mono text-nexora-accent bg-nexora-accent/10 rounded-full border border-nexora-accent/20">
+                {dep.host}
+              </span>
+            </motion.a>
+          ))}
+        </div>
+        <p className="text-xs text-nexora-dark/40 text-center mt-6 max-w-2xl mx-auto">
+          The backend API runs on Render&apos;s free tier and spins down after periods of inactivity. Please allow 30 to 60 seconds for the initial cold start.
+        </p>
+      </section>
+
       {/* ═══════════════ THE PROBLEM ═══════════════ */}
       <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
         <h2 className="font-display text-3xl font-bold text-center mb-4">The Problem We Solve</h2>
@@ -134,7 +167,7 @@ export const Home: React.FC = () => {
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { num: '80%', label: 'Time Wasted', desc: 'Data scientists spend 80% of their time on data preparation, not model building (Forbes, 2024).' },
-            { num: '6×', label: 'Faster Workflow', desc: 'Nexora completes the full ML pipeline in 1/6th the time of manual workflows.' },
+            { num: '6x', label: 'Faster Workflow', desc: 'Nexora completes the full ML pipeline in 1/6th the time of manual workflows.' },
             { num: '18+', label: 'Models Trained', desc: 'From XGBoost to CatBoost, LightGBM, SVMs, Neural Nets — all trained and compared automatically.' },
           ].map((stat, i) => (
             <motion.div key={i} whileHover={{ y: -4 }} className="glass p-8 rounded-2xl border border-nexora-border text-center">
@@ -143,6 +176,40 @@ export const Home: React.FC = () => {
               <p className="text-sm text-nexora-dark/60">{stat.desc}</p>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* ═══════════════ SUPPORTED DATA FORMATS ═══════════════ */}
+      <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-4">100+ Supported Data Formats</h2>
+        <p className="text-center text-nexora-dark/60 max-w-3xl mx-auto mb-10 leading-relaxed">
+          Upload virtually any tabular dataset. Nexora handles parsing, validation, and profiling automatically
+          across all major file formats and data sources.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[
+            { category: 'Standard Files', formats: ['CSV', 'TSV', 'Excel (XLSX/XLS)', 'JSON', 'JSONL'] },
+            { category: 'Columnar / Binary', formats: ['Parquet', 'Feather', 'ORC', 'HDF5', 'Pickle'] },
+            { category: 'Statistical', formats: ['Stata (.dta)', 'SAS (.sas7bdat)', 'SPSS (.sav)', 'HTML Tables', 'XML'] },
+            { category: 'Remote Sources', formats: ['SQL Databases', 'MongoDB', 'AWS S3', 'Google Sheets', 'Clipboard'] },
+          ].map((group, i) => (
+            <div key={i} className="glass p-5 rounded-2xl border border-nexora-border">
+              <h4 className="font-semibold text-nexora-dark mb-3 text-sm">{group.category}</h4>
+              <ul className="space-y-1.5">
+                {group.formats.map((fmt, j) => (
+                  <li key={j} className="text-xs text-nexora-dark/60 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-nexora-accent/60 flex-shrink-0" />
+                    {fmt}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="glass p-4 rounded-xl border border-nexora-border">
+          <code className="block text-xs font-mono text-nexora-dark/70 text-center">
+            Plus scikit-learn built-in datasets, pandas-compatible URLs, and any format supported by the pandas ecosystem
+          </code>
         </div>
       </section>
 
@@ -217,19 +284,19 @@ export const Home: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-6">
           {[
             {
-              title: '🎓 Education-First Design',
+              title: 'Education-First Design',
               desc: 'Every prediction comes with SHAP explanations. Students don\'t just see results — they understand WHY a model made a decision. This builds real intuition, not blind trust in AI.',
             },
             {
-              title: '🔬 Research-Grade Rigor',
+              title: 'Research-Grade Rigor',
               desc: 'Nexora generates reproducible experiments with full versioning. Every training run is logged, every hyperparameter is recorded, and results can be compared across sessions.',
             },
             {
-              title: '🌍 Democratizing Data Science',
+              title: 'Democratizing Data Science',
               desc: 'No GPU required, no cloud costs, no API keys. Nexora runs entirely on your local machine. A student in Mumbai has the same power as a researcher at MIT.',
             },
             {
-              title: '🏗️ A Brick in the Future',
+              title: 'A Brick in the Future',
               desc: 'We\'re not just building a tool — we\'re building a foundation. When data literacy becomes a core subject in every school, tools like Nexora will be the textbooks.',
             },
           ].map((item, i) => (
@@ -275,55 +342,46 @@ export const Home: React.FC = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {[
             {
-              icon: '🏟️',
               title: 'Real-Time Training Arena',
               desc: 'Watch 18+ models train simultaneously with live accuracy curves, loss plots, and progress bars streaming via WebSockets. See which model takes the lead in real-time — like a leaderboard that updates every second.',
               highlight: true,
             },
             {
-              icon: '📊',
               title: 'Dataset Intelligence Dashboard',
               desc: 'Upload any file and instantly see column profiles, statistical distributions, missing value heatmaps, data quality scores, numeric trends, categorical breakdowns, and an overall health score — all visualized with interactive Recharts.',
               highlight: true,
             },
             {
-              icon: '🔬',
               title: 'SHAP Explainability Panel',
               desc: 'Interactive feature importance charts, waterfall plots, and dependence visualizations. Understand exactly why your model predicts what it predicts — no black boxes, ever.',
               highlight: false,
             },
             {
-              icon: '🎯',
               title: 'Prediction Studio',
               desc: 'Select your champion model, input new feature values through a beautiful form interface, and get instant predictions with confidence intervals. Save and compare predictions across models.',
               highlight: false,
             },
             {
-              icon: '💬',
               title: 'AI Learning Assistant',
               desc: 'An integrated chat interface powered by LLMs (GPT, Claude, or Ollama) that explains your data, models, and results in plain English. Ask questions like "Why did the model choose XGBoost?" and get contextual answers.',
               highlight: false,
             },
             {
-              icon: '🚀',
               title: 'Production Ops Panel',
               desc: 'Generate deployment code (FastAPI, Flask, Docker), monitor model drift with Evidently, run diagnostics, and export production-ready artifacts — all from the browser.',
               highlight: false,
             },
             {
-              icon: '🧪',
               title: 'Exploration Modes',
               desc: 'What-if analysis, time-series forecasting, anomaly detection, and scenario simulation. Go beyond basic predictions into advanced analytical workflows.',
               highlight: false,
             },
             {
-              icon: '📋',
               title: 'Experiment Tracking',
               desc: 'Every training run is logged with hyperparameters, metrics, timestamps, and results. Compare experiments side by side and reproduce any result with a single click.',
               highlight: false,
             },
             {
-              icon: '⚙️',
               title: 'Smart Preprocessing',
               desc: 'Visual pipeline showing exactly what transformations Nexora applies — encoding, scaling, imputation, outlier handling — with full transparency and override controls.',
               highlight: false,
@@ -338,7 +396,6 @@ export const Home: React.FC = () => {
                   : 'glass border-nexora-border hover:shadow-card'
               }`}
             >
-              <div className="text-3xl mb-4">{feature.icon}</div>
               <h3 className="font-semibold text-nexora-dark mb-2">{feature.title}</h3>
               <p className="text-sm text-nexora-dark/60 leading-relaxed">{feature.desc}</p>
               {feature.highlight && (
@@ -363,6 +420,72 @@ export const Home: React.FC = () => {
               <div key={i} className={`p-4 rounded-xl border ${arch.color}`}>
                 <h4 className="font-bold text-sm mb-2">{arch.layer}</h4>
                 <p className="text-xs leading-relaxed opacity-80">{arch.stack}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ SYSTEM ARCHITECTURE ═══════════════ */}
+      <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-4">System Architecture</h2>
+        <p className="text-center text-nexora-dark/60 max-w-3xl mx-auto mb-10 leading-relaxed">
+          End-to-end data flow from upload to deployment — every component designed for reliability, speed, and transparency.
+        </p>
+        <div className="glass p-8 rounded-2xl border border-nexora-border">
+          <div className="grid md:grid-cols-3 gap-6">
+            <div>
+              <h4 className="font-semibold text-nexora-dark mb-4 text-sm uppercase tracking-wider">Client Layer</h4>
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-xs">React Frontend with Framer Motion</div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold text-nexora-dark mb-4 text-sm uppercase tracking-wider">Service API Layer</h4>
+              <div className="space-y-2">
+                {['FastAPI Backend Gateway', 'Dataset Analyzer and Validator', 'Preprocessing Engine', 'Training Manager and Registry', 'SHAP Explainability Engine', 'Grounded Chat Agent', 'API Key Deployment Manager'].map((svc, i) => (
+                  <div key={i} className="p-2 rounded-lg bg-green-50 border border-green-200 text-green-700 text-xs">{svc}</div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold text-nexora-dark mb-4 text-sm uppercase tracking-wider">Storage and Compute</h4>
+              <div className="space-y-2">
+                {['Local Uploads / MongoDB Atlas', 'Local Ollama / Phi-3 Mini LLM', 'ML Models: XGBoost, CatBoost, LightGBM, Scikit-Learn'].map((store, i) => (
+                  <div key={i} className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs">{store}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ INTERACTIVE CLI WIZARD ═══════════════ */}
+      <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-4">Interactive CLI Wizard</h2>
+        <p className="text-center text-nexora-dark/60 max-w-3xl mx-auto mb-10 leading-relaxed">
+          Full terminal feature parity with the web interface. Run a guided 9-stage workflow
+          directly from your terminal — no browser needed.
+        </p>
+        <div className="glass p-6 rounded-2xl border border-nexora-border mb-6">
+          <code className="block text-sm font-mono text-nexora-dark/70 text-center mb-6">$ nexora wizard</code>
+          <div className="grid sm:grid-cols-3 lg:grid-cols-3 gap-3">
+            {[
+              { num: '1', label: 'Data Upload and Profiling' },
+              { num: '2', label: 'Advanced Settings' },
+              { num: '3', label: 'Target Selection and Task Detection' },
+              { num: '4', label: 'Preprocessing Pipeline Display' },
+              { num: '5', label: 'Model Battle Arena' },
+              { num: '6', label: 'Prediction Studio' },
+              { num: '7', label: 'SHAP Explanation' },
+              { num: '8', label: 'Advanced Tracks (Clustering, Forecasting)' },
+              { num: '9', label: 'Export and Deployment' },
+            ].map((stage, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-nexora-accent/5 border border-nexora-border">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-nexora-accent bg-nexora-accent/10 flex-shrink-0">
+                  {stage.num}
+                </span>
+                <span className="text-xs text-nexora-dark/70 font-medium">{stage.label}</span>
               </div>
             ))}
           </div>
@@ -402,17 +525,16 @@ export const Home: React.FC = () => {
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { icon: '📊', title: 'Auto Profiling', desc: 'Dataset health scoring, statistical summaries, missing-value detection, outlier flagging — all automatic.' },
-            { icon: '🤖', title: '18+ ML Models', desc: 'XGBoost, LightGBM, CatBoost, Random Forest, SVM, KNN, Neural Nets, Elastic Net, and more.' },
-            { icon: '🔍', title: 'SHAP Explainability', desc: 'Feature importance, dependence plots, and interaction analysis for every model trained.' },
-            { icon: '⚡', title: 'One-Command Deploy', desc: 'Generate FastAPI/Flask apps, Docker containers, or serve models directly via REST.' },
-            { icon: '📈', title: 'Drift Detection', desc: 'Evidently-powered monitoring catches feature and prediction drift before it hurts production.' },
-            { icon: '🧠', title: 'LLM Explanations', desc: 'Connect GPT, Claude, or Ollama for natural-language model explanations.' },
-            { icon: '📝', title: 'PDF/HTML Reports', desc: 'Branded, exportable reports with leaderboards, charts, metrics, and recommendations.' },
-            { icon: '⌨️', title: 'CLI + Python API', desc: 'Full feature parity — use the terminal, write scripts, or build Jupyter notebooks.' },
+            { title: 'Auto Profiling', desc: 'Dataset health scoring, statistical summaries, missing-value detection, outlier flagging — all automatic.' },
+            { title: '18+ ML Models', desc: 'XGBoost, LightGBM, CatBoost, Random Forest, SVM, KNN, Neural Nets, Elastic Net, and more.' },
+            { title: 'SHAP Explainability', desc: 'Feature importance, dependence plots, and interaction analysis for every model trained.' },
+            { title: 'One-Command Deploy', desc: 'Generate FastAPI/Flask apps, Docker containers, or serve models directly via REST.' },
+            { title: 'Drift Detection', desc: 'Evidently-powered monitoring catches feature and prediction drift before it hurts production.' },
+            { title: 'LLM Explanations', desc: 'Connect GPT, Claude, or Ollama for natural-language model explanations.' },
+            { title: 'PDF/HTML Reports', desc: 'Branded, exportable reports with leaderboards, charts, metrics, and recommendations.' },
+            { title: 'CLI + Python API', desc: 'Full feature parity — use the terminal, write scripts, or build Jupyter notebooks.' },
           ].map((f, i) => (
             <motion.div key={i} whileHover={{ y: -4 }} className="glass p-6 rounded-2xl border border-nexora-border hover:shadow-card transition-all">
-              <div className="text-3xl mb-4">{f.icon}</div>
               <h3 className="font-semibold text-nexora-dark mb-2">{f.title}</h3>
               <p className="text-sm text-nexora-dark/60 leading-relaxed">{f.desc}</p>
             </motion.div>
@@ -445,6 +567,47 @@ export const Home: React.FC = () => {
                 ))}
               </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══════════════ ADVANCED ANALYTICS ═══════════════ */}
+      <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-4">Advanced Analytics</h2>
+        <p className="text-center text-nexora-dark/60 max-w-3xl mx-auto mb-10 leading-relaxed">
+          Go beyond supervised learning with built-in clustering, time-series forecasting,
+          what-if analysis, and production drift detection.
+        </p>
+        <div className="grid md:grid-cols-2 gap-6">
+          {[
+            {
+              title: 'Unsupervised Clustering',
+              desc: 'Segment your data with K-Means and hierarchical clustering. Get cluster memberships, profiles, silhouette scores, and inertia metrics automatically.',
+              cmd: 'nexora cluster data.csv --n-clusters 5',
+            },
+            {
+              title: 'Time-Series Forecasting',
+              desc: 'Predict future values with Prophet and ARIMA models. Supports daily, weekly, and monthly frequencies with MAE and R-squared evaluation.',
+              cmd: 'nexora forecast data.csv --date-col date --target-col revenue --periods 24',
+            },
+            {
+              title: 'What-If Scenario Analysis',
+              desc: 'Test multiple feature variations to understand prediction sensitivity. Upload scenario files and see how different inputs change model outputs.',
+              cmd: 'nexora whatif session.nx scenarios.csv --sample-size 100',
+            },
+            {
+              title: 'Feature Drift Detection',
+              desc: 'Compare production data against training distributions. Get alerts when data deviates beyond configurable thresholds to prevent silent model degradation.',
+              cmd: 'nexora drift session.nx production_data.csv --threshold 0.15',
+            },
+          ].map((analytics, i) => (
+            <motion.div key={i} whileHover={{ y: -4 }} className="glass p-6 rounded-2xl border border-nexora-border">
+              <h3 className="font-semibold text-nexora-dark mb-2">{analytics.title}</h3>
+              <p className="text-sm text-nexora-dark/60 leading-relaxed mb-3">{analytics.desc}</p>
+              <code className="block bg-white/50 border border-nexora-border px-3 py-2 rounded font-mono text-xs text-nexora-dark/70 overflow-x-auto">
+                {analytics.cmd}
+              </code>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -531,15 +694,42 @@ report.to_html('report.html')`}</code>
         </div>
       </section>
 
+      {/* ═══════════════ DEPLOYMENT CODE GENERATION ═══════════════ */}
+      <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-4">Deployment Code Generation</h2>
+        <p className="text-center text-nexora-dark/60 max-w-3xl mx-auto mb-10 leading-relaxed">
+          Generate production-ready deployment artifacts with a single method call.
+          Export to any framework or container format you need.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { target: 'FastAPI', cmd: 'report.save_fastapi("api.py")', desc: 'Production REST API with automatic request validation' },
+            { target: 'Flask', cmd: 'report.save_flask("app.py")', desc: 'Lightweight web server for quick deployments' },
+            { target: 'Streamlit', cmd: 'report.save_streamlit("dashboard.py")', desc: 'Interactive dashboard with built-in visualization' },
+            { target: 'Docker', cmd: 'report.save_docker("Dockerfile")', desc: 'Containerized deployment with dependencies' },
+            { target: 'Jupyter Notebook', cmd: 'report.save_notebook("explore.ipynb")', desc: 'Reproducible analysis in notebook format' },
+            { target: 'Standalone Script', cmd: 'report.save_code("standalone.py")', desc: 'Self-contained Python script for offline use' },
+          ].map((dep, i) => (
+            <motion.div key={i} whileHover={{ y: -3 }} className="glass p-5 rounded-xl border border-nexora-border">
+              <h4 className="font-semibold text-nexora-dark text-sm mb-2">{dep.target}</h4>
+              <code className="block bg-white/50 border border-nexora-border px-3 py-1.5 rounded font-mono text-xs text-nexora-dark/70 mb-2 overflow-x-auto">
+                {dep.cmd}
+              </code>
+              <p className="text-xs text-nexora-dark/50">{dep.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
       {/* ═══════════════ OUR VISION ═══════════════ */}
       <section className="py-16 px-6 max-w-4xl mx-auto relative z-10">
         <div className="glass p-10 rounded-2xl border border-nexora-border text-center">
           <h2 className="font-display text-3xl font-bold mb-6 text-nexora-dark">Our Vision</h2>
           <p className="text-nexora-dark/60 leading-relaxed mb-6 max-w-3xl mx-auto">
             In a world where data is the new currency, the ability to understand, analyze, and predict from
-            data shouldn't be locked behind years of specialized training. We envision a future where
+            data shouldn&apos;t be locked behind years of specialized training. We envision a future where
             every student, every researcher, and every small business has access to the same predictive
-            power that today's tech giants enjoy.
+            power that today&apos;s tech giants enjoy.
           </p>
           <p className="text-nexora-dark/60 leading-relaxed mb-8 max-w-3xl mx-auto">
             Nexora is our contribution to that future — <strong className="text-nexora-dark">a free, open-source, production-grade
@@ -550,6 +740,33 @@ report.to_html('report.html')`}</code>
           <div className="flex flex-wrap justify-center gap-4">
             <a href="https://github.com/jeet2005/nexora" className="btn-primary px-8 py-3">Star on GitHub</a>
             <a href="https://github.com/jeet2005/nexora/blob/main/CONTRIBUTING.md" className="btn-outline px-6 py-3">Contribute</a>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ REPOSITORY ROADMAP ═══════════════ */}
+      <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-4">Repository Roadmap</h2>
+        <p className="text-center text-nexora-dark/60 max-w-2xl mx-auto mb-10">
+          What we are working on next. Contributions to any of these are welcome.
+        </p>
+        <div className="glass p-6 rounded-2xl border border-nexora-border">
+          <div className="space-y-4">
+            {[
+              'Add Pytest code coverage reports in the Backend CI pipeline',
+              'Implement multi-file comparison dashboards within the Frontend page',
+              'Add support for automated time-series forecasting hyperparameter tuning',
+              'Integrate PostgreSQL database schema mappings for enterprise persistence layers',
+              'Add REST API key rotation options inside the Production UI',
+              'Create automated end-to-end integration tests using Playwright',
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-nexora-accent/5 transition-colors">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-md border border-nexora-border bg-white text-xs text-nexora-dark/40 flex-shrink-0 mt-0.5">
+                  {i + 1}
+                </span>
+                <span className="text-sm text-nexora-dark/70 leading-relaxed">{item}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
