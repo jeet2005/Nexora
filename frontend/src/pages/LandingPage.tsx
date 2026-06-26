@@ -85,6 +85,10 @@ export default function LandingPage() {
               How It Works
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </a>
+            <a href="/home" className="btn-outline text-base px-6 py-3.5 group">
+              CLI Guide (Home)
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </a>
           </motion.div>
 
           <motion.a href="#how-it-works" className="inline-block mt-16 text-nexora-accent/50 hover:text-nexora-accent transition-colors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, ease: [0.16, 1, 0.3, 1] }}>
