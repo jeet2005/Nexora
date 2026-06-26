@@ -11,7 +11,6 @@
 
 An autonomous predictive analytics platform that profiles datasets, builds optimized preprocessing pipelines, trains reproducible model registries, runs batch predictions, monitors feature drift, and provides grounded AI educational interactive chats from a single CSV upload.
 
-**Project Status: 85-90% Complete** | **Full Terminal Feature Parity with Web** | [View Completion Status](COMPLETION_STATUS.md)
 
 ---
 
