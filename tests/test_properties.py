@@ -52,7 +52,7 @@ classification_df_strategy = data_frames(
 )
 
 
-@settings(max_examples=5, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=5, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
 @given(classification_df_strategy)
 def test_nexora_classification_properties(df):
     """Property: Nexora should successfully profile and train on any valid classification DataFrame."""

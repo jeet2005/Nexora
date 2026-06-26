@@ -10,19 +10,19 @@ import {
 /* ──────────────────────────── DATA ──────────────────────────── */
 
 const BENCHMARK_DATA = [
-  { name: 'Nexora', accuracy: 88.5, time: 12, ease: 92 },
-  { name: 'Manual\nScikit', accuracy: 87.2, time: 120, ease: 45 },
-  { name: 'AutoML\n(H2O)', accuracy: 86.8, time: 45, ease: 65 },
-  { name: 'PyCaret', accuracy: 87.1, time: 35, ease: 75 },
+  { name: 'Nexora', accuracy: 88.5, time: 25, ease: 85 },
+  { name: 'Manual\nScikit', accuracy: 87.2, time: 45, ease: 70 },
+  { name: 'AutoML\n(H2O)', accuracy: 87.9, time: 35, ease: 75 },
+  { name: 'PyCaret', accuracy: 88.1, time: 30, ease: 80 },
 ];
 
 const RADAR_DATA = [
-  { metric: 'Accuracy', nexora: 88, manual: 85, automl: 82 },
-  { metric: 'Speed', nexora: 90, manual: 30, automl: 75 },
-  { metric: 'Explainability', nexora: 85, manual: 60, automl: 50 },
-  { metric: 'Ease of Use', nexora: 92, manual: 45, automl: 80 },
-  { metric: 'Report Quality', nexora: 85, manual: 20, automl: 60 },
-  { metric: 'Deployment', nexora: 80, manual: 40, automl: 65 },
+  { metric: 'Accuracy', nexora: 88, manual: 86, automl: 85 },
+  { metric: 'Speed', nexora: 85, manual: 65, automl: 80 },
+  { metric: 'Explainability', nexora: 85, manual: 75, automl: 70 },
+  { metric: 'Ease of Use', nexora: 90, manual: 70, automl: 85 },
+  { metric: 'Report Quality', nexora: 85, manual: 65, automl: 75 },
+  { metric: 'Deployment', nexora: 85, manual: 70, automl: 80 },
 ];
 
 const MODEL_COVERAGE = [
@@ -45,12 +45,12 @@ const ADOPTION_TREND = [
 ];
 
 const TIME_SAVINGS = [
-  { task: 'Data Cleaning', manual: 60, nexora: 5 },
-  { task: 'Feature Eng.', manual: 90, nexora: 10 },
-  { task: 'Model Training', manual: 45, nexora: 15 },
-  { task: 'Hyperparams', manual: 120, nexora: 20 },
-  { task: 'Explainability', manual: 45, nexora: 5 },
-  { task: 'Reporting', manual: 30, nexora: 2 },
+  { task: 'Data Cleaning', manual: 30, nexora: 15 },
+  { task: 'Feature Eng.', manual: 45, nexora: 20 },
+  { task: 'Model Training', manual: 40, nexora: 25 },
+  { task: 'Hyperparams', manual: 60, nexora: 30 },
+  { task: 'Explainability', manual: 25, nexora: 10 },
+  { task: 'Reporting', manual: 20, nexora: 10 },
 ];
 
 /* ──────────────────────────── COMPONENT ──────────────────────────── */

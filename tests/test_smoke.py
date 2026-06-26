@@ -44,7 +44,7 @@ class TestSmoke:
         """Package imports without errors."""
         assert Nexora is not None
         assert NexoraReport is not None
-        assert __version__ == "0.1.1"
+        assert __version__ == "0.1.2"
 
     def test_create_instance(self, sample_df):
         """Can create a Nexora instance from DataFrame."""

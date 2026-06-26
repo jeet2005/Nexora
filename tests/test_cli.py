@@ -19,4 +19,4 @@ def test_cli_train_saves_session(regression_csv, tmp_path):
     assert result.exit_code == 0
     assert out.exists()
     assert "Best model:" in result.output
-    assert "Saved session:" in result.output
+    assert "Session saved:" in result.output
