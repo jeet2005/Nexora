@@ -27,9 +27,7 @@ export default function Layout() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm text-nexora-dark/60">
-            <Link to="/datasets" className="hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium">
-              History
-            </Link>
+
             {isHome && (
               <>
                 <a href="#how-it-works" className="hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium">

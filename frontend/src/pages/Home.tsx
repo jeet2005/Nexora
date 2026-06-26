@@ -1,13 +1,16 @@
 import React from 'react';
-import './Home.css';
+import { motion } from 'framer-motion';
 
 export const Home: React.FC = () => {
   return (
-    <div className="home-container">
-      {/* Hero Section with CLI Logo */}
-      <section className="hero">
-        <div className="logo-section">
-          <pre className="cli-logo">{`
+    <div className="min-h-screen bg-nexora-bg text-nexora-dark font-sans pb-20">
+      {/* Hero Section */}
+      <section className="relative pt-28 pb-16 px-6 max-w-6xl mx-auto flex flex-col items-center text-center">
+        <div className="absolute inset-0 bg-grid bg-[size:48px_48px] opacity-30 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-nexora-accent/15 rounded-full blur-[120px] animate-pulse-slow pointer-events-none" />
+        
+        <div className="relative z-10 glass p-8 rounded-2xl mb-12 shadow-sm border border-nexora-border inline-block">
+          <pre className="text-left font-mono text-[8px] sm:text-[10px] md:text-sm text-nexora-accent overflow-x-auto leading-[1.1]">{`
 ███╗   ██╗    ███████╗    ██╗  ██╗     ██████╗     ██████╗      █████╗
 ████╗  ██║    ██╔════╝    ╚██╗██╔╝    ██╔═══██╗    ██╔══██╗    ██╔══██╗
 ██╔██╗ ██║    █████╗       ╚███╔╝     ██║   ██║    ██████╔╝    ███████║
@@ -16,205 +19,94 @@ export const Home: React.FC = () => {
 ╚═╝  ╚═══╝    ╚══════╝    ╚═╝  ╚═╝     ╚═════╝     ╚═╝  ╚═╝    ╚═╝  ╚═╝`}</pre>
         </div>
 
-        <div className="hero-content">
-          <h1>Autonomous AI Predictive Analytics Platform</h1>
-          <p className="tagline">
-            Drop a CSV → Auto-analyze → Train 18+ models → Generate insights → Deploy to production
-          </p>
-          
-          <div className="quick-install">
-            <h3>Quick Start</h3>
-            <code className="install-cmd">pip install nexora-prediction</code>
-            <code className="install-cmd">nexora</code>
-          </div>
+        <h1 className="font-display text-4xl md:text-5xl font-bold mb-6 text-nexora-dark relative z-10">
+          Autonomous AI Predictive Analytics Platform
+        </h1>
+        <p className="text-lg text-nexora-dark/60 mb-10 max-w-3xl relative z-10">
+          Drop a CSV → Auto-analyze → Train 18+ models → Generate insights → Deploy to production
+        </p>
 
-          <div className="cta-buttons">
-            <a href="https://github.com/jeet2005/nexora" className="btn btn-primary">
-              GitHub Repository
-            </a>
-            <a href="/docs" className="btn btn-secondary">
-              View Documentation
-            </a>
-          </div>
+        <div className="glass px-8 py-6 rounded-xl border border-nexora-border mb-10 flex flex-col items-center gap-3 relative z-10">
+          <h3 className="font-semibold text-nexora-dark/80 text-sm tracking-wider uppercase">Quick Start</h3>
+          <code className="bg-nexora-dark/5 text-nexora-dark px-4 py-2 rounded-md font-mono text-sm border border-nexora-border w-full max-w-sm text-left">
+            $ pip install nexora-prediction
+          </code>
+          <code className="bg-nexora-dark/5 text-nexora-dark px-4 py-2 rounded-md font-mono text-sm border border-nexora-border w-full max-w-sm text-left">
+            $ nexora
+          </code>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-4 relative z-10">
+          <a href="https://github.com/jeet2005/nexora" className="btn-primary px-6 py-3">
+            GitHub Repository
+          </a>
+          <a href="/docs" className="btn-outline px-6 py-3">
+            View Documentation
+          </a>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="features">
-        <h2>Why Choose Nexora?</h2>
-        <div className="feature-grid">
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Auto-Analysis</h3>
-            <p>Dataset profiling, missing value detection, outlier analysis, and health scoring in seconds</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">🤖</div>
-            <h3>18+ Models</h3>
-            <p>Classification & regression across boosting, ensemble, and neural network families</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">🔍</div>
-            <h3>Explainability</h3>
-            <p>SHAP feature importance, partial dependence plots, interaction analysis</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">⚡</div>
-            <h3>Production-Ready</h3>
-            <p>REST API, Docker deployment, FastAPI/Flask code generation in one command</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">📈</div>
-            <h3>Drift Detection</h3>
-            <p>Monitor feature distribution shift and data quality degradation in production</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">🧠</div>
-            <h3>LLM Integration</h3>
-            <p>AI-powered explanations with GPT/Claude/Ollama for natural language insights</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">📝</div>
-            <h3>Full Reports</h3>
-            <p>HTML/PDF reports with leaderboards, metrics, and recommendations</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">⌨️</div>
-            <h3>CLI First</h3>
-            <p>No browser needed. Full feature parity between CLI and Python API</p>
-          </div>
+      <section className="py-16 px-6 max-w-6xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-12">Why Choose Nexora?</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { icon: "📊", title: "Auto-Analysis", desc: "Dataset profiling, missing value detection, outlier analysis, and health scoring in seconds" },
+            { icon: "🤖", title: "18+ Models", desc: "Classification & regression across boosting, ensemble, and neural network families" },
+            { icon: "🔍", title: "Explainability", desc: "SHAP feature importance, partial dependence plots, interaction analysis" },
+            { icon: "⚡", title: "Production-Ready", desc: "REST API, Docker deployment, FastAPI/Flask code generation in one command" },
+            { icon: "📈", title: "Drift Detection", desc: "Monitor feature distribution shift and data quality degradation in production" },
+            { icon: "🧠", title: "LLM Integration", desc: "AI-powered explanations with GPT/Claude/Ollama for natural language insights" },
+            { icon: "📝", title: "Full Reports", desc: "HTML/PDF reports with leaderboards, metrics, and recommendations" },
+            { icon: "⌨️", title: "CLI First", desc: "No browser needed. Full feature parity between CLI and Python API" },
+          ].map((feature, idx) => (
+            <motion.div key={idx} whileHover={{ y: -4 }} className="glass p-6 rounded-2xl border border-nexora-border hover:shadow-card transition-all">
+              <div className="text-3xl mb-4">{feature.icon}</div>
+              <h3 className="font-semibold text-nexora-dark mb-2">{feature.title}</h3>
+              <p className="text-sm text-nexora-dark/60 leading-relaxed">{feature.desc}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
       {/* CLI Commands Section */}
-      <section className="commands">
-        <h2>Available Commands</h2>
-        <div className="commands-grid">
-          <div className="command-group">
-            <h4>Data Analysis</h4>
-            <code>nexora profile data.csv</code>
-            <code>nexora clean data.csv --target y</code>
-          </div>
-
-          <div className="command-group">
-            <h4>Training</h4>
-            <code>nexora train data.csv --target price</code>
-            <code>nexora quick data.csv --target y</code>
-          </div>
-
-          <div className="command-group">
-            <h4>Predictions</h4>
-            <code>nexora predict model.nx new_data.csv</code>
-            <code>nexora drift model.nx prod_data.csv</code>
-          </div>
-
-          <div className="command-group">
-            <h4>Deployment</h4>
-            <code>nexora serve model.nx --port 8000</code>
-            <code>nexora report model.nx --format pdf</code>
-          </div>
-
-          <div className="command-group">
-            <h4>Analytics</h4>
-            <code>nexora explain model.nx --top 15</code>
-            <code>nexora compare model1.nx model2.nx</code>
-          </div>
-
-          <div className="command-group">
-            <h4>Utility</h4>
-            <code>nexora models --task regression</code>
-            <code>nexora config --show</code>
-          </div>
-        </div>
-      </section>
-
-      {/* Workflow Section */}
-      <section className="workflow">
-        <h2>Typical Workflow</h2>
-        <div className="workflow-steps">
-          <div className="step">
-            <div className="step-number">1</div>
-            <h4>Profile</h4>
-            <p><code>nexora profile data.csv</code></p>
-            <p className="description">Analyze dataset health and quality</p>
-          </div>
-
-          <div className="arrow">→</div>
-
-          <div className="step">
-            <div className="step-number">2</div>
-            <h4>Train</h4>
-            <p><code>nexora train data.csv --target y</code></p>
-            <p className="description">Train multiple models automatically</p>
-          </div>
-
-          <div className="arrow">→</div>
-
-          <div className="step">
-            <div className="step-number">3</div>
-            <h4>Explain</h4>
-            <p><code>nexora explain model.nx</code></p>
-            <p className="description">Understand feature importance</p>
-          </div>
-
-          <div className="arrow">→</div>
-
-          <div className="step">
-            <div className="step-number">4</div>
-            <h4>Deploy</h4>
-            <p><code>nexora serve model.nx --port 8000</code></p>
-            <p className="description">Start REST API in production</p>
-          </div>
+      <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-12">Available Commands</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            { group: "Data Analysis", cmds: ["nexora profile data.csv", "nexora clean data.csv --target y"] },
+            { group: "Training", cmds: ["nexora train data.csv --target price", "nexora quick data.csv --target y"] },
+            { group: "Predictions", cmds: ["nexora predict model.nx new_data.csv", "nexora drift model.nx prod_data.csv"] },
+            { group: "Deployment", cmds: ["nexora serve model.nx --port 8000", "nexora report model.nx --format pdf"] },
+            { group: "Analytics", cmds: ["nexora explain model.nx --top 15", "nexora compare model1.nx model2.nx"] },
+            { group: "Utility", cmds: ["nexora models --task regression", "nexora config --show"] },
+          ].map((cmdGroup, idx) => (
+            <div key={idx} className="glass p-6 rounded-2xl border border-nexora-border">
+              <h4 className="font-semibold mb-4 text-nexora-dark">{cmdGroup.group}</h4>
+              <div className="space-y-3">
+                {cmdGroup.cmds.map((cmd, i) => (
+                  <code key={i} className="block bg-white/50 border border-nexora-border px-3 py-2 rounded font-mono text-xs text-nexora-dark/80 whitespace-nowrap overflow-x-auto">
+                    {cmd}
+                  </code>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Getting Started Section */}
-      <section className="getting-started">
-        <h2>Getting Started</h2>
-        <div className="guide-steps">
-          <div className="guide-step">
-            <h4>Step 1: Install</h4>
-            <pre><code>pip install nexora-prediction</code></pre>
+      <section className="py-16 px-6 max-w-3xl mx-auto relative z-10">
+        <h2 className="font-display text-3xl font-bold text-center mb-12">Python API Example</h2>
+        <div className="glass rounded-2xl border border-nexora-border overflow-hidden">
+          <div className="bg-nexora-dark/5 px-4 py-3 border-b border-nexora-border flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-400"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+            <div className="w-3 h-3 rounded-full bg-green-400"></div>
+            <span className="ml-2 text-xs font-mono text-nexora-dark/50">example.py</span>
           </div>
-
-          <div className="guide-step">
-            <h4>Step 2: Run Interactive Wizard</h4>
-            <pre><code>nexora wizard</code></pre>
-          </div>
-
-          <div className="guide-step">
-            <h4>Step 3: Or Use Direct Commands</h4>
-            <pre><code>{`nexora train data.csv --target price
-nexora predict model.nx new_data.csv
-nexora serve model.nx --port 8000`}</code></pre>
-          </div>
-
-          <div className="guide-step">
-            <h4>Step 4: Check Out Examples</h4>
-            <pre><code>{`# View saved sessions
-nexora history --limit 10
-
-# Get model leaderboard
-nexora compare model.nx
-
-# Generate report
-nexora report model.nx --format pdf`}</code></pre>
-          </div>
-        </div>
-      </section>
-
-      {/* Python API Section */}
-      <section className="python-api">
-        <h2>Python API</h2>
-        <div className="api-example">
-          <pre><code>{`from nexora import Nexora
+          <pre className="p-6 overflow-x-auto text-sm font-mono leading-relaxed text-nexora-dark/80 bg-white/30">
+            <code>{`from nexora import Nexora
 import pandas as pd
 
 # Load and train
@@ -235,46 +127,10 @@ report.serve(port=8000)
 
 # Export
 report.to_pdf('report.pdf')
-report.to_html('report.html')`}</code></pre>
+report.to_html('report.html')`}</code>
+          </pre>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-section">
-            <h4>Documentation</h4>
-            <a href="/docs/quick-start">Quick Start</a>
-            <a href="/docs/cli-features">CLI Features</a>
-            <a href="/docs/completion-status">Status</a>
-          </div>
-
-          <div className="footer-section">
-            <h4>Resources</h4>
-            <a href="https://github.com/jeet2005/nexora">GitHub</a>
-            <a href="https://github.com/jeet2005/nexora/issues">Issues</a>
-            <a href="https://github.com/jeet2005/nexora/discussions">Discussions</a>
-          </div>
-
-          <div className="footer-section">
-            <h4>Project</h4>
-            <a href="/docs/completion-report">Completion Report</a>
-            <a href="/docs/roadmap">Roadmap</a>
-            <a href="https://github.com/jeet2005/nexora/blob/main/LICENSE">License</a>
-          </div>
-
-          <div className="footer-section">
-            <h4>Support</h4>
-            <a href="https://github.com/jeet2005/nexora/blob/main/CONTRIBUTING.md">Contributing</a>
-            <a href="https://github.com/jeet2005/nexora/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <p>&copy; 2026 Nexora. Autonomous AI Predictive Analytics Platform.</p>
-          <p>Built with Python, FastAPI, React, and machine learning excellence.</p>
-        </div>
-      </footer>
     </div>
   );
 };
