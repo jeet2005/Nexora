@@ -17,7 +17,7 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  { icon: Upload, label: "Upload", desc: "Drop your CSV file. Nexora profiles it instantly.", num: "01" },
+  { icon: Upload, label: "Upload", desc: "Drop your dataset (CSV, Excel, JSON, Parquet, SQL). Nexora profiles it instantly.", num: "01" },
   { icon: Target, label: "Target", desc: "Pick what to predict. AI auto-detects the problem type.", num: "02" },
   { icon: Settings2, label: "Select Models", desc: "Choose one or several trained-model candidates.", num: "03" },
   { icon: Trophy, label: "Predict", desc: "Run saved backend models with real input values.", num: "04" },
@@ -73,7 +73,7 @@ export default function LandingPage() {
             className="text-lg md:text-xl text-nexora-dark/60 max-w-2xl mx-auto mb-10 leading-relaxed font-light"
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
-            Upload a CSV. Select models, run backend-owned predictions, understand the result, and export a complete report.
+            Upload your dataset (CSV, Excel, Parquet, JSON, SQL, and 100+ more). Select models, run backend-owned predictions, understand the results, and export a complete report.
           </motion.p>
 
           <motion.div className="flex justify-center gap-4" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, ease: [0.16, 1, 0.3, 1] }}>
@@ -86,7 +86,7 @@ export default function LandingPage() {
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </a>
             <a href="/home" className="btn-outline text-base px-6 py-3.5 group">
-              CLI Guide (Home)
+              Deep-Dive (Home of Nexora)
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </a>
           </motion.div>
@@ -133,6 +133,41 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Why Nexora */}
+      <section id="why-nexora" className="py-20 bg-nexora-dark/5 border-t border-b border-nexora-border">
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div className="text-center mb-14" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            <h2 className="font-display text-2xl md:text-3xl text-nexora-dark mb-3">Why Choose Nexora?</h2>
+            <p className="text-nexora-dark/50">Complex data science simplified into a single autonomous workflow</p>
+          </motion.div>
+
+          <motion.div
+            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.div variants={scaleIn} whileHover={{ y: -4 }} className="bg-white p-6 rounded-2xl border border-nexora-border shadow-sm">
+              <h3 className="font-semibold text-nexora-dark mb-2">100+ Formats Supported</h3>
+              <p className="text-sm text-nexora-dark/60">Upload CSVs, Excel, JSON, Parquet, or connect directly to SQL. We handle the parsing automatically.</p>
+            </motion.div>
+            <motion.div variants={scaleIn} whileHover={{ y: -4 }} className="bg-white p-6 rounded-2xl border border-nexora-border shadow-sm">
+              <h3 className="font-semibold text-nexora-dark mb-2">Zero Boilerplate</h3>
+              <p className="text-sm text-nexora-dark/60">Say goodbye to repetitive data cleaning and model training scripts. Nexora does it all in seconds.</p>
+            </motion.div>
+            <motion.div variants={scaleIn} whileHover={{ y: -4 }} className="bg-white p-6 rounded-2xl border border-nexora-border shadow-sm">
+              <h3 className="font-semibold text-nexora-dark mb-2">No Black Boxes</h3>
+              <p className="text-sm text-nexora-dark/60">Every decision is explained via SHAP values, giving you complete transparency into model predictions.</p>
+            </motion.div>
+            <motion.div variants={scaleIn} whileHover={{ y: -4 }} className="bg-white p-6 rounded-2xl border border-nexora-border shadow-sm">
+              <h3 className="font-semibold text-nexora-dark mb-2">Deploy Anywhere</h3>
+              <p className="text-sm text-nexora-dark/60">Export your final model as a compiled artifact or deploy it instantly via our built-in REST API.</p>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features */}
       <section id="features" className="py-20">
         <div className="max-w-5xl mx-auto px-6">
@@ -171,7 +206,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <motion.div className="text-center mb-10" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
             <h2 className="font-display text-2xl md:text-3xl text-nexora-dark mb-3">Start Now</h2>
-            <p className="text-nexora-dark/50">Upload a CSV and watch Nexora work its magic</p>
+            <p className="text-nexora-dark/50">Upload your tabular dataset and watch Nexora work its magic</p>
           </motion.div>
           <UploadZone />
         </div>
