@@ -241,6 +241,134 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* ═══════════════ NEXORA WEB PLATFORM ═══════════════ */}
+      <section className="py-20 px-6 max-w-6xl mx-auto relative z-10">
+        <div className="text-center mb-6">
+          <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-nexora-accent/15 text-nexora-accent border border-nexora-accent/30 mb-4">
+            Our Biggest Achievement
+          </span>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-nexora-dark mb-4">The Nexora Web Platform</h2>
+          <p className="text-nexora-dark/60 max-w-3xl mx-auto leading-relaxed">
+            Not just a CLI tool — Nexora ships with a <strong className="text-nexora-dark">full-stack, production-grade web application</strong> built
+            with React, TypeScript, FastAPI, and WebSockets. A complete visual data science workbench
+            that rivals commercial platforms costing thousands per year — <strong className="text-nexora-dark">completely free and open-source</strong>.
+          </p>
+        </div>
+
+        {/* Platform Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          {[
+            { num: '28+', label: 'React Components', desc: 'Purpose-built, reusable UI components' },
+            { num: '4', label: 'Major Dashboards', desc: 'Landing, Dataset, Training, Home' },
+            { num: 'Real-time', label: 'WebSocket Streams', desc: 'Live training metrics and progress' },
+            { num: '100%', label: 'TypeScript', desc: 'Fully typed, zero any-casts' },
+          ].map((stat, i) => (
+            <motion.div key={i} whileHover={{ y: -3 }} className="glass p-5 rounded-xl border border-nexora-border text-center">
+              <div className="text-2xl font-bold text-nexora-accent mb-1">{stat.num}</div>
+              <div className="text-sm font-semibold text-nexora-dark mb-1">{stat.label}</div>
+              <p className="text-xs text-nexora-dark/50">{stat.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Platform Feature Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {[
+            {
+              icon: '🏟️',
+              title: 'Real-Time Training Arena',
+              desc: 'Watch 18+ models train simultaneously with live accuracy curves, loss plots, and progress bars streaming via WebSockets. See which model takes the lead in real-time — like a leaderboard that updates every second.',
+              highlight: true,
+            },
+            {
+              icon: '📊',
+              title: 'Dataset Intelligence Dashboard',
+              desc: 'Upload any file and instantly see column profiles, statistical distributions, missing value heatmaps, data quality scores, numeric trends, categorical breakdowns, and an overall health score — all visualized with interactive Recharts.',
+              highlight: true,
+            },
+            {
+              icon: '🔬',
+              title: 'SHAP Explainability Panel',
+              desc: 'Interactive feature importance charts, waterfall plots, and dependence visualizations. Understand exactly why your model predicts what it predicts — no black boxes, ever.',
+              highlight: false,
+            },
+            {
+              icon: '🎯',
+              title: 'Prediction Studio',
+              desc: 'Select your champion model, input new feature values through a beautiful form interface, and get instant predictions with confidence intervals. Save and compare predictions across models.',
+              highlight: false,
+            },
+            {
+              icon: '💬',
+              title: 'AI Learning Assistant',
+              desc: 'An integrated chat interface powered by LLMs (GPT, Claude, or Ollama) that explains your data, models, and results in plain English. Ask questions like "Why did the model choose XGBoost?" and get contextual answers.',
+              highlight: false,
+            },
+            {
+              icon: '🚀',
+              title: 'Production Ops Panel',
+              desc: 'Generate deployment code (FastAPI, Flask, Docker), monitor model drift with Evidently, run diagnostics, and export production-ready artifacts — all from the browser.',
+              highlight: false,
+            },
+            {
+              icon: '🧪',
+              title: 'Exploration Modes',
+              desc: 'What-if analysis, time-series forecasting, anomaly detection, and scenario simulation. Go beyond basic predictions into advanced analytical workflows.',
+              highlight: false,
+            },
+            {
+              icon: '📋',
+              title: 'Experiment Tracking',
+              desc: 'Every training run is logged with hyperparameters, metrics, timestamps, and results. Compare experiments side by side and reproduce any result with a single click.',
+              highlight: false,
+            },
+            {
+              icon: '⚙️',
+              title: 'Smart Preprocessing',
+              desc: 'Visual pipeline showing exactly what transformations Nexora applies — encoding, scaling, imputation, outlier handling — with full transparency and override controls.',
+              highlight: false,
+            },
+          ].map((feature, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ y: -4 }}
+              className={`p-6 rounded-2xl border transition-all ${
+                feature.highlight
+                  ? 'bg-nexora-accent/5 border-nexora-accent/30 shadow-md'
+                  : 'glass border-nexora-border hover:shadow-card'
+              }`}
+            >
+              <div className="text-3xl mb-4">{feature.icon}</div>
+              <h3 className="font-semibold text-nexora-dark mb-2">{feature.title}</h3>
+              <p className="text-sm text-nexora-dark/60 leading-relaxed">{feature.desc}</p>
+              {feature.highlight && (
+                <span className="inline-block mt-3 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-nexora-accent bg-nexora-accent/10 rounded-full">
+                  Flagship Feature
+                </span>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Architecture Callout */}
+        <div className="glass p-8 rounded-2xl border border-nexora-border">
+          <h3 className="font-display text-xl font-bold text-nexora-dark mb-6 text-center">Full-Stack Architecture</h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { layer: 'Frontend', stack: 'React 18 · TypeScript · Tailwind CSS · Framer Motion · Recharts', color: 'bg-blue-50 border-blue-200 text-blue-700' },
+              { layer: 'Backend API', stack: 'FastAPI · WebSocket Streams · Pydantic v2 · CORS · Background Tasks', color: 'bg-green-50 border-green-200 text-green-700' },
+              { layer: 'ML Engine', stack: 'scikit-learn · XGBoost · LightGBM · CatBoost · SHAP · Optuna', color: 'bg-purple-50 border-purple-200 text-purple-700' },
+              { layer: 'Data Layer', stack: 'Pandas · DuckDB · PyArrow · Parquet · Excel · JSON · SQL', color: 'bg-amber-50 border-amber-200 text-amber-700' },
+            ].map((arch, i) => (
+              <div key={i} className={`p-4 rounded-xl border ${arch.color}`}>
+                <h4 className="font-bold text-sm mb-2">{arch.layer}</h4>
+                <p className="text-xs leading-relaxed opacity-80">{arch.stack}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══════════════ ADOPTION TREND ═══════════════ */}
       <section className="py-16 px-6 max-w-5xl mx-auto relative z-10">
         <h2 className="font-display text-3xl font-bold text-center mb-4">Growing Community</h2>
