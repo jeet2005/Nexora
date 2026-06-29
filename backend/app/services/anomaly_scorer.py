@@ -14,7 +14,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 # ── Feature columns used for scoring ────────────────────────────────────────
 NUMERIC_FEATURES = [
@@ -161,10 +161,14 @@ class AnomalyScorer:
         num_cols = [c for c in NUMERIC_FEATURES if c in df.columns]
         if fit:
             # type: ignore
-            num_data = np.asarray(self._scaler.fit_transform(df[num_cols].values.astype(float)))
+            num_data = np.asarray(
+                self._scaler.fit_transform(df[num_cols].values.astype(float))
+            )
         else:
             # type: ignore
-            num_data = np.asarray(self._scaler.transform(df[num_cols].values.astype(float)))
+            num_data = np.asarray(
+                self._scaler.transform(df[num_cols].values.astype(float))
+            )
         parts.append(num_data)
 
         # Categorical columns — label-encode

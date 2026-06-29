@@ -1,8 +1,16 @@
 from __future__ import annotations
 
+from datetime import date, timedelta
+
 import numpy as np
 import pandas as pd
 import pytest
+
+
+def _date_strings(start: str, n: int) -> list[str]:
+    """Generate *n* consecutive ISO date strings starting from *start*."""
+    d = date.fromisoformat(start)
+    return [(d + timedelta(days=i)).isoformat() for i in range(n)]
 
 
 @pytest.fixture()
@@ -12,15 +20,19 @@ def regression_csv(tmp_path):
     age = rng.integers(22, 68, size=rows)
     income = rng.normal(72_000, 12_000, size=rows).round(2)
     region = rng.choice(["north", "south", "east"], size=rows)
-    region_bonus = pd.Series(region).map({"north": 8.0, "south": -3.0, "east": 2.0}).to_numpy()
-    revenue = (age * 2.4 + income * 0.012 + region_bonus + rng.normal(0, 3, rows)).round(2)
+    region_bonus = (
+        pd.Series(region).map({"north": 8.0, "south": -3.0, "east": 2.0}).to_numpy()
+    )
+    revenue = (
+        age * 2.4 + income * 0.012 + region_bonus + rng.normal(0, 3, rows)
+    ).round(2)
     df = pd.DataFrame(
         {
             "customer_id": [f"C{i:03d}" for i in range(rows)],
             "age": age,
             "income": income,
             "region": region,
-            "signup_date": pd.date_range("2025-01-01", periods=rows).astype(str),
+            "signup_date": _date_strings("2025-01-01", rows),
             "constant_flag": "keep",
             "revenue": revenue,
         }

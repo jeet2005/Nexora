@@ -9,12 +9,11 @@ from __future__ import annotations
 import asyncio
 import csv
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import geoip2.database
 import geoip2.errors
-
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import StreamingResponse
 
@@ -56,7 +55,7 @@ def _get_geo_reader():
 
 def _load_csv_rows() -> list[dict]:
     """Load all rows from the sample CSV."""
-    with open(_DATA_PATH, "r", encoding="utf-8") as f:
+    with open(_DATA_PATH, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         return list(reader)
 
@@ -115,7 +114,7 @@ async def _sse_generator(
             # Build the SSE payload
             scored = ScoredRow(
                 row_id=str(uuid.uuid4())[:8],
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(UTC).isoformat(),
                 anomaly_score=result["anomaly_score"],
                 threat_level=ThreatLevel(result["threat_level"]),
                 top_features=result["top_features"],

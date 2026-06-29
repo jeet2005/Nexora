@@ -21,7 +21,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
+        # Pre-install native-extension binaries to avoid ABI mismatch on 3.12
+        pip install --upgrade numpy pyarrow
         pip install -e ".[dev]"
     - name: Run tests
-      run: python -m pytest -q --tb=short
+      run: python -X faulthandler -m pytest -q --tb=short
