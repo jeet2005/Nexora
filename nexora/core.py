@@ -95,7 +95,6 @@ class Nexora:
         return cls(load_from_clipboard(), target=target)
 
 
-
     def profile(self) -> DatasetProfile:
         """Profile the dataset without training.
 
