@@ -27,7 +27,7 @@ from app.routers import (
     training,
     users,
 )
-from app.services.auth_service import firebase_enabled
+from app.services.auth_service import _firebase_app, firebase_enabled
 from app.services.persistence_service import collection
 
 app = FastAPI(
@@ -333,6 +333,13 @@ async def health():
     if settings.mongodb_uri:
         mongo_host = urlparse(settings.mongodb_uri).hostname
     database_online = collection("datasets") is not None
+    firebase_configured = firebase_enabled()
+    firebase_available = False
+    if firebase_configured:
+        try:
+            firebase_available = _firebase_app() is not None
+        except Exception:
+            firebase_available = False
     return {
         "status": "ok",
         "service": "nexora-api",
@@ -344,5 +351,13 @@ async def health():
             "host": mongo_host,
             "online": database_online,
         },
-        "firebase": {"configured": firebase_enabled()},
+        "firebase": {
+            "configured": firebase_configured,
+            "available": firebase_available,
+            "project_id_configured": bool(settings.firebase_project_id),
+            "credentials_configured": bool(
+                settings.firebase_credentials_json
+                or settings.firebase_credentials_file
+            ),
+        },
     }

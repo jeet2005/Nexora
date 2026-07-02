@@ -66,12 +66,13 @@ def _issue_token(response: Response, email: str) -> None:
     token = jwt.encode(
         payload, settings.admin_jwt_secret, algorithm=settings.admin_jwt_algorithm
     )
+    cross_site_cookie = settings.public_app_url.startswith("https://")
     response.set_cookie(
         key="admin_token",
         value=token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=cross_site_cookie,
+        samesite="none" if cross_site_cookie else "lax",
         max_age=8 * 60 * 60,
     )
 
@@ -279,7 +280,12 @@ async def reset_password(request_data: AdminResetPasswordRequest):
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie(key="admin_token")
+    cross_site_cookie = settings.public_app_url.startswith("https://")
+    response.delete_cookie(
+        key="admin_token",
+        secure=cross_site_cookie,
+        samesite="none" if cross_site_cookie else "lax",
+    )
     return {"success": True, "message": "Logged out"}
 
 

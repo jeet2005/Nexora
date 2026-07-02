@@ -12,7 +12,12 @@ async def get_current_user(
 ):
     if not firebase_enabled():
         raise HTTPException(
-            status_code=500, detail="Firebase auth not configured on backend."
+            status_code=503,
+            detail=(
+                "Firebase auth is not configured on the backend. Set "
+                "FIREBASE_PROJECT_ID and either FIREBASE_CREDENTIALS_JSON or "
+                "FIREBASE_CREDENTIALS_FILE in the deployed environment."
+            ),
         )
 
     decoded = verify_bearer_token(f"Bearer {credentials.credentials}")
