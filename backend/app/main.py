@@ -356,8 +356,7 @@ async def health():
             "available": firebase_available,
             "project_id_configured": bool(settings.firebase_project_id),
             "credentials_configured": bool(
-                settings.firebase_credentials_json
-                or settings.firebase_credentials_file
+                settings.firebase_credentials_json or settings.firebase_credentials_file
             ),
         },
     }
