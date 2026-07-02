@@ -1,9 +1,10 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 
 from app.config import settings
+from app.middleware.user_auth_guard import get_optional_user
 from app.models.schemas import (
     ArchiveDatasetRequest,
     ArchiveDatasetResponse,
@@ -15,7 +16,12 @@ from app.models.schemas import (
 from app.services.dataset_analyzer import analyze_dataset
 from app.services.dataset_store import load_analysis, save_dataset
 from app.services.dataset_validator import DatasetValidationError, load_dataframe
-from app.services.history_service import delete_dataset, list_history, set_archived
+from app.services.history_service import (
+    delete_dataset,
+    history_item,
+    list_history,
+    set_archived,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
@@ -33,7 +39,10 @@ async def get_dataset_history(include_archived: bool = Query(False)):
     response_model=UploadResponse,
     responses={400: {"model": ErrorResponse}},
 )
-async def upload_dataset(file: UploadFile = File(...)):
+async def upload_dataset(
+    file: UploadFile = File(...),
+    token: dict | None = Depends(get_optional_user),
+):
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided.")
 
@@ -69,6 +78,8 @@ async def upload_dataset(file: UploadFile = File(...)):
         analysis = analyze_dataset(df, file.filename, dataset_id)
         logger.info(f"Saving dataset {dataset_id}...")
         save_dataset(df, file.filename, analysis)
+        user_id = token.get("uid") if token else None
+        history_item(dataset_id, user_id=user_id)
         logger.info(f"Successfully processed dataset {dataset_id}")
     except Exception as e:
         logger.error(f"Error analyzing or saving dataset: {e}", exc_info=True)

@@ -17,6 +17,9 @@ import {
 } from 'lucide-react';
 import NexoraLogo from '../components/NexoraLogo';
 import UploadZone from '../components/UploadZone';
+import { useEffect, useState } from 'react';
+import { getPublicContent } from '../api/users';
+import { Megaphone, X } from 'lucide-react';
 
 const FEATURES = [
   {
@@ -122,8 +125,58 @@ const scaleIn: Variants = {
 };
 
 export default function LandingPage() {
+  const [announcement, setAnnouncement] = useState<{
+    value: string;
+    updated_by_name?: string;
+    updated_by_avatar?: string;
+    updated_at?: string;
+  } | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    getPublicContent('announcement_banner')
+      .then((res) => {
+        if (res?.value) {
+          setAnnouncement(res);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-nexora-bg">
+      {announcement?.value && !dismissed && (
+        <div className="bg-nexora-accent/10 border-b border-nexora-accent/30">
+          <div className="max-w-5xl mx-auto px-6 py-3 flex items-start gap-3">
+            {announcement.updated_by_avatar ? (
+              <img
+                src={announcement.updated_by_avatar}
+                alt=""
+                className="w-8 h-8 rounded-full object-cover border border-nexora-accent/30 flex-shrink-0 mt-0.5"
+              />
+            ) : (
+              <Megaphone className="w-5 h-5 text-nexora-accent flex-shrink-0 mt-1" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-nexora-dark leading-relaxed">{announcement.value}</p>
+              {announcement.updated_by_name && (
+                <p className="text-xs text-nexora-dark/50 mt-1">
+                  — {announcement.updated_by_name}
+                  {announcement.updated_at &&
+                    ` · ${new Date(announcement.updated_at).toLocaleDateString()}`}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => setDismissed(true)}
+              className="text-nexora-dark/40 hover:text-nexora-dark p-1"
+              aria-label="Dismiss announcement"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-grid bg-[size:48px_48px] opacity-30" />

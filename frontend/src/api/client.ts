@@ -28,6 +28,8 @@ const api = axios.create({
   timeout: 120_000,
 });
 
+export { api };
+
 export async function uploadDataset(file: File, onProgress?: (pct: number) => void) {
   const form = new FormData();
   form.append('file', file);
