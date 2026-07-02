@@ -1,8 +1,11 @@
+import json
 import random
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
+from app.config import settings
 from app.middleware.user_auth_guard import get_current_user
 from app.models.user import (
     ActivityResponse,
@@ -20,6 +23,103 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 
 VALID_AVATARS = {f"/avatars/users/u{i}.png" for i in range(1, 21)}
 MAX_LOGIN_HISTORY = 20
+
+
+def _local_users_path() -> Path:
+    return settings.upload_dir / "users.json"
+
+
+def _load_local_users() -> list[dict]:
+    path = _local_users_path()
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return data if isinstance(data, list) else []
+
+
+def _save_local_users(users: list[dict]) -> None:
+    path = _local_users_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(users, indent=2, default=str), encoding="utf-8")
+
+
+def _normalize_local_user(user: dict | None) -> dict | None:
+    if not user:
+        return None
+    normalized = dict(user)
+    for key in ("created_at", "last_login"):
+        value = normalized.get(key)
+        if isinstance(value, str):
+            try:
+                normalized[key] = datetime.fromisoformat(value)
+            except ValueError:
+                pass
+    history = []
+    for event in normalized.get("login_history") or []:
+        if isinstance(event, dict):
+            item = dict(event)
+            value = item.get("at")
+            if isinstance(value, str):
+                try:
+                    item["at"] = datetime.fromisoformat(value)
+                except ValueError:
+                    pass
+            history.append(item)
+    normalized["login_history"] = history
+    return normalized
+
+
+def _find_local_user(**query) -> dict | None:
+    for user in _load_local_users():
+        if all(user.get(key) == value for key, value in query.items()):
+            return _normalize_local_user(user)
+    return None
+
+
+def _upsert_local_user(user_id: str, updates: dict) -> dict:
+    users = _load_local_users()
+    for index, user in enumerate(users):
+        if user.get("user_id") == user_id:
+            merged = {**user, **updates}
+            users[index] = merged
+            _save_local_users(users)
+            return _normalize_local_user(merged)
+    users.append(updates)
+    _save_local_users(users)
+    return _normalize_local_user(updates)
+
+
+def _record_local_login(user_id: str, token: dict, request: Request) -> dict | None:
+    user = _find_local_user(user_id=user_id)
+    if not user:
+        return None
+    now = datetime.utcnow()
+    providers = _auth_providers_from_token(token)
+    event = {
+        "at": now,
+        "method": providers[0] if providers else "unknown",
+        "user_agent": request.headers.get("user-agent"),
+        "ip": request.client.host if request.client else None,
+    }
+    auth_providers = list(user.get("auth_providers") or [])
+    for provider in providers:
+        if provider not in auth_providers:
+            auth_providers.append(provider)
+    user["last_login"] = now
+    user["login_history"] = [event, *(user.get("login_history") or [])][
+        :MAX_LOGIN_HISTORY
+    ]
+    user["auth_providers"] = auth_providers
+    return _upsert_local_user(user_id, user)
+
+
+def _delete_local_user(user_id: str) -> None:
+    _save_local_users(
+        [user for user in _load_local_users() if user.get("user_id") != user_id]
+    )
 
 
 def _sanitize_user(doc: dict) -> dict:
@@ -103,14 +203,17 @@ async def register_user(
         )
 
     users_col = collection("users")
-    if users_col is None:
-        raise HTTPException(status_code=500, detail="Database not available")
-
-    existing = users_col.find_one({"user_id": user_data.user_id})
+    existing = (
+        users_col.find_one({"user_id": user_data.user_id})
+        if users_col is not None
+        else _find_local_user(user_id=user_data.user_id)
+    )
     if existing:
-        _record_login(users_col, user_data.user_id, token, request)
-        _mark_github_verified(users_col, user_data.user_id, token)
-        return existing
+        if users_col is not None:
+            _record_login(users_col, user_data.user_id, token, request)
+            _mark_github_verified(users_col, user_data.user_id, token)
+            return users_col.find_one({"user_id": user_data.user_id})
+        return _record_local_login(user_data.user_id, token, request) or existing
 
     if not user_data.avatar_url or user_data.avatar_url not in VALID_AVATARS:
         user_data.avatar_url = f"/avatars/users/u{random.randint(1, 20)}.png"
@@ -128,19 +231,23 @@ async def register_user(
             "ip": request.client.host if request.client else None,
         }
     ]
-    users_col.insert_one(new_user)
-    _mark_github_verified(users_col, user_data.user_id, token)
+    if users_col is not None:
+        users_col.insert_one(new_user)
+        _mark_github_verified(users_col, user_data.user_id, token)
+    else:
+        _upsert_local_user(user_data.user_id, new_user)
     return new_user
 
 
 @router.get("/me", response_model=UserResponse)
 async def get_my_profile(token: dict = Depends(get_current_user)):
     users_col = collection("users")
-    if users_col is None:
-        raise HTTPException(status_code=500, detail="Database not available")
-
     user_id = token.get("uid")
-    user = users_col.find_one({"user_id": user_id})
+    user = (
+        users_col.find_one({"user_id": user_id})
+        if users_col is not None
+        else _find_local_user(user_id=user_id)
+    )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -152,15 +259,18 @@ async def update_my_profile(
     update_data: UserUpdate, token: dict = Depends(get_current_user)
 ):
     users_col = collection("users")
-    if users_col is None:
-        raise HTTPException(status_code=500, detail="Database not available")
 
     user_id = token.get("uid")
 
     if update_data.username:
-        existing = users_col.find_one(
-            {"username": update_data.username, "user_id": {"$ne": user_id}}
-        )
+        if users_col is not None:
+            existing = users_col.find_one(
+                {"username": update_data.username, "user_id": {"$ne": user_id}}
+            )
+        else:
+            existing = _find_local_user(username=update_data.username)
+            if existing and existing.get("user_id") == user_id:
+                existing = None
         if existing:
             raise HTTPException(status_code=400, detail="Username already taken")
 
@@ -177,23 +287,34 @@ async def update_my_profile(
     update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
 
     if not update_dict:
-        user = users_col.find_one({"user_id": user_id})
+        user = (
+            users_col.find_one({"user_id": user_id})
+            if users_col is not None
+            else _find_local_user(user_id=user_id)
+        )
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         return user
 
-    users_col.update_one({"user_id": user_id}, {"$set": update_dict})
-    return users_col.find_one({"user_id": user_id})
+    if users_col is not None:
+        users_col.update_one({"user_id": user_id}, {"$set": update_dict})
+        return users_col.find_one({"user_id": user_id})
+    user = _find_local_user(user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return _upsert_local_user(user_id, {**user, **update_dict})
 
 
 @router.get("/me/activity", response_model=ActivityResponse)
 async def get_my_activity(token: dict = Depends(get_current_user)):
     users_col = collection("users")
-    if users_col is None:
-        raise HTTPException(status_code=500, detail="Database not available")
 
     user_id = token.get("uid")
-    user = users_col.find_one({"user_id": user_id})
+    user = (
+        users_col.find_one({"user_id": user_id})
+        if users_col is not None
+        else _find_local_user(user_id=user_id)
+    )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -261,10 +382,11 @@ async def notify_new_login(request: Request, token: dict = Depends(get_current_u
 @router.get("/profile/{username}", response_model=UserResponse)
 async def get_public_profile(username: str):
     users_col = collection("users")
-    if users_col is None:
-        raise HTTPException(status_code=500, detail="Database not available")
-
-    user = users_col.find_one({"username": username})
+    user = (
+        users_col.find_one({"username": username})
+        if users_col is not None
+        else _find_local_user(username=username)
+    )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -298,9 +420,11 @@ async def export_my_data(token: dict = Depends(get_current_user)):
     user_id = token.get("uid")
     users_col = collection("users")
     datasets_col = collection("datasets")
-    if users_col is None:
-        raise HTTPException(status_code=500, detail="Database not available")
-    user = users_col.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+    user = (
+        users_col.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+        if users_col is not None
+        else _find_local_user(user_id=user_id)
+    )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     datasets = []
@@ -316,9 +440,10 @@ async def export_my_data(token: dict = Depends(get_current_user)):
 @router.delete("/me")
 async def delete_my_account(token: dict = Depends(get_current_user)):
     users_col = collection("users")
-    if users_col is None:
-        raise HTTPException(status_code=500, detail="Database not available")
 
     user_id = token.get("uid")
-    users_col.delete_one({"user_id": user_id})
+    if users_col is not None:
+        users_col.delete_one({"user_id": user_id})
+    else:
+        _delete_local_user(user_id)
     return {"status": "success", "message": "User account deleted successfully"}

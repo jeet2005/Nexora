@@ -14,6 +14,7 @@ import { Profile } from './pages/Profile';
 import ProfileSettings from './pages/ProfileSettings';
 import LoginPage from './pages/LoginPage';
 import PublicProfilePage from './pages/PublicProfilePage';
+import ErrorPage from './pages/ErrorPage';
 
 const AdminDashboard = lazy(() => import('./admin/pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const AdminApiKeys = lazy(() => import('./admin/pages/ApiKeys').then(m => ({ default: m.ApiKeys })));
@@ -41,6 +42,10 @@ export default function App() {
         </Route>
         {/* CyberShield has its own full-page dark layout */}
         <Route path="/cybershield" element={<CyberShieldPage />} />
+        <Route path="/401" element={<ErrorPage code="401" title="Access gate kept closed" description="You do not have permission to view this section yet. Sign in or head back to the main workspace." />} />
+        <Route path="/404" element={<ErrorPage code="404" title="Signal lost in the mesh" description="The page you requested is not part of this workspace. Try navigating home or exploring the datasets area." />} />
+        <Route path="/500" element={<ErrorPage code="500" title="The system hit a snag" description="Something went wrong inside the platform. A quick return home usually gets you back on track." />} />
+        <Route path="*" element={<ErrorPage code="404" title="Signal lost in the mesh" description="The page you requested is not part of this workspace. Try navigating home or exploring the datasets area." />} />
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminLayout />}>
