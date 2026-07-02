@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { adminApi } from '../../api/admin';
+import { adminApi, DatasetRecord } from '../../api/admin';
 import { Database, Trash2, Activity, FileSpreadsheet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Datasets: React.FC = () => {
-  const [datasets, setDatasets] = useState<any[]>([]);
+  const [datasets, setDatasets] = useState<DatasetRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchDatasets = async () => {

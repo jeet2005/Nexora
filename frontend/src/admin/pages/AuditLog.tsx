@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { adminApi } from '../../api/admin';
+import { adminApi, AuditLogEntry } from '../../api/admin';
 import { ClipboardList } from 'lucide-react';
 
 export const AuditLog: React.FC = () => {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

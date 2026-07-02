@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { adminApi } from '../../api/admin';
+import { adminApi, ApiKey } from '../../api/admin';
 import { Key, Ban, CheckCircle2, XCircle } from 'lucide-react';
 
 export const ApiKeys: React.FC = () => {
-  const [keys, setKeys] = useState<any[]>([]);
+  const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchKeys = async () => {

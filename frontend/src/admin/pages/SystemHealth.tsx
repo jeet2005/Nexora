@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { adminApi } from '../../api/admin';
+import { adminApi, SystemHealthData } from '../../api/admin';
 import { Activity, Server, Database, Globe, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
 
 export const SystemHealth: React.FC = () => {
-  const [health, setHealth] = useState<any>(null);
+  const [health, setHealth] = useState<SystemHealthData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchHealth = async () => {

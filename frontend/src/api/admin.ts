@@ -1,5 +1,45 @@
 import axios from 'axios';
 
+export interface ApiKey {
+  id: string;
+  dataset_id: string;
+  api_key_preview?: string;
+  created_at: string;
+  active: boolean;
+}
+
+export interface AuditLogEntry {
+  timestamp: string;
+  admin_email: string;
+  action: string;
+  resource_id?: string;
+  details?: string;
+}
+
+export interface DatasetRecord {
+  dataset_id: string;
+  filename: string;
+  archived?: boolean;
+  status: string;
+  trained_model_count: number;
+  last_trained_model?: string;
+  health_score: number;
+  updated_at?: string;
+  created_at: string;
+}
+
+export interface SystemHealthData {
+  services?: {
+    api?: string;
+    database?: string;
+  };
+  uptime_seconds?: number;
+  memory_usage?: {
+    used?: number;
+    total?: number;
+  };
+}
+
 const adminClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   withCredentials: true, // Send cookies with requests
@@ -39,11 +79,11 @@ export const adminApi = {
     const response = await adminClient.get(`/admin/content/${key}`);
     return response.data;
   },
-  updateContent: async (key: string, value: any, notifyUsers = false) => {
+  updateContent: async (key: string, value: unknown, notifyUsers = false) => {
     const response = await adminClient.put(`/admin/content/${key}`, { value, notify_users: notifyUsers });
     return response.data;
   },
-  getSystemHealth: async () => {
+  getSystemHealth: async (): Promise<SystemHealthData> => {
     const response = await adminClient.get('/admin/health');
     return response.data;
   },

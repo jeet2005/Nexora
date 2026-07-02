@@ -43,7 +43,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     }
   }, [isOpen]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
@@ -71,9 +71,9 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         await confirmPhoneOtp(phoneConfirmation, otpCode);
         onClose();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'An error occurred. Please try again.');
+      setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -85,8 +85,8 @@ export default function LoginModal({ isOpen, onClose }: Props) {
       if (provider === 'google') await signInWithGoogle();
       if (provider === 'github') await signInWithGithub();
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     }
   };
 
@@ -320,7 +320,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   </div>
 
                   <div className="mt-8 text-center text-sm text-gray-500">
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <button onClick={() => setMode('signup')} className="text-nexora-primary hover:underline font-medium">
                       Sign up
                     </button>
