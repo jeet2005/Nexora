@@ -8,6 +8,7 @@ const DatasetHistoryPage = lazy(() => import('./pages/DatasetHistoryPage'));
 const DatasetDashboard = lazy(() => import('./pages/DatasetDashboard'));
 const Home = lazy(() => import('./pages/Home'));
 const CyberShieldPage = lazy(() => import('./pages/CyberShieldPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 import { AdminLayout } from './admin/AdminLayout';
 import { AdminLogin } from './admin/pages/AdminLogin';
 import { Profile } from './pages/Profile';
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/dataset/:datasetId" element={<DatasetDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/settings" element={<ProfileSettings />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
         </Route>

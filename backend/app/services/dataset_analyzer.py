@@ -99,6 +99,9 @@ def _compute_stats(df: pd.DataFrame, profiles: list[ColumnProfile]) -> DatasetSt
         return stats
 
     num_df = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
+    bool_cols = [col for col in numeric_cols if pd.api.types.is_bool_dtype(df[col])]
+    if bool_cols:
+        num_df[bool_cols] = num_df[bool_cols].astype(float)
     stats.mean = {c: _safe_float(num_df[c].mean()) for c in numeric_cols}
     stats.median = {c: _safe_float(num_df[c].median()) for c in numeric_cols}
     stats.std = {c: _safe_float(num_df[c].std()) for c in numeric_cols}

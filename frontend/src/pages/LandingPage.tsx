@@ -1,6 +1,7 @@
 import { motion, Variants } from 'framer-motion';
 import {
   Brain,
+  Bell,
   Zap,
   BarChart3,
   MessageSquare,
@@ -219,7 +220,7 @@ export default function LandingPage() {
           </motion.p>
 
           <motion.div
-            className="flex justify-center gap-4"
+            className="flex flex-wrap justify-center gap-4"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -235,6 +236,10 @@ export default function LandingPage() {
             <a href="/home" className="btn-outline text-base px-6 py-3.5 group">
               Deep-Dive (Home of Nexora)
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </a>
+            <a href="/notifications" className="btn-outline text-base px-6 py-3.5 group">
+              <Bell className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
+              Notifications
             </a>
           </motion.div>
 

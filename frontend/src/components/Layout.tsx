@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, User } from 'lucide-react';
+import { Bell, Shield, User } from 'lucide-react';
 import NexoraLogo from './NexoraLogo';
 import { useAuth } from '../contexts/AuthContext';
 import LoginModal from './LoginModal';
@@ -80,6 +80,13 @@ export default function Layout() {
               <Shield size={15} />
               CyberShield
             </Link>
+            <Link
+              to="/notifications"
+              className="flex items-center gap-1.5 hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium"
+            >
+              <Bell size={15} />
+              Notifications
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -87,6 +94,14 @@ export default function Layout() {
               <span className="group-hover:translate-x-0.5 transition-transform duration-200">
                 New dataset
               </span>
+            </Link>
+            <Link
+              to="/notifications"
+              className="w-9 h-9 rounded-lg border border-nexora-border text-nexora-dark/60 hover:text-nexora-accent hover:border-nexora-accent/40 flex items-center justify-center transition-colors"
+              aria-label="Notifications"
+              title="Notifications"
+            >
+              <Bell size={16} />
             </Link>
             
             {user ? (

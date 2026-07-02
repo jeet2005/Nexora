@@ -86,10 +86,17 @@ def _upsert_local_user(user_id: str, updates: dict) -> dict:
             merged = {**user, **updates}
             users[index] = merged
             _save_local_users(users)
-            return _normalize_local_user(merged)
+            return _normalize_local_user(merged) or merged
     users.append(updates)
     _save_local_users(users)
-    return _normalize_local_user(updates)
+    return _normalize_local_user(updates) or updates
+
+
+def _current_user_id(token: dict) -> str:
+    user_id = token.get("uid")
+    if not isinstance(user_id, str) or not user_id:
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
+    return user_id
 
 
 def _record_local_login(user_id: str, token: dict, request: Request) -> dict | None:
@@ -242,7 +249,7 @@ async def register_user(
 @router.get("/me", response_model=UserResponse)
 async def get_my_profile(token: dict = Depends(get_current_user)):
     users_col = collection("users")
-    user_id = token.get("uid")
+    user_id = _current_user_id(token)
     user = (
         users_col.find_one({"user_id": user_id})
         if users_col is not None
@@ -260,7 +267,7 @@ async def update_my_profile(
 ):
     users_col = collection("users")
 
-    user_id = token.get("uid")
+    user_id = _current_user_id(token)
 
     if update_data.username:
         if users_col is not None:
@@ -309,7 +316,7 @@ async def update_my_profile(
 async def get_my_activity(token: dict = Depends(get_current_user)):
     users_col = collection("users")
 
-    user_id = token.get("uid")
+    user_id = _current_user_id(token)
     user = (
         users_col.find_one({"user_id": user_id})
         if users_col is not None
@@ -332,7 +339,7 @@ async def get_my_activity(token: dict = Depends(get_current_user)):
 
 @router.post("/me/sessions/revoke-all")
 async def revoke_all_sessions(token: dict = Depends(get_current_user)):
-    user_id = token.get("uid")
+    user_id = _current_user_id(token)
     try:
         from firebase_admin import auth as firebase_auth
 
@@ -403,7 +410,7 @@ async def get_public_profile(username: str):
 
 @router.get("/me/datasets")
 async def get_my_datasets(token: dict = Depends(get_current_user)):
-    user_id = token.get("uid")
+    user_id = _current_user_id(token)
     datasets_col = collection("datasets")
     if datasets_col is None:
         return {"datasets": []}
@@ -441,7 +448,7 @@ async def export_my_data(token: dict = Depends(get_current_user)):
 async def delete_my_account(token: dict = Depends(get_current_user)):
     users_col = collection("users")
 
-    user_id = token.get("uid")
+    user_id = _current_user_id(token)
     if users_col is not None:
         users_col.delete_one({"user_id": user_id})
     else:
