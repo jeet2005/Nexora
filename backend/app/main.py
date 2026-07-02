@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 import bcrypt
 from fastapi import FastAPI
@@ -62,15 +63,6 @@ app.include_router(admin_audit.router)
 app.include_router(admin_drift.router)
 app.include_router(admin_users.router)
 
-DEFAULT_ADMIN_PASSWORD = "nexora"
-DEFAULT_ADMINS = [
-    {"email": "nexora-jeet@nexora.io", "name": "nexora-jeet"},
-    {"email": "nexora-dhaval@nexora.io", "name": "nexora-dhaval"},
-    {"email": "nexora-parit@nexora.io", "name": "nexora-parit"},
-    {"email": "nexora-harshvardhan@nexora.io", "name": "nexora-harshvardhan"},
-]
-
-
 def _hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
@@ -80,17 +72,35 @@ async def seed_admin_users():
     if settings.persistence_backend != "mongodb":
         return
 
+    if not settings.admin_seed_json or not settings.admin_seed_password:
+        return
+
+    try:
+        admins_to_seed = json.loads(settings.admin_seed_json)
+    except ValueError:
+        return
+
+    if not isinstance(admins_to_seed, list):
+        return
+
     admins_coll = collection("admins")
     if admins_coll is None:
         return
 
-    for index, admin in enumerate(DEFAULT_ADMINS, start=1):
-        if admins_coll.find_one({"email": admin["email"]}) is None:
+    for index, admin in enumerate(admins_to_seed, start=1):
+        if not isinstance(admin, dict):
+            continue
+        email = admin.get("email")
+        name = admin.get("name")
+        if not isinstance(email, str) or not isinstance(name, str):
+            continue
+
+        if admins_coll.find_one({"email": email}) is None:
             admins_coll.insert_one(
                 {
-                    "email": admin["email"],
-                    "password_hash": _hash_password(DEFAULT_ADMIN_PASSWORD),
-                    "name": admin["name"],
+                    "email": email,
+                    "password_hash": _hash_password(settings.admin_seed_password),
+                    "name": name,
                     "avatar_url": f"/avatars/admins/a{index}.png",
                     "created_at": datetime.utcnow(),
                     "last_login": None,

@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     max_parallel_models: int = 1
     random_seed: int = 42
 
-    # Persistence / auth integrations. Local files remain the development fallback.
-    persistence_backend: str = "local"
+    # Persistence / auth integrations. MongoDB is used by default for this deployment.
+    persistence_backend: str = "mongodb"
     mongodb_uri: str | None = None
     mongodb_db: str = "nexora"
     firebase_project_id: str | None = None
@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     public_api_url: str = "http://127.0.0.1:8000"
     admin_jwt_secret: str = "nexora_super_secret_default_change_me"
     admin_jwt_algorithm: str = "HS256"
+
+    # Admin seeding
+    admin_seed_json: str | None = None
+    admin_seed_password: str | None = None
 
     # Email (optional — announcements skipped if unset)
     smtp_host: str | None = None
