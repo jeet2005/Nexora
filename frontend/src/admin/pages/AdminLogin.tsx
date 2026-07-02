@@ -4,9 +4,12 @@ import { adminApi } from '../../api/admin';
 import NexoraLogo from '../../components/NexoraLogo';
 import { Lock } from 'lucide-react';
 
+const DEFAULT_ADMIN_EMAIL = 'jeet@example.com';
+const DEFAULT_ADMIN_PASSWORD = 'nexora123';
+
 export const AdminLogin: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(DEFAULT_ADMIN_EMAIL);
+  const [password, setPassword] = useState(DEFAULT_ADMIN_PASSWORD);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -76,9 +79,14 @@ export const AdminLogin: React.FC = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="btn-primary w-full py-3 mt-4 flex items-center justify-center"
+            className="w-full mt-4 flex items-center justify-center rounded-2xl border border-nexora-accent/20 bg-white p-3 shadow-sm transition hover:shadow-md disabled:opacity-70"
+            aria-label="Sign in to admin panel"
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? (
+              <span className="text-sm font-semibold text-nexora-dark">Authenticating...</span>
+            ) : (
+              <NexoraLogo size="sm" className="h-6" />
+            )}
           </button>
         </form>
       </div>

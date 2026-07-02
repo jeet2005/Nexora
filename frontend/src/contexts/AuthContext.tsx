@@ -16,9 +16,6 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   verifyBeforeUpdateEmail,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  ConfirmationResult,
 } from 'firebase/auth';
 import { auth, googleProvider, githubProvider } from '../config/firebase';
 import { api } from '../api/client';
@@ -42,8 +39,6 @@ interface AuthContextType {
   canResendNow: (key: string) => boolean;
   updateUserPassword: (currentPassword: string, newPassword: string) => Promise<void>;
   updateUserEmail: (newEmail: string, currentPassword: string) => Promise<void>;
-  startPhoneSignIn: (phoneNumber: string, containerId: string) => Promise<ConfirmationResult>;
-  confirmPhoneOtp: (confirmation: ConfirmationResult, code: string) => Promise<void>;
   revokeAllSessions: () => Promise<void>;
   deleteAccount: (password?: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -195,15 +190,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await verifyBeforeUpdateEmail(currentUser, newEmail);
   };
 
-  const startPhoneSignIn = async (phoneNumber: string, containerId: string) => {
-    const verifier = new RecaptchaVerifier(auth, containerId, { size: 'invisible' });
-    return signInWithPhoneNumber(auth, phoneNumber, verifier);
-  };
-
-  const confirmPhoneOtp = async (confirmation: ConfirmationResult, code: string) => {
-    await confirmation.confirm(code);
-  };
-
   const revokeAllSessions = async () => {
     await userApi.revokeAllSessions();
     await auth.signOut();
@@ -232,7 +218,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       resetPassword, resendVerificationEmail, resendMagicLink,
       resendCooldownSeconds, canResendNow,
       updateUserPassword, updateUserEmail,
-      startPhoneSignIn, confirmPhoneOtp,
       revokeAllSessions, deleteAccount, signOut,
     }}>
       {!loading && children}

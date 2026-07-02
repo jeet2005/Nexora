@@ -8,7 +8,7 @@ interface Props {
   onClose: () => void;
 }
 
-type AuthMode = 'login' | 'signup' | 'forgot' | 'passwordless' | 'phone';
+type AuthMode = 'login' | 'signup' | 'forgot' | 'passwordless';
 
 export default function LoginModal({ isOpen, onClose }: Props) {
   const { 
@@ -17,7 +17,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     sendPasswordlessLink, resetPassword,
     resendVerificationEmail, resendMagicLink,
     canResendNow, resendCooldownSeconds,
-    startPhoneSignIn, confirmPhoneOtp,
   } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>('login');
@@ -27,9 +26,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
-  const [phone, setPhone] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [phoneConfirmation, setPhoneConfirmation] = useState<import('firebase/auth').ConfirmationResult | null>(null);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -63,13 +59,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
       } else if (mode === 'passwordless') {
         await sendPasswordlessLink(email);
         setSuccessMsg('Magic link sent! Check your email to sign in.');
-      } else if (mode === 'phone' && !phoneConfirmation) {
-        const conf = await startPhoneSignIn(phone, 'recaptcha-container');
-        setPhoneConfirmation(conf);
-        setSuccessMsg('SMS code sent! Enter the 6-digit OTP below.');
-      } else if (mode === 'phone' && phoneConfirmation) {
-        await confirmPhoneOtp(phoneConfirmation, otpCode);
-        onClose();
       }
     } catch (err: unknown) {
       console.error(err);
@@ -121,15 +110,13 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
                   {mode === 'login' ? 'Welcome Back' : 
                    mode === 'signup' ? 'Create Account' : 
-                   mode === 'forgot' ? 'Reset Password' : 
-                   mode === 'phone' ? 'Phone OTP Sign-In' :
+                   mode === 'forgot' ? 'Reset Password' :
                    'Magic Link'}
                 </h2>
                 <p className="text-gray-500">
                   {mode === 'login' ? 'Sign in to access your Nexora dashboard.' : 
                    mode === 'signup' ? 'Join Nexora to deploy predictive models.' :
                    mode === 'forgot' ? 'Enter your email to receive a reset link.' :
-                   mode === 'phone' ? 'Enter your phone number with country code (e.g. +1...).' :
                    'Enter your email to receive a secure sign-in link.'}
                 </p>
               </div>
@@ -148,8 +135,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                 </div>
               )}
               
-              <div id="recaptcha-container" />
-
               {successMsg && mode === 'signup' && (
                 <button
                   type="button"
@@ -200,7 +185,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   </div>
                 )}
                 
-                {mode !== 'phone' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                   <input 
@@ -210,37 +194,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                     className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20 focus:border-nexora-accent"
                   />
                 </div>
-                )}
-
-                {mode === 'phone' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                      <input
-                        type="tel"
-                        required
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+1234567890"
-                        disabled={!!phoneConfirmation}
-                        className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20"
-                      />
-                    </div>
-                    {phoneConfirmation && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">SMS OTP Code</label>
-                        <input
-                          type="text"
-                          required
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                          placeholder="6-digit code"
-                          className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20"
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
 
                 {(mode === 'login' || mode === 'signup') && (
                   <div>
@@ -269,8 +222,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   ) : (
                     mode === 'login' ? 'Sign In' : 
-                    mode === 'signup' ? 'Sign Up' : 
-                    mode === 'phone' ? (phoneConfirmation ? 'Verify OTP' : 'Send SMS Code') :
+                    mode === 'signup' ? 'Sign Up' :
                     'Send Link'
                   )}
                 </button>
@@ -295,13 +247,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   </div>
 
                   <div className="mt-6 space-y-3">
-                    <button
-                      type="button"
-                      onClick={() => setMode('phone')}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                    >
-                      Sign in with Phone OTP
-                    </button>
                     <button
                       onClick={() => handleOAuth('google')}
                       className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"

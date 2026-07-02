@@ -48,8 +48,16 @@ export const userApi = {
     return data;
   },
   updateMe: async (update: UserProfileUpdate): Promise<UserProfile> => {
-    const { data } = await userClient.put('/users/me', update);
-    return data;
+    try {
+      const { data } = await userClient.put('/users/me', update);
+      return data;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const detail = error.response?.data?.detail || error.response?.data?.message;
+        throw new Error(detail || error.message);
+      }
+      throw error;
+    }
   },
   getPublicProfile: async (username: string): Promise<UserProfile> => {
     const { data } = await userClient.get(`/users/profile/${username}`);
