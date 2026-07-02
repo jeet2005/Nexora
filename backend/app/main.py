@@ -1,17 +1,31 @@
+from datetime import datetime
+
+import bcrypt
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.routers import (
+    admin_api_keys,
+    admin_audit,
+    admin_auth,
+    admin_content,
+    admin_datasets,
+    admin_drift,
+    admin_health,
+    admin_users,
     advanced,
     auth,
     chat,
+    content,
     cyber_stream,
     datasets,
     explainability,
     pipeline,
     training,
+    users,
 )
+from app.services.persistence_service import collection
 
 app = FastAPI(
     title=settings.app_name,
@@ -30,6 +44,8 @@ app.add_middleware(
 
 app.include_router(datasets.router)
 app.include_router(auth.router)
+app.include_router(users.router)
+app.include_router(content.router)
 app.include_router(pipeline.router)
 app.include_router(training.router)
 app.include_router(training.public_router)
@@ -37,7 +53,49 @@ app.include_router(chat.router)
 app.include_router(explainability.router)
 app.include_router(advanced.router)
 app.include_router(cyber_stream.router)
+app.include_router(admin_auth.router)
+app.include_router(admin_api_keys.router)
+app.include_router(admin_datasets.router)
+app.include_router(admin_content.router)
+app.include_router(admin_health.router)
+app.include_router(admin_audit.router)
+app.include_router(admin_drift.router)
+app.include_router(admin_users.router)
 
+DEFAULT_ADMIN_PASSWORD = "nexora"
+DEFAULT_ADMINS = [
+    {"email": "nexora-jeet@nexora.io", "name": "nexora-jeet"},
+    {"email": "nexora-dhaval@nexora.io", "name": "nexora-dhaval"},
+    {"email": "nexora-parit@nexora.io", "name": "nexora-parit"},
+    {"email": "nexora-harshvardhan@nexora.io", "name": "nexora-harshvardhan"},
+]
+
+
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+@app.on_event("startup")
+async def seed_admin_users():
+    if settings.persistence_backend != "mongodb":
+        return
+
+    admins_coll = collection("admins")
+    if admins_coll is None:
+        return
+
+    for index, admin in enumerate(DEFAULT_ADMINS, start=1):
+        if admins_coll.find_one({"email": admin["email"]}) is None:
+            admins_coll.insert_one(
+                {
+                    "email": admin["email"],
+                    "password_hash": _hash_password(DEFAULT_ADMIN_PASSWORD),
+                    "name": admin["name"],
+                    "avatar_url": f"/avatars/admins/a{index}.png",
+                    "created_at": datetime.utcnow(),
+                    "last_login": None,
+                }
+            )
 
 from fastapi.responses import HTMLResponse
 
