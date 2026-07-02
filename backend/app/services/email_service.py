@@ -16,23 +16,25 @@ def _is_configured() -> bool:
 def send_email(
     to: str, subject: str, html_body: str, text_body: str | None = None
 ) -> bool:
-    if not _is_configured():
+    smtp_host = settings.smtp_host
+    smtp_from_email = settings.smtp_from_email
+    if not smtp_host or not smtp_from_email:
         logger.info("SMTP not configured; skipping email to %s: %s", to, subject)
         return False
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = settings.smtp_from_email
+        msg["From"] = smtp_from_email
         msg["To"] = to
         if text_body:
             msg.attach(MIMEText(text_body, "plain"))
         msg.attach(MIMEText(html_body, "html"))
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
+        with smtplib.SMTP(smtp_host, settings.smtp_port) as server:
             if settings.smtp_use_tls:
                 server.starttls()
             if settings.smtp_username and settings.smtp_password:
                 server.login(settings.smtp_username, settings.smtp_password)
-            server.sendmail(settings.smtp_from_email, [to], msg.as_string())
+            server.sendmail(smtp_from_email, [to], msg.as_string())
         return True
     except Exception as exc:
         logger.error("Failed to send email to %s: %s", to, exc)

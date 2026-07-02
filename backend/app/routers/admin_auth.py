@@ -28,7 +28,7 @@ RATE_LIMIT_MINUTES = 15
 MAX_ATTEMPTS = 5
 PASSWORD_RESET_EXPIRY_MINUTES = 15
 OTP_EXPIRY_MINUTES = 10
-login_attempts = {}
+login_attempts: dict[str, tuple[int, datetime]] = {}
 
 
 def _hash_password(password: str) -> str:
@@ -84,7 +84,7 @@ def _admin_login_response(email: str) -> AdminLoginResponse:
 
 @router.post("/login", response_model=AdminLoginResponse)
 async def login(request: Request, response: Response, login_data: AdminLoginRequest):
-    client_ip = request.client.host
+    client_ip = request.client.host if request.client is not None else "unknown"
     now = datetime.utcnow()
 
     if client_ip in login_attempts:

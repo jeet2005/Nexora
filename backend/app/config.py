@@ -1,5 +1,7 @@
+import json
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -16,10 +18,29 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
         "https://nexoraprediction.netlify.app",
     ]
-    # Bulletproof regex allowing the primary Netlify domain, all deploy previews, and localhost
     cors_origin_regex: str | None = (
         r"https://([a-z0-9]+--)?nexoraprediction\.netlify\.app|http://localhost(:\d+)?|http://127\.0\.0\.1(:\d+)?"
     )
+
+    # Bulletproof regex allowing the primary Netlify domain, all deploy previews, and localhost
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value):
+        if value is None:
+            return []
+        if isinstance(value, str):
+            try:
+                return json.loads(value)
+            except ValueError:
+                return [value]
+        return value
+
+    @field_validator("cors_origin_regex", mode="before")
+    @classmethod
+    def parse_cors_origin_regex(cls, value):
+        if value in (None, ""):
+            return None
+        return str(value)
 
     # Ollama
     ollama_base_url: str = "http://127.0.0.1:11434"

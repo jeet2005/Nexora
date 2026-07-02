@@ -89,7 +89,9 @@ export const Datasets: React.FC = () => {
                       {ds.trained_model_count > 0 ? (
                         <div className="flex flex-col">
                           <span className="text-sm font-medium">{ds.trained_model_count} models</span>
-                          <span className="text-xs text-nexora-dark/60" title={ds.last_trained_model}>Best: {ds.last_trained_model?.length > 20 ? ds.last_trained_model.substring(0,20)+'...' : ds.last_trained_model}</span>
+                          <span className="text-xs text-nexora-dark/60" title={ds.last_trained_model || ''}>
+                            Best: {ds.last_trained_model ? (ds.last_trained_model.length > 20 ? `${ds.last_trained_model.substring(0, 20)}...` : ds.last_trained_model) : '-'}
+                          </span>
                         </div>
                       ) : (
                         <span className="text-sm text-nexora-dark/40">-</span>

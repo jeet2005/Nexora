@@ -29,9 +29,17 @@ export interface DatasetRecord {
 }
 
 export interface SystemHealthData {
+  status: string;
   services?: {
     api?: string;
     database?: string;
+    frontend?: string;
+    ollama?: string;
+  };
+  system?: {
+    cpu_percent?: number;
+    memory_percent?: number;
+    uptime_seconds?: number;
   };
   uptime_seconds?: number;
   memory_usage?: {

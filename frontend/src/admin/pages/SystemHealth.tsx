@@ -30,6 +30,8 @@ export const SystemHealth: React.FC = () => {
     return `${days}d ${hrs}h ${mins}m`;
   };
 
+  const uptimeSeconds = health?.system?.uptime_seconds ?? null;
+
   const getStatusIcon = (status: string) => {
     if (status === 'healthy' || status === 'online') return <CheckCircle2 className="text-green-500" size={20} />;
     if (status === 'degraded') return <AlertTriangle className="text-yellow-500" size={20} />;
@@ -110,7 +112,7 @@ export const SystemHealth: React.FC = () => {
         <div className="glass p-6 rounded-2xl">
           <h3 className="text-sm font-semibold text-nexora-dark/70">System Uptime</h3>
           <div className="text-xl font-display font-bold mt-2 pt-1">
-            {health?.system?.uptime_seconds ? formatUptime(health.system.uptime_seconds) : 'N/A'}
+            {uptimeSeconds !== null ? formatUptime(uptimeSeconds) : 'N/A'}
           </div>
         </div>
       </div>

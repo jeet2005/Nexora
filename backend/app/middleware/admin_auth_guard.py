@@ -16,12 +16,12 @@ def require_admin(token: str | None = Security(cookie_sec)):
         payload = jwt.decode(
             token, settings.admin_jwt_secret, algorithms=[settings.admin_jwt_algorithm]
         )
-        email: str = payload.get("sub")
-        if email is None:
+        subject = payload.get("sub")
+        if not isinstance(subject, str):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
             )
-        return {"email": email}
+        return {"email": subject}
     except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token"

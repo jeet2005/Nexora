@@ -7,27 +7,40 @@ without making MongoDB mandatory for smoke tests or offline demos.
 
 from __future__ import annotations
 
-from functools import lru_cache
+import logging
 from typing import Any
 
 from app.config import settings
 
+logger = logging.getLogger(__name__)
+_client_instance = None
 
-@lru_cache(maxsize=1)
+
 def _client():
+    global _client_instance
+    if _client_instance is not None:
+        return _client_instance
+
     if settings.persistence_backend.lower() != "mongodb" or not settings.mongodb_uri:
+        logger.warning(
+            "MongoDB persistence is disabled or MONGODB_URI is not configured."
+        )
         return None
+
     try:
         from pymongo import MongoClient
     except ImportError:
+        logger.error("PyMongo is not installed; MongoDB persistence is unavailable.")
         return None
 
-    client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=2000)
     try:
+        client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=2000)
         client.admin.command("ping")
-    except Exception:
+        _client_instance = client
+        return client
+    except Exception as exc:
+        logger.error("MongoDB connection failed: %s", exc)
         return None
-    return client
 
 
 def collection(name: str):
