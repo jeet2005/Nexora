@@ -8,6 +8,7 @@ without making MongoDB mandatory for smoke tests or offline demos.
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 from app.config import settings
@@ -29,18 +30,26 @@ def _client():
 
     try:
         from pymongo import MongoClient
+        from pymongo.errors import PyMongoError
     except ImportError:
         logger.error("PyMongo is not installed; MongoDB persistence is unavailable.")
         return None
 
-    try:
-        client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=2000)
-        client.admin.command("ping")
-        _client_instance = client
-        return client
-    except Exception as exc:
-        logger.error("MongoDB connection failed: %s", exc)
-        return None
+    for attempt in range(3):
+        try:
+            client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=5000)
+            client.admin.command("ping")
+            _client_instance = client
+            return client
+        except PyMongoError as exc:
+            logger.error(
+                "MongoDB connection failed on attempt %d: %s",
+                attempt + 1,
+                exc,
+            )
+            if attempt < 2:
+                time.sleep(1)
+    return None
 
 
 def collection(name: str):
