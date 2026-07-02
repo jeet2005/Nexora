@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from urllib.parse import urlparse
 
 import bcrypt
 from fastapi import FastAPI
@@ -26,6 +27,7 @@ from app.routers import (
     training,
     users,
 )
+from app.services.auth_service import firebase_enabled
 from app.services.persistence_service import collection
 
 app = FastAPI(
@@ -327,4 +329,20 @@ async def root():
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "service": "nexora-api", "version": "0.4.0"}
+    mongo_host = None
+    if settings.mongodb_uri:
+        mongo_host = urlparse(settings.mongodb_uri).hostname
+    database_online = collection("datasets") is not None
+    return {
+        "status": "ok",
+        "service": "nexora-api",
+        "version": "0.4.1",
+        "environment": settings.app_env,
+        "database": {
+            "backend": settings.persistence_backend,
+            "configured": bool(settings.mongodb_uri),
+            "host": mongo_host,
+            "online": database_online,
+        },
+        "firebase": {"configured": firebase_enabled()},
+    }
