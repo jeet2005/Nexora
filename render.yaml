@@ -23,9 +23,20 @@ services:
       - key: CORS_ORIGINS
         sync: false
       - key: FIREBASE_PROJECT_ID
+        value: nexora-75056
+      - key: FIREBASE_CREDENTIALS_FILE
+        value: firebase-service-account.json
         sync: false
       - key: FIREBASE_CREDENTIALS_JSON
         sync: false
+      - key: SMTP_HOST
+        value: smtp.office365.com
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        value: nexora.platform@outlook.com
       - key: OLLAMA_BASE_URL
         sync: false
       - key: OLLAMA_MODEL
