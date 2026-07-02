@@ -7,7 +7,11 @@ from app.config import settings
 from app.middleware.admin_auth_guard import require_admin
 from app.services.audit_service import log_admin_action
 
-router = APIRouter(prefix="/api/admin/drift", tags=["admin", "drift"], dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/api/admin/drift",
+    tags=["admin", "drift"],
+    dependencies=[Depends(require_admin)],
+)
 
 RESOLVED_FILE = settings.upload_dir / ".drift_resolved.json"
 
@@ -52,7 +56,9 @@ def _scan_alerts() -> list[dict]:
                             "created_at": data.get("created_at"),
                             "feature": feature,
                             "score": details.get("score"),
-                            "severity": "high" if details.get("score", 0) > 0.5 else "medium",
+                            "severity": "high"
+                            if details.get("score", 0) > 0.5
+                            else "medium",
                             "status": "open",
                         }
                         key = _alert_key(alert)
@@ -88,7 +94,9 @@ class ResolveDriftRequest(BaseModel):
 
 
 @router.post("/resolve")
-def resolve_drift_alert(body: ResolveDriftRequest, request: Request, admin: dict = Depends(require_admin)):
+def resolve_drift_alert(
+    body: ResolveDriftRequest, request: Request, admin: dict = Depends(require_admin)
+):
     key = f"{body.dataset_id}:{body.batch_id}:{body.feature}"
     resolved = _load_resolved()
     resolved.add(key)

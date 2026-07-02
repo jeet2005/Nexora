@@ -22,24 +22,29 @@ from nexora import Nexora, NexoraReport
 
 # ─────────────────────────── helpers ───────────────────────────
 
+
 def _make_regression_df(n: int = 100) -> pd.DataFrame:
     rng = np.random.default_rng(42)
-    return pd.DataFrame({
-        "feat_a": rng.normal(50, 10, n),
-        "feat_b": rng.integers(0, 100, n).astype(float),
-        "cat_col": rng.choice(["x", "y", "z"], n),
-        "target": rng.normal(100, 15, n).round(2),
-    })
+    return pd.DataFrame(
+        {
+            "feat_a": rng.normal(50, 10, n),
+            "feat_b": rng.integers(0, 100, n).astype(float),
+            "cat_col": rng.choice(["x", "y", "z"], n),
+            "target": rng.normal(100, 15, n).round(2),
+        }
+    )
 
 
 def _make_classification_df(n: int = 100) -> pd.DataFrame:
     rng = np.random.default_rng(7)
-    return pd.DataFrame({
-        "feat_a": rng.normal(50, 10, n),
-        "feat_b": rng.integers(0, 100, n).astype(float),
-        "cat_col": rng.choice(["x", "y", "z"], n),
-        "label": rng.choice(["yes", "no"], n),
-    })
+    return pd.DataFrame(
+        {
+            "feat_a": rng.normal(50, 10, n),
+            "feat_b": rng.integers(0, 100, n).astype(float),
+            "cat_col": rng.choice(["x", "y", "z"], n),
+            "label": rng.choice(["yes", "no"], n),
+        }
+    )
 
 
 def _save_csv(df: pd.DataFrame, tmp_path: Path, name: str = "data.csv") -> Path:
@@ -81,6 +86,7 @@ def cls_report(cls_df):
 # ═══════════════════════════════════════════════════════════════
 # SECTION 1 — ENTRY POINTS (15 tests)
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestEntryPoints:
     """Tests 01–15: All ways to create a Nexora instance."""
@@ -186,6 +192,7 @@ class TestEntryPoints:
 # SECTION 2 — RUN MODES (10 tests)
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestRunModes:
     """Tests 16–25: Execution modes."""
 
@@ -246,6 +253,7 @@ class TestRunModes:
 # ═══════════════════════════════════════════════════════════════
 # SECTION 3 — REPORT OUTPUTS (18 tests)
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestReportOutputs:
     """Tests 26–43: Report properties and methods."""
@@ -345,6 +353,7 @@ class TestReportOutputs:
 # SECTION 4 — CODE GENERATION (11 tests)
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestCodeGeneration:
     """Tests 44–54: Code generation methods."""
 
@@ -409,6 +418,7 @@ class TestCodeGeneration:
 # ═══════════════════════════════════════════════════════════════
 # SECTION 5 — PREPROCESSING (10 tests)
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestPreprocessing:
     """Tests 55–64: Preprocessing controls."""
@@ -475,6 +485,7 @@ class TestPreprocessing:
 # SECTION 6 — ANALYSIS & DIAGNOSTICS (10 tests)
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestAnalysis:
     """Tests 65–74: Explainability and diagnostics."""
 
@@ -537,6 +548,7 @@ class TestAnalysis:
 # SECTION 7 — PRODUCTION (9 tests)
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestProduction:
     """Tests 75–83: Production features."""
 
@@ -567,6 +579,7 @@ class TestProduction:
         path = reg_report.save_model(tmp_path / "model.pkl")
         assert path.exists()
         import joblib
+
         model = joblib.load(path)
         assert hasattr(model, "predict")
 
@@ -606,16 +619,22 @@ class TestProduction:
 # SECTION 8 — CLI (12 tests)
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestCLI:
     """Tests 84–95: CLI commands."""
 
-    def _run_cli(self, args: list[str], cwd: str | None = None) -> subprocess.CompletedProcess:
+    def _run_cli(
+        self, args: list[str], cwd: str | None = None
+    ) -> subprocess.CompletedProcess:
         import os
+
         env = os.environ.copy()
         env["PYTHONIOENCODING"] = "utf-8"
         return subprocess.run(
             [sys.executable, "-m", "nexora.cli.main"] + args,
-            capture_output=True, encoding="utf-8", timeout=120,
+            capture_output=True,
+            encoding="utf-8",
+            timeout=120,
             cwd=cwd,
             env=env,
         )
@@ -629,7 +648,9 @@ class TestCLI:
     def test_85_cli_train(self, reg_csv, tmp_path):
         """85. nexora train data.csv --target col."""
         out = tmp_path / "model.nx"
-        result = self._run_cli(["train", str(reg_csv), "--target", "target", "--out", str(out)])
+        result = self._run_cli(
+            ["train", str(reg_csv), "--target", "target", "--out", str(out)]
+        )
         assert result.returncode == 0 or "Best model" in result.stdout
 
     def test_86_cli_profile(self, reg_csv):
@@ -660,17 +681,23 @@ class TestCLI:
     def test_91_cli_clean(self, reg_csv, tmp_path):
         """91. nexora clean data.csv --target col."""
         out = tmp_path / "clean.csv"
-        result = self._run_cli(["clean", str(reg_csv), "--target", "target", "--out", str(out)])
+        result = self._run_cli(
+            ["clean", str(reg_csv), "--target", "target", "--out", str(out)]
+        )
         assert result.returncode == 0
 
     def test_92_cli_predict(self, reg_csv, tmp_path):
         """92. nexora predict model.nx new_data.csv."""
         # First train a model
         model_path = tmp_path / "model.nx"
-        self._run_cli(["train", str(reg_csv), "--target", "target", "--out", str(model_path)])
+        self._run_cli(
+            ["train", str(reg_csv), "--target", "target", "--out", str(model_path)]
+        )
         # Then predict
         out = tmp_path / "preds.csv"
-        result = self._run_cli(["predict", str(model_path), str(reg_csv), "--output", str(out)])
+        result = self._run_cli(
+            ["predict", str(model_path), str(reg_csv), "--output", str(out)]
+        )
         assert result.returncode == 0 or out.exists()
 
     def test_93_cli_compare(self, reg_csv, tmp_path):
@@ -685,9 +712,13 @@ class TestCLI:
     def test_94_cli_report_html(self, reg_csv, tmp_path):
         """94. nexora report model.nx --format html."""
         model = tmp_path / "model.nx"
-        self._run_cli(["train", str(reg_csv), "--target", "target", "--out", str(model)])
+        self._run_cli(
+            ["train", str(reg_csv), "--target", "target", "--out", str(model)]
+        )
         html = tmp_path / "report.html"
-        result = self._run_cli(["report", str(model), "--format", "html", "--out", str(html)])
+        result = self._run_cli(
+            ["report", str(model), "--format", "html", "--out", str(html)]
+        )
         assert result.returncode == 0
 
     def test_95_cli_wizard_listed(self):
@@ -699,6 +730,7 @@ class TestCLI:
 # ═══════════════════════════════════════════════════════════════
 # SECTION 9 — EDGE CASES & ROBUSTNESS (10 tests)
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestEdgeCases:
     """Tests 96–105: Edge cases and robustness."""
@@ -743,7 +775,9 @@ class TestEdgeCases:
     def test_101_integer_target(self):
         """101. Integer target with few classes → classification."""
         rng = np.random.default_rng(0)
-        df = pd.DataFrame({"f1": rng.normal(size=100), "target": rng.choice([0, 1], 100)})
+        df = pd.DataFrame(
+            {"f1": rng.normal(size=100), "target": rng.choice([0, 1], 100)}
+        )
         report = Nexora(df, target="target").run(max_models=2)
         assert report.task_type == "classification"
 
@@ -757,11 +791,13 @@ class TestEdgeCases:
     def test_103_high_cardinality_cat(self):
         """103. High cardinality categorical doesn't crash."""
         rng = np.random.default_rng(0)
-        df = pd.DataFrame({
-            "high_card": [f"val_{i}" for i in range(200)],
-            "f1": rng.normal(size=200),
-            "target": rng.normal(size=200),
-        })
+        df = pd.DataFrame(
+            {
+                "high_card": [f"val_{i}" for i in range(200)],
+                "f1": rng.normal(size=200),
+                "target": rng.normal(size=200),
+            }
+        )
         report = Nexora(df, target="target").run(max_models=2)
         assert report is not None
 

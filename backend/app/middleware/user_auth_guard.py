@@ -1,4 +1,3 @@
-
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -8,9 +7,13 @@ security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
     if not firebase_enabled():
-        raise HTTPException(status_code=500, detail="Firebase auth not configured on backend.")
+        raise HTTPException(
+            status_code=500, detail="Firebase auth not configured on backend."
+        )
 
     decoded = verify_bearer_token(f"Bearer {credentials.credentials}")
     if not decoded:

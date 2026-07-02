@@ -46,7 +46,9 @@ def build_preprocessing(
 
     candidate_features = [col for col in work.columns if col != target]
     id_columns = [
-        col for col in candidate_features if config.drop_id_columns and is_id_like(work[col])
+        col
+        for col in candidate_features
+        if config.drop_id_columns and is_id_like(work[col])
     ]
     datetime_columns = [
         col
@@ -56,7 +58,9 @@ def build_preprocessing(
     constant_columns = [
         col
         for col in candidate_features
-        if config.remove_constant and col not in id_columns and work[col].nunique(dropna=True) <= 1
+        if config.remove_constant
+        and col not in id_columns
+        and work[col].nunique(dropna=True) <= 1
     ]
     dropped = id_columns + datetime_columns + constant_columns
     features = [col for col in candidate_features if col not in set(dropped)]
@@ -66,15 +70,15 @@ def build_preprocessing(
     numeric_features = [
         col for col in features if pd.api.types.is_numeric_dtype(work[col])
     ]
-    
+
     # Heuristic for text vs categorical
     text_features = []
     categorical_features = []
-    
+
     for col in features:
         if col in numeric_features:
             continue
-            
+
         # If it's a string/object type, check unique values and length
         nunique = work[col].nunique(dropna=True)
         if nunique > 20:
@@ -83,7 +87,7 @@ def build_preprocessing(
             if avg_len > 30:
                 text_features.append(col)
                 continue
-                
+
         categorical_features.append(col)
 
     if config.outlier_cap:
@@ -95,7 +99,7 @@ def build_preprocessing(
         text_features,
         config=config,
     )
-    
+
     # Build decision log
     decision_log = {}
     for col in id_columns:
@@ -105,7 +109,11 @@ def build_preprocessing(
     for col in constant_columns:
         decision_log[col] = "Dropped (constant value)"
     for col in numeric_features:
-        missing = "Imputed (median)" if config.fill_missing else "Missing values passed through"
+        missing = (
+            "Imputed (median)"
+            if config.fill_missing
+            else "Missing values passed through"
+        )
         scaling = {
             "standard": "StandardScaler",
             "minmax": "MinMaxScaler",
@@ -135,7 +143,7 @@ def build_preprocessing(
     )
     # Patch schema with text_features if we define it, but for MVP we might not need to if we just pass it to transformer
     schema.text_features = text_features
-    
+
     return PreprocessingBundle(
         transformer=transformer,
         schema=schema,
@@ -173,7 +181,7 @@ def _make_column_transformer(
     config = config or PreprocessingConfig()
     if text_features is None:
         text_features = []
-        
+
     transformers = []
     if numeric_features:
         numeric_steps = []
@@ -206,6 +214,7 @@ def _make_column_transformer(
         )
     if text_features:
         from nexora.preprocessing.text_processor import SentenceTransformerEncoder
+
         transformers.append(
             (
                 "text",
@@ -218,7 +227,7 @@ def _make_column_transformer(
                 text_features,
             )
         )
-        
+
     return ColumnTransformer(
         transformers=transformers,
         remainder="drop",

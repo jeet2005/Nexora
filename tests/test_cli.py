@@ -12,7 +12,16 @@ def test_cli_train_saves_session(regression_csv, tmp_path):
 
     result = runner.invoke(
         cli,
-        ["train", str(path), "--target", "revenue", "--max-models", "2", "--out", str(out)],
+        [
+            "train",
+            str(path),
+            "--target",
+            "revenue",
+            "--max-models",
+            "2",
+            "--out",
+            str(out),
+        ],
         catch_exceptions=False,
     )
 

@@ -53,7 +53,7 @@ def test_code_fastapi_generates_valid_code(regression_csv):
     assert "def health_check" in code
     assert "BaseModel" in code  # Pydantic models
     assert report.best_model in code  # Model name in code
-    
+
     # Verify it's syntactically valid Python
     compile(code, "<fastapi_generated>", "exec")
 
@@ -68,8 +68,8 @@ def test_code_fastapi_has_required_endpoints(regression_csv):
 
     assert '@app.get("/health"' in code or '@app.get("/health")' in code
     assert '@app.post("/predict"' in code or '@app.post("/predict")' in code
-    assert 'PredictionRequest' in code
-    assert 'PredictionResponse' in code
+    assert "PredictionRequest" in code
+    assert "PredictionResponse" in code
 
 
 def test_code_fastapi_for_specific_model(regression_csv):
@@ -100,7 +100,7 @@ def test_save_fastapi_writes_to_file(regression_csv, tmp_path):
 
     assert saved.exists()
     code = saved.read_text(encoding="utf-8")
-    
+
     assert "@app.post" in code
     assert "@app.get" in code
     compile(code, str(app_path), "exec")
@@ -118,7 +118,7 @@ def test_code_streamlit_generates_valid_code(regression_csv):
     assert "import nexora" not in code
     assert "def predict" not in code  # Streamlit doesn't need explicit functions
     assert report.best_model in code  # Model name in code
-    
+
     # Verify it's syntactically valid Python
     compile(code, "<streamlit_generated>", "exec")
 
@@ -166,12 +166,13 @@ def test_save_streamlit_writes_to_file(regression_csv, tmp_path):
 
     assert saved.exists()
     code = saved.read_text(encoding="utf-8")
-    
+
     assert "streamlit" in code.lower()
     compile(code, str(app_path), "exec")
 
 
 # ─ Flask Generator Tests ─────────────────────────────────
+
 
 def test_code_flask_generates_valid_code(regression_csv):
     """Test that Flask code generator produces valid Python."""
@@ -216,6 +217,7 @@ def test_save_flask_writes_to_file(regression_csv, tmp_path):
 
 # ─ Docker Generator Tests ────────────────────────────────
 
+
 def test_code_docker_returns_dockerfile_and_requirements(regression_csv):
     """Test that Docker generator returns both files."""
 
@@ -238,7 +240,7 @@ def test_save_docker_writes_both_files(regression_csv, tmp_path):
 
     docker_path = tmp_path / "Dockerfile"
     req_path = tmp_path / "requirements.txt"
-    
+
     saved_docker, saved_req = report.save_docker(docker_path, req_path)
 
     assert saved_docker.exists()
@@ -249,6 +251,7 @@ def test_save_docker_writes_both_files(regression_csv, tmp_path):
 
 # ─ Jupyter Notebook Generator Tests ──────────────────────
 
+
 def test_code_notebook_generates_valid_json(regression_csv):
     """Test that Jupyter notebook generator produces valid JSON."""
 
@@ -258,6 +261,7 @@ def test_code_notebook_generates_valid_json(regression_csv):
     nb_json = report.code_notebook()
 
     import json
+
     nb = json.loads(nb_json)
     assert "cells" in nb
     assert "metadata" in nb
@@ -274,13 +278,15 @@ def test_save_notebook_writes_to_file(regression_csv, tmp_path):
     saved = report.save_notebook(nb_path)
 
     assert saved.exists()
-    
+
     import json
+
     nb = json.loads(saved.read_text(encoding="utf-8"))
     assert nb["nbformat"] == 4
 
 
 # ─ MLflow Generator Tests ────────────────────────────────
+
 
 def test_code_mlflow_generates_valid_code(regression_csv):
     """Test that MLflow code generator produces valid Python."""
@@ -311,6 +317,7 @@ def test_save_mlflow_writes_to_file(regression_csv, tmp_path):
 
 
 # ─ Pipeline Generator Tests ─────────────────────────────
+
 
 def test_code_pipeline_generates_valid_code(regression_csv):
     """Test that Pipeline code generator produces valid Python."""

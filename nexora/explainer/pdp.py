@@ -1,8 +1,8 @@
-'''Partial Dependence Plot explainer module.
+"""Partial Dependence Plot explainer module.
 
 Provides a lightweight implementation of partial dependence without relying on scikit‑learn's ``partial_dependence`` function.
 It creates a grid of values for the specified feature, replaces the column with each grid value, and averages the model predictions.
-'''
+"""
 
 from __future__ import annotations
 
@@ -10,7 +10,9 @@ import numpy as np
 import pandas as pd
 
 
-def get_partial_dependence(model, X: pd.DataFrame, feature: str) -> dict[str, list[float]]:
+def get_partial_dependence(
+    model, X: pd.DataFrame, feature: str
+) -> dict[str, list[float]]:
     """Calculate partial dependence for ``feature``.
 
     Args:

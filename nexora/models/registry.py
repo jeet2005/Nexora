@@ -44,21 +44,22 @@ def get_model(task_type: TaskType, name: str) -> ModelSpec | None:
             return spec
     return None
 
+
 def load_custom_model(url_or_repo: str) -> ModelSpec:
     """Dynamically load a custom model spec from a remote source or string.
-    
+
     This allows community-contributed models to be injected into Nexora.
-    
+
     Args:
         url_or_repo: URL to a Python file containing a `get_spec()` function.
-        
+
     Returns:
         The dynamically loaded ModelSpec.
     """
     import importlib.util
     import tempfile
     import urllib.request
-    
+
     if url_or_repo.startswith("http"):
         # Download the spec
         with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as tmp:
@@ -67,14 +68,16 @@ def load_custom_model(url_or_repo: str) -> ModelSpec:
             spec = importlib.util.spec_from_file_location(module_name, tmp.name)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            
+
             model_spec = module.get_spec()
-            
-            # Note: We should ideally inject this into the registry lists, 
+
+            # Note: We should ideally inject this into the registry lists,
             # but for MVP we just return it so the user can pass it to `train_models`
             return model_spec
     else:
-        raise ValueError("Only HTTP/HTTPS URLs are supported for community models in the MVP.")
+        raise ValueError(
+            "Only HTTP/HTTPS URLs are supported for community models in the MVP."
+        )
 
 
 def _classification_specs() -> list[ModelSpec]:

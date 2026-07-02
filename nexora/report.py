@@ -139,7 +139,9 @@ class NexoraReport:
         if not isinstance(new_df, pd.DataFrame):
             raise TypeError("report.predict expects a pandas DataFrame.")
 
-        missing = [col for col in self.schema.feature_columns if col not in new_df.columns]
+        missing = [
+            col for col in self.schema.feature_columns if col not in new_df.columns
+        ]
         if missing:
             raise ValueError(f"Missing required feature columns: {', '.join(missing)}")
 
@@ -150,7 +152,9 @@ class NexoraReport:
         output["model_used"] = self.best_model
         return output
 
-    def available_prediction_models(self, limit: int | None = None) -> list[dict[str, Any]]:
+    def available_prediction_models(
+        self, limit: int | None = None
+    ) -> list[dict[str, Any]]:
         """Return completed models that can be used in Prediction Studio."""
 
         rows: list[dict[str, Any]] = []
@@ -228,18 +232,25 @@ class NexoraReport:
                     )
                 )
             elif _looks_datetime(series):
-                parsed = pd.to_datetime(series, errors="coerce", format="mixed").dropna()
+                parsed = pd.to_datetime(
+                    series, errors="coerce", format="mixed"
+                ).dropna()
                 fields.append(
                     PredictionInputField(
                         name=column,
                         kind="date",
-                        default=parsed.median().date().isoformat() if len(parsed) else None,
+                        default=parsed.median().date().isoformat()
+                        if len(parsed)
+                        else None,
                     )
                 )
             elif series.nunique(dropna=True) <= 40:
                 options = [
                     str(value)
-                    for value in series.dropna().astype(str).value_counts().index.tolist()
+                    for value in series.dropna()
+                    .astype(str)
+                    .value_counts()
+                    .index.tolist()
                 ]
                 fields.append(
                     PredictionInputField(
@@ -270,7 +281,9 @@ class NexoraReport:
         if not isinstance(new_df, pd.DataFrame):
             raise TypeError("predict_with_models expects a pandas DataFrame.")
         selected = self._selected_model_results(models)
-        missing = [col for col in self.schema.feature_columns if col not in new_df.columns]
+        missing = [
+            col for col in self.schema.feature_columns if col not in new_df.columns
+        ]
         if missing:
             raise ValueError(f"Missing required feature columns: {', '.join(missing)}")
 
@@ -282,12 +295,16 @@ class NexoraReport:
             predictions = pipeline.predict(X)
             pred_col = f"{self.target}_predicted_{result.model_id}"
             output[pred_col] = [_json_value(value) for value in predictions]
-            output[f"confidence_{result.model_id}"] = self._confidence_for_pipeline(pipeline, X)
+            output[f"confidence_{result.model_id}"] = self._confidence_for_pipeline(
+                pipeline, X
+            )
             output[f"model_name_{result.model_id}"] = result.model_name
             prediction_columns.append(pred_col)
 
         if len(prediction_columns) > 1:
-            output["nexora_consensus"] = self._batch_consensus(output[prediction_columns])
+            output["nexora_consensus"] = self._batch_consensus(
+                output[prediction_columns]
+            )
         return output.reset_index(drop=True)
 
     def prediction_receipt(
@@ -508,7 +525,10 @@ class NexoraReport:
         return generate_docker(self, model_name)
 
     def save_docker(
-        self, dockerfile_path: str | Path, requirements_path: str | Path, model: str | None = None
+        self,
+        dockerfile_path: str | Path,
+        requirements_path: str | Path,
+        model: str | None = None,
     ) -> tuple[Path, Path]:
         """Write Docker deployment files to disk.
 
@@ -641,7 +661,9 @@ class NexoraReport:
         output.write_text(code, encoding="utf-8")
         return output
 
-    def explain(self, *, plot: bool = False, in_words: bool = False) -> pd.DataFrame | str:
+    def explain(
+        self, *, plot: bool = False, in_words: bool = False
+    ) -> pd.DataFrame | str:
         """Return ranked feature importance for the best model.
 
         Args:
@@ -665,11 +687,15 @@ class NexoraReport:
                 "n_rows": len(self.training_frame),
                 "n_features": len(self.schema.feature_columns),
                 "target_col": self.target,
-                "top_features": df.head(5).to_dict(orient="records") if not df.empty else [],
+                "top_features": df.head(5).to_dict(orient="records")
+                if not df.empty
+                else [],
                 "data_profile": {
                     "health_score": self.profile.health_score,
-                    "missing_count": sum(c.missing_count for c in self.profile.columns.values()),
-                }
+                    "missing_count": sum(
+                        c.missing_count for c in self.profile.columns.values()
+                    ),
+                },
             }
             fallback = "Model feature importance:\n" + df.head(5).to_string()
             return generate_explanation(context, fallback)
@@ -686,11 +712,15 @@ class NexoraReport:
             "n_rows": len(self.training_frame),
             "n_features": len(self.schema.feature_columns),
             "target_col": self.target,
-            "top_features": df.head(5).to_dict(orient="records") if not df.empty else [],
+            "top_features": df.head(5).to_dict(orient="records")
+            if not df.empty
+            else [],
             "data_profile": {
                 "health_score": self.profile.health_score,
-                "missing_count": sum(c.missing_count for c in self.profile.columns.values()),
-            }
+                "missing_count": sum(
+                    c.missing_count for c in self.profile.columns.values()
+                ),
+            },
         }
         return ask_question(context, question)
 
@@ -699,10 +729,10 @@ class NexoraReport:
         row_df = pd.DataFrame([row_data])
         row_df_changed = row_df.copy()
         row_df_changed[feature] = value
-        
+
         # Predict original and changed
         new_pred = self.predict(row_df_changed).iloc[0, 0]
-        
+
         context = {
             "model_type": self.best_model,
             "metric_name": self.best_score_label,
@@ -716,9 +746,13 @@ class NexoraReport:
         """Calculate partial dependence for a feature."""
         return get_partial_dependence(self.pipeline, self.training_frame, feature)
 
-    def sensitivity(self, feature: str, stdev_multiplier: float = 1.0) -> dict[str, float]:
+    def sensitivity(
+        self, feature: str, stdev_multiplier: float = 1.0
+    ) -> dict[str, float]:
         """Calculate sensitivity of predictions to a feature."""
-        return sensitivity(self.pipeline, self.training_frame, feature, stdev_multiplier)
+        return sensitivity(
+            self.pipeline, self.training_frame, feature, stdev_multiplier
+        )
 
     def predict_proba(self, new_df: pd.DataFrame) -> pd.DataFrame:
         """Class probabilities for classification."""
@@ -734,7 +768,9 @@ class NexoraReport:
 
         from nexora.intelligence import detect_problem
 
-        detection = detect_problem(self.training_frame, self.target, override=self.task_type)
+        detection = detect_problem(
+            self.training_frame, self.target, override=self.task_type
+        )
         return {
             "problem_detector": detection,
             "automated_preprocessing_engine": {
@@ -788,7 +824,9 @@ class NexoraReport:
         completed = leaderboard[leaderboard["status"] == "completed"]
         if completed.empty:
             return pd.DataFrame(columns=["family", "models", "best_score", "avg_score"])
-        grouped = completed.groupby("family")["primary_score"].agg(["count", "max", "mean"])
+        grouped = completed.groupby("family")["primary_score"].agg(
+            ["count", "max", "mean"]
+        )
         grouped = grouped.rename(
             columns={"count": "models", "max": "best_score", "mean": "avg_score"}
         )
@@ -858,52 +896,73 @@ class NexoraReport:
 
         output = Path(path).expanduser().resolve()
         output.parent.mkdir(parents=True, exist_ok=True)
-        
+
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Helvetica", "B", 16)
-        pdf.cell(0, 10, "Nexora Training Report", new_x="LMARGIN", new_y="NEXT", align="C")
-        
+        pdf.cell(
+            0, 10, "Nexora Training Report", new_x="LMARGIN", new_y="NEXT", align="C"
+        )
+
         pdf.set_font("Helvetica", size=12)
         pdf.ln(10)
         pdf.cell(0, 8, f"Target: {self.schema.target}", new_x="LMARGIN", new_y="NEXT")
-        pdf.cell(0, 8, f"Task: {self.task_type.capitalize()}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            0, 8, f"Task: {self.task_type.capitalize()}", new_x="LMARGIN", new_y="NEXT"
+        )
         pdf.cell(0, 8, f"Best Model: {self.best_model}", new_x="LMARGIN", new_y="NEXT")
-        pdf.cell(0, 8, f"Score ({self.best_score_label}): {self.best_score:.4f}", new_x="LMARGIN", new_y="NEXT")
-        
+        pdf.cell(
+            0,
+            8,
+            f"Score ({self.best_score_label}): {self.best_score:.4f}",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
+
         pdf.ln(10)
         pdf.set_font("Helvetica", "B", 14)
         pdf.cell(0, 10, "Top 5 Models Leaderboard", new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", size=10)
-        
+
         top5 = self.leaderboard.head(5)
         for _, row in top5.iterrows():
-            pdf.cell(0, 6, f"{row['rank']}. {row['model_name']} ({row['family']}) - {self.best_score_label}: {row['primary_score']:.4f}", new_x="LMARGIN", new_y="NEXT")
-            
+            pdf.cell(
+                0,
+                6,
+                f"{row['rank']}. {row['model_name']} ({row['family']}) - {self.best_score_label}: {row['primary_score']:.4f}",
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
+
         # Add SHAP chart if tree-based
         if hasattr(self.pipeline[-1], "feature_importances_"):
             pdf.ln(10)
             pdf.set_font("Helvetica", "B", 14)
             pdf.cell(0, 10, "Feature Importance", new_x="LMARGIN", new_y="NEXT")
-            
+
             with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
                 # Basic plot
                 importances = self.pipeline[-1].feature_importances_
                 names = self.schema.transformed_feature_names
                 if not names or len(names) != len(importances):
                     names = [f"feat_{i}" for i in range(len(importances))]
-                    
+
                 import pandas as pd
-                feat_df = pd.DataFrame({"feat": names, "imp": importances}).sort_values("imp", ascending=True).tail(10)
+
+                feat_df = (
+                    pd.DataFrame({"feat": names, "imp": importances})
+                    .sort_values("imp", ascending=True)
+                    .tail(10)
+                )
                 plt.figure(figsize=(6, 4))
                 plt.barh(feat_df["feat"], feat_df["imp"], color="#7c6af7")
                 plt.title("Top 10 Feature Importances")
                 plt.tight_layout()
                 plt.savefig(f.name)
                 plt.close()
-                
+
                 pdf.image(f.name, w=150)
-                
+
         pdf.output(str(output))
         print(f"Saved PDF report to {output}")
         return output
@@ -933,7 +992,9 @@ class NexoraReport:
             plt.close()
             paths.append(path)
 
-        numeric_cols = [col.name for col in self.profile.column_profiles if col.is_numeric][:6]
+        numeric_cols = [
+            col.name for col in self.profile.column_profiles if col.is_numeric
+        ][:6]
         if numeric_cols:
             path = out_dir / "numeric_distributions.png"
             self.training_frame[numeric_cols].hist(figsize=(10, 6), bins=20)
@@ -943,11 +1004,15 @@ class NexoraReport:
             plt.close()
             paths.append(path)
 
-        leaderboard = self.leaderboard[self.leaderboard["status"] == "completed"].head(10)
+        leaderboard = self.leaderboard[self.leaderboard["status"] == "completed"].head(
+            10
+        )
         if not leaderboard.empty:
             path = out_dir / "top_model_scores.png"
             plt.figure(figsize=(9, 4))
-            plt.barh(leaderboard["model_name"], leaderboard["primary_score"], color="#16a34a")
+            plt.barh(
+                leaderboard["model_name"], leaderboard["primary_score"], color="#16a34a"
+            )
             plt.gca().invert_yaxis()
             plt.title("Top Model Scores")
             plt.xlabel(self.best_score_label)
@@ -958,9 +1023,17 @@ class NexoraReport:
 
             path = out_dir / "speed_vs_score.png"
             plt.figure(figsize=(7, 5))
-            plt.scatter(leaderboard["train_time_sec"], leaderboard["primary_score"], color="#9333ea")
+            plt.scatter(
+                leaderboard["train_time_sec"],
+                leaderboard["primary_score"],
+                color="#9333ea",
+            )
             for _, row in leaderboard.iterrows():
-                plt.annotate(str(row["model_name"])[:18], (row["train_time_sec"], row["primary_score"]), fontsize=8)
+                plt.annotate(
+                    str(row["model_name"])[:18],
+                    (row["train_time_sec"], row["primary_score"]),
+                    fontsize=8,
+                )
             plt.title("Speed vs Score")
             plt.xlabel("Train time (seconds)")
             plt.ylabel(self.best_score_label)
@@ -982,12 +1055,12 @@ class NexoraReport:
         import tempfile
 
         from nexora.codegen.fastapi_gen import generate_fastapi
-        
+
         # Write to a temp file and run uvicorn
         with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as f:
             f.write(generate_fastapi(self).encode("utf-8"))
             temp_path = f.name
-            
+
         print(f"Starting Nexora API server on port {port}...")
         try:
             # We can't easily start uvicorn programmatically without blocking,
@@ -998,7 +1071,9 @@ class NexoraReport:
 
     def summary(self) -> None:
         """Print a concise terminal summary."""
-        print(f"Best: {self.best_model} | {self.best_score_label}={self.best_score:.4f} | {len(self.schema.feature_columns)} features")
+        print(
+            f"Best: {self.best_model} | {self.best_score_label}={self.best_score:.4f} | {len(self.schema.feature_columns)} features"
+        )
 
     def interaction(self, f1: str, f2: str) -> None:
         """Feature interaction heatmap (SHAP interaction values)."""
@@ -1007,6 +1082,7 @@ class NexoraReport:
     def save_model(self, path: str | Path) -> Path:
         """Export trained model as pickle."""
         import joblib
+
         output = Path(path).expanduser().resolve()
         joblib.dump(self.pipeline, output)
         return output
@@ -1051,7 +1127,12 @@ class NexoraReport:
 
     def _selected_model_results(self, models: list[str] | None) -> list[ModelResult]:
         if models is None:
-            models = [item["model_id"] for item in self.suggest_models(max_models=min(3, len(self.results) or 1))]
+            models = [
+                item["model_id"]
+                for item in self.suggest_models(
+                    max_models=min(3, len(self.results) or 1)
+                )
+            ]
         if isinstance(models, str):
             models = [models]
         if not models:
@@ -1070,7 +1151,9 @@ class NexoraReport:
             f"Model '{model_id}' does not have a fitted pipeline in this session."
         )
 
-    def _confidence_for_pipeline(self, pipeline: Any, X: pd.DataFrame) -> list[float | None]:
+    def _confidence_for_pipeline(
+        self, pipeline: Any, X: pd.DataFrame
+    ) -> list[float | None]:
         model = pipeline.named_steps["model"]
         if self.task_type != "classification" or not hasattr(model, "predict_proba"):
             return [1.0 for _ in range(len(X))]
@@ -1080,7 +1163,9 @@ class NexoraReport:
             return [None for _ in range(len(X))]
         return [round(float(value), 4) for value in np.max(proba, axis=1)]
 
-    def _probabilities_for_pipeline(self, pipeline: Any, X: pd.DataFrame) -> dict[str, float]:
+    def _probabilities_for_pipeline(
+        self, pipeline: Any, X: pd.DataFrame
+    ) -> dict[str, float]:
         model = pipeline.named_steps["model"]
         if self.task_type != "classification" or not hasattr(model, "predict_proba"):
             return {}
@@ -1089,12 +1174,17 @@ class NexoraReport:
             labels = pipeline.classes_
         except Exception:
             return {}
-        return {str(label): round(float(prob), 4) for label, prob in zip(labels, proba, strict=False)}
+        return {
+            str(label): round(float(prob), 4)
+            for label, prob in zip(labels, proba, strict=False)
+        }
 
     def _consensus(self, outputs: list[PredictionOutput]) -> tuple[Any, str]:
         if self.task_type == "regression":
             values = [float(output.prediction) for output in outputs]
-            return round(float(np.mean(values)), 4), "Average of selected trained models"
+            return round(
+                float(np.mean(values)), 4
+            ), "Average of selected trained models"
         votes: dict[str, int] = {}
         for output in outputs:
             key = str(output.prediction)
@@ -1190,89 +1280,109 @@ class NexoraReport:
         return [round(float(value), 4) for value in np.max(proba, axis=1)]
 
     # --- Diagnostics & Monitoring (Phase 5) ---
-    
+
     def residuals(self) -> Any:
         """Plot residuals for regression models."""
         from nexora.monitor.diagnostics import plot_residuals
+
         if self.task_type != "regression":
             raise ValueError("Residuals plot is only available for regression tasks.")
         y_true = self.training_frame[self.target]
         y_pred = self.pipeline.predict(self.training_frame.drop(columns=[self.target]))
         return plot_residuals(y_true, y_pred)
-        
+
     def confusion_matrix(self) -> Any:
         """Plot confusion matrix and print classification report."""
         from nexora.monitor.diagnostics import plot_confusion_matrix
+
         if self.task_type != "classification":
-            raise ValueError("Confusion matrix is only available for classification tasks.")
+            raise ValueError(
+                "Confusion matrix is only available for classification tasks."
+            )
         y_true = self.training_frame[self.target]
         y_pred = self.pipeline.predict(self.training_frame.drop(columns=[self.target]))
         labels = [str(x) for x in np.unique(y_true)]
         return plot_confusion_matrix(y_true, y_pred, labels)
-        
+
     def roc_curve(self) -> Any:
         """Plot ROC curve."""
         from nexora.monitor.diagnostics import plot_roc_curve
+
         if self.task_type != "classification":
             raise ValueError("ROC curve is only available for classification tasks.")
         y_true = self.training_frame[self.target]
-        y_prob = self.pipeline.predict_proba(self.training_frame.drop(columns=[self.target]))
+        y_prob = self.pipeline.predict_proba(
+            self.training_frame.drop(columns=[self.target])
+        )
         labels = [str(x) for x in np.unique(y_true)]
         return plot_roc_curve(y_true, y_prob, labels)
-        
+
     def pr_curve(self) -> Any:
         """Plot Precision-Recall curve."""
         from nexora.monitor.diagnostics import plot_pr_curve
+
         if self.task_type != "classification":
             raise ValueError("PR curve is only available for classification tasks.")
         y_true = self.training_frame[self.target]
-        y_prob = self.pipeline.predict_proba(self.training_frame.drop(columns=[self.target]))
+        y_prob = self.pipeline.predict_proba(
+            self.training_frame.drop(columns=[self.target])
+        )
         labels = [str(x) for x in np.unique(y_true)]
         return plot_pr_curve(y_true, y_prob, labels)
-        
+
     def learning_curve(self, cv: int = 5) -> Any:
         """Plot bias-variance learning curve."""
         from nexora.monitor.diagnostics import plot_learning_curve
+
         X = self.training_frame.drop(columns=[self.target])
         y = self.training_frame[self.target]
         return plot_learning_curve(self.pipeline, X, y, cv=cv)
-        
+
     def calibration_curve(self) -> Any:
         """Plot probability calibration curve."""
         from nexora.monitor.diagnostics import plot_calibration_curve
+
         if self.task_type != "classification":
-            raise ValueError("Calibration curve is only available for classification tasks.")
+            raise ValueError(
+                "Calibration curve is only available for classification tasks."
+            )
         y_true = self.training_frame[self.target]
-        y_prob = self.pipeline.predict_proba(self.training_frame.drop(columns=[self.target]))
+        y_prob = self.pipeline.predict_proba(
+            self.training_frame.drop(columns=[self.target])
+        )
         return plot_calibration_curve(y_true, y_prob)
-        
+
     def error_analysis(self) -> pd.DataFrame:
         """Find segments where the model has highest error."""
         from nexora.monitor.performance import error_analysis
+
         y_true = self.training_frame[self.target]
         y_pred = self.pipeline.predict(self.training_frame.drop(columns=[self.target]))
         features = self.training_frame.drop(columns=[self.target])
         return error_analysis(y_true, y_pred, features, self.task_type)
-        
+
     def drift(self, new_df: pd.DataFrame, threshold: float = 0.1) -> Any:
         """Detect feature distribution shift against training data."""
         from nexora.monitor.drift import detect_drift
+
         X_train = self.training_frame.drop(columns=[self.target])
         if self.target in new_df.columns:
             new_df = new_df.drop(columns=[self.target])
         return detect_drift(X_train, new_df, threshold)
-        
+
     def monitor(self, new_df: pd.DataFrame) -> pd.DataFrame:
         """Generate a tabular monitoring report of drift metrics."""
         from nexora.monitor.drift import full_monitoring_report
+
         X_train = self.training_frame.drop(columns=[self.target])
         if self.target in new_df.columns:
             new_df = new_df.drop(columns=[self.target])
         return full_monitoring_report(X_train, new_df)
-        
+
     def retrain(self, new_df: pd.DataFrame) -> NexoraReport:
         """Retrain the best model pipeline on new data."""
         from nexora.core import Nexora
+
         # Since we just want to retrain the exact model, we could either:
         # 1. Run full automl again
         # 2. Re-fit the pipeline
@@ -1282,11 +1392,11 @@ class NexoraReport:
 
     def publish(self, repo_id: str, private: bool = False) -> str:
         """Publish the model and a generated model card to Hugging Face Hub.
-        
+
         Args:
             repo_id: The ID of the repository to create/update on HF Hub (e.g. "user/model").
             private: Whether the repository should be private.
-            
+
         Returns:
             The URL of the published repository.
         """
@@ -1295,17 +1405,17 @@ class NexoraReport:
 
         import joblib
         from huggingface_hub import HfApi
-        
+
         api = HfApi()
-        
+
         # Create repo
         url = api.create_repo(repo_id=repo_id, private=private, exist_ok=True)
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             # 1. Save pipeline
             model_path = os.path.join(tmpdir, "pipeline.pkl")
             joblib.dump(self.pipeline, model_path)
-            
+
             # 2. Generate and save model card
             card = f"""---
 tags:
@@ -1330,7 +1440,7 @@ The best model is **{self.best_model}** with a {self.best_score_label} of **{sel
             for res in self.results:
                 if res.status == "completed":
                     card += f"| {res.model_name} | {res.primary_score:.4f} |\n"
-                    
+
             card += f"""
 ## Dataset Profile
 
@@ -1342,39 +1452,40 @@ The best model is **{self.best_model}** with a {self.best_score_label} of **{sel
 """
             with open(os.path.join(tmpdir, "README.md"), "w", encoding="utf-8") as f:
                 f.write(card)
-                
+
             # Upload folder
             api.upload_folder(
                 folder_path=tmpdir,
                 repo_id=repo_id,
                 repo_type="model",
-                commit_message="Publish Nexora model"
+                commit_message="Publish Nexora model",
             )
-            
+
         return url
 
     def code_gradio(self) -> str:
         """Generate Gradio app code for model serving.
-        
+
         Returns:
             Complete Gradio application code (standalone, ready to run).
         """
         # Ensure our codegen module has this function
         from nexora.export.codegen import generate_gradio_app
+
         return generate_gradio_app(self)
 
     def notebook(self, format: str = "ipynb") -> str:
         """Generate a notebook for the model.
-        
+
         Args:
             format: "ipynb" (Jupyter) or "marimo" (Reactive).
-            
+
         Returns:
             Notebook content as a string.
         """
         if format.lower() == "marimo":
             # Very basic marimo code generator
-            
+
             # Create a simple python script that marimo uses natively
             cells = [
                 "import marimo",
@@ -1383,61 +1494,76 @@ The best model is **{self.best_model}** with a {self.best_score_label} of **{sel
                 "@app.cell\ndef __():\n    pipeline = joblib.load('pipeline.pkl')\n    return pipeline,",
                 "@app.cell\ndef __(mo):\n    mo.md('# Nexora Interactive Model')\n    return",
             ]
-            return "\\n\\n".join(cells) + "\\n\\nif __name__ == '__main__':\\n    app.run()\\n"
+            return (
+                "\\n\\n".join(cells)
+                + "\\n\\nif __name__ == '__main__':\\n    app.run()\\n"
+            )
         else:
             return self.code_notebook(self.best_model)
 
     def umap(self, n_components: int = 2) -> Any:
         """Plot a UMAP projection of the training data.
-        
+
         Args:
             n_components: Number of dimensions to project to (2 or 3).
-            
+
         Returns:
             A matplotlib or seaborn plot of the UMAP projection.
         """
         try:
             import umap
         except ImportError as e:
-            raise ImportError("umap-learn is required for UMAP projection. Run `pip install umap-learn`.") from e
-            
+            raise ImportError(
+                "umap-learn is required for UMAP projection. Run `pip install umap-learn`."
+            ) from e
+
         import matplotlib.pyplot as plt
         import seaborn as sns
-        
+
         X = self.training_frame.drop(columns=[self.target])
         y = self.training_frame[self.target]
-        
+
         # Transform the data using the fitted pipeline's preprocessor
         preprocessor = self.pipeline.named_steps["preprocess"]
         X_trans = preprocessor.transform(X)
-        
+
         reducer = umap.UMAP(n_components=n_components, random_state=42)
         embedding = reducer.fit_transform(X_trans)
-        
+
         fig, ax = plt.subplots(figsize=(10, 8))
         if n_components == 2:
             if self.task_type == "classification":
-                sns.scatterplot(x=embedding[:, 0], y=embedding[:, 1], hue=y, palette="Set1", ax=ax)
+                sns.scatterplot(
+                    x=embedding[:, 0], y=embedding[:, 1], hue=y, palette="Set1", ax=ax
+                )
             else:
-                sns.scatterplot(x=embedding[:, 0], y=embedding[:, 1], hue=y, palette="viridis", ax=ax)
+                sns.scatterplot(
+                    x=embedding[:, 0],
+                    y=embedding[:, 1],
+                    hue=y,
+                    palette="viridis",
+                    ax=ax,
+                )
             ax.set_title("UMAP Projection of Training Data")
             ax.set_xlabel("UMAP 1")
             ax.set_ylabel("UMAP 2")
         elif n_components == 3:
-            ax = fig.add_subplot(111, projection='3d')
-            scatter = ax.scatter(embedding[:, 0], embedding[:, 1], embedding[:, 2], c=y, cmap="viridis")
+            ax = fig.add_subplot(111, projection="3d")
+            scatter = ax.scatter(
+                embedding[:, 0], embedding[:, 1], embedding[:, 2], c=y, cmap="viridis"
+            )
             plt.colorbar(scatter)
             ax.set_title("UMAP 3D Projection")
-            
+
         plt.tight_layout()
         return fig
 
     def diff(self, other: NexoraReport) -> dict[str, Any]:
         """Compare this session with another report session.
-        
+
         Args:
             other: Another NexoraReport to compare against.
-            
+
         Returns:
             Dictionary containing the differences in data shape, best models, and performance.
         """
@@ -1449,76 +1575,91 @@ The best model is **{self.best_model}** with a {self.best_score_label} of **{sel
             "performance": {
                 "best_model_self": self.best_model,
                 "best_model_other": other.best_model,
-                "score_diff": self.best_score - other.best_score
+                "score_diff": self.best_score - other.best_score,
             },
             "features": {
-                "added": list(set(self.profile.column_names) - set(other.profile.column_names)),
-                "removed": list(set(other.profile.column_names) - set(self.profile.column_names))
-            }
+                "added": list(
+                    set(self.profile.column_names) - set(other.profile.column_names)
+                ),
+                "removed": list(
+                    set(other.profile.column_names) - set(self.profile.column_names)
+                ),
+            },
         }
 
     def scan_bias(self, protected_attribute: str) -> pd.DataFrame:
         """Scan the model for disparate impact against a protected attribute.
-        
+
         Args:
             protected_attribute: Column name to scan for bias.
-            
+
         Returns:
             DataFrame containing selection rates or average scores per segment.
         """
         if protected_attribute not in self.training_frame.columns:
-            raise ValueError(f"Protected attribute '{protected_attribute}' not found in training frame.")
-            
+            raise ValueError(
+                f"Protected attribute '{protected_attribute}' not found in training frame."
+            )
+
         y_true = self.training_frame[self.target]
         X = self.training_frame.drop(columns=[self.target])
         y_pred = self.pipeline.predict(X)
-        
+
         segments = self.training_frame[protected_attribute]
-        
+
         results = []
         for segment_value in segments.unique():
             mask = segments == segment_value
             segment_true = y_true[mask]
             segment_pred = y_pred[mask]
-            
+
             if self.task_type == "classification":
                 from sklearn.metrics import accuracy_score
+
                 selection_rate = segment_pred.mean()
                 accuracy = accuracy_score(segment_true, segment_pred)
-                results.append({
-                    "segment": segment_value,
-                    "count": mask.sum(),
-                    "selection_rate": selection_rate,
-                    "accuracy": accuracy
-                })
+                results.append(
+                    {
+                        "segment": segment_value,
+                        "count": mask.sum(),
+                        "selection_rate": selection_rate,
+                        "accuracy": accuracy,
+                    }
+                )
             else:
                 from sklearn.metrics import mean_squared_error
+
                 avg_pred = segment_pred.mean()
                 rmse = np.sqrt(mean_squared_error(segment_true, segment_pred))
-                results.append({
-                    "segment": segment_value,
-                    "count": mask.sum(),
-                    "avg_prediction": avg_pred,
-                    "rmse": rmse
-                })
-                
+                results.append(
+                    {
+                        "segment": segment_value,
+                        "count": mask.sum(),
+                        "avg_prediction": avg_pred,
+                        "rmse": rmse,
+                    }
+                )
+
         return pd.DataFrame(results)
 
     def reproducibility_score(self) -> int:
         """Score how easily this session can be re-run (0-100)."""
         score = 100
-        
+
         # Deduct if data wasn't tracked by DVC (assuming we have a flag or file path check)
         import os
+
         if not os.path.exists(".dvc"):
             score -= 30
-            
+
         # Deduct if no specific random state was passed (we default to 42, but assume static)
-        
+
         # Deduct if pip freeze isn't pinned in pyproject.toml / requirements.txt
-        if not os.path.exists("requirements.txt") and not os.path.exists("pyproject.toml"):
+        if not os.path.exists("requirements.txt") and not os.path.exists(
+            "pyproject.toml"
+        ):
             score -= 20
-            
+
         return max(0, score)
 
     def code_github_actions(self) -> str:
@@ -1589,7 +1730,9 @@ def _prepare_input_values(
         else:
             value = str(raw)
             if fld.kind == "category" and fld.options and value not in fld.options:
-                warnings.append(f"{fld.name} value was not present in the training dataset.")
+                warnings.append(
+                    f"{fld.name} value was not present in the training dataset."
+                )
         submitted[fld.name] = value
     return submitted, assumed, warnings
 

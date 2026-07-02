@@ -57,43 +57,54 @@ class Nexora:
     @classmethod
     def from_url(cls, url: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_url
+
         return cls(load_from_url(url), target=target)
 
     @classmethod
-    def from_sql(cls, query: str, connection_string: str | None = None, target: str | None = None) -> Nexora:
+    def from_sql(
+        cls, query: str, connection_string: str | None = None, target: str | None = None
+    ) -> Nexora:
         from nexora.io.remote import load_from_sql
+
         return cls(load_from_sql(query, connection_string), target=target)
 
     @classmethod
     def from_postgres(cls, uri: str, table: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_postgres
+
         return cls(load_from_postgres(uri, table), target=target)
 
     @classmethod
-    def from_mongodb(cls, uri: str, collection: str, target: str | None = None) -> Nexora:
+    def from_mongodb(
+        cls, uri: str, collection: str, target: str | None = None
+    ) -> Nexora:
         from nexora.io.remote import load_from_mongodb
+
         return cls(load_from_mongodb(uri, collection), target=target)
 
     @classmethod
     def from_s3(cls, bucket: str, key: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_s3
+
         return cls(load_from_s3(bucket, key), target=target)
 
     @classmethod
     def from_google_sheets(cls, sheet_id: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_google_sheets
+
         return cls(load_from_google_sheets(sheet_id), target=target)
 
     @classmethod
     def from_sklearn(cls, dataset_name: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_sklearn
+
         return cls(load_from_sklearn(dataset_name), target=target)
 
     @classmethod
     def from_clipboard(cls, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_clipboard
-        return cls(load_from_clipboard(), target=target)
 
+        return cls(load_from_clipboard(), target=target)
 
     def profile(self) -> DatasetProfile:
         """Profile the dataset without training.
@@ -171,7 +182,9 @@ class Nexora:
             "problem_detector": detection,
             "preprocessing": {
                 "missing_values": "Auto (median / mode)",
-                "encoding": "Label + One-Hot" if config.encode_categorical else "Disabled",
+                "encoding": "Label + One-Hot"
+                if config.encode_categorical
+                else "Disabled",
                 "outliers": "IQR capping" if config.outlier_cap else "Disabled",
                 "feature_scaling": {
                     "standard": "StandardScaler",
@@ -281,26 +294,31 @@ class Nexora:
 
     def quick(self, target: str | None = None) -> NexoraReport:
         """30-second speed mode — top models only.
-        
+
         Args:
             target: Optional target override.
-            
+
         Returns:
             Trained NexoraReport.
         """
         return self.run(target=target, max_models=2)
 
-    def deep(self, target: str | None = None, time_limit: int | None = None) -> NexoraReport:
+    def deep(
+        self, target: str | None = None, time_limit: int | None = None
+    ) -> NexoraReport:
         """Exhaustive mode — all models, ensembles, and HPO.
-        
+
         (Currently an alias for run with max_models=None)
         """
         return self.run(target=target, max_models=None)
 
-    def preprocess(self, target: str | None = None, save: str | None = None) -> pd.DataFrame:
+    def preprocess(
+        self, target: str | None = None, save: str | None = None
+    ) -> pd.DataFrame:
         """Run preprocessing pipeline only and return cleaned DataFrame."""
         resolved_target = target or self.target
         from nexora.preprocessing.pipeline_builder import build_preprocessing
+
         bundle = build_preprocessing(self.df, resolved_target)
         X = self.df[bundle.schema.feature_columns]
         y = self.df[resolved_target]
@@ -308,10 +326,7 @@ class Nexora:
         cols = bundle.schema.transformed_feature_names
         if not cols or len(cols) != transformed_X.shape[1]:
             cols = [f"feat_{i}" for i in range(transformed_X.shape[1])]
-        X_clean = pd.DataFrame(
-            transformed_X,
-            columns=cols
-        )
+        X_clean = pd.DataFrame(transformed_X, columns=cols)
         X_clean[resolved_target] = y.values
         if save:
             X_clean.to_csv(save, index=False)
@@ -321,12 +336,16 @@ class Nexora:
         """Train specific models only."""
         return self.run(target=target, model_names=models)
 
-    def tune(self, model_name: str, n_trials: int = 50, target: str | None = None) -> NexoraReport:
+    def tune(
+        self, model_name: str, n_trials: int = 50, target: str | None = None
+    ) -> NexoraReport:
         """Deep hyperparameter tuning for one specific model."""
         # Stub for deep HPO - currently runs standard training for that model
         return self.run(target=target, model_names=[model_name])
 
-    def compare(self, holdout_df: pd.DataFrame, target: str | None = None) -> NexoraReport:
+    def compare(
+        self, holdout_df: pd.DataFrame, target: str | None = None
+    ) -> NexoraReport:
         """Train on main df, evaluate on holdout df."""
         report = self.run(target=target)
         # In a real implementation we would evaluate the models on holdout_df here
@@ -339,7 +358,9 @@ class Nexora:
     ) -> dict[str, Any]:
         """Run package-native clustering for terminal/Jupyter workflows."""
 
-        return run_clustering(self.df, n_clusters=n_clusters, feature_columns=feature_columns)
+        return run_clustering(
+            self.df, n_clusters=n_clusters, feature_columns=feature_columns
+        )
 
     def forecast(
         self,
@@ -362,7 +383,9 @@ class Nexora:
     @staticmethod
     def compare_runs(r1: NexoraReport, r2: NexoraReport) -> None:
         """Compare two Nexora reports side by side."""
-        print(f"Comparing Run 1 ({r1.best_model}: {r1.best_score:.4f}) vs Run 2 ({r2.best_model}: {r2.best_score:.4f})")
+        print(
+            f"Comparing Run 1 ({r1.best_model}: {r1.best_score:.4f}) vs Run 2 ({r2.best_model}: {r2.best_score:.4f})"
+        )
         delta = r2.best_score - r1.best_score
         print(f"Score Delta: {delta:+.4f}")
 
@@ -387,6 +410,7 @@ class Nexora:
         """
 
         return load_report(path)
+
 
 # Alias for backward compatibility
 NexoraPrediction = Nexora

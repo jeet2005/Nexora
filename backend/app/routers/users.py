@@ -25,7 +25,8 @@ MAX_LOGIN_HISTORY = 20
 def _sanitize_user(doc: dict) -> dict:
     if doc.get("links"):
         doc["links"] = {
-            k: v for k, v in doc["links"].items()
+            k: v
+            for k, v in doc["links"].items()
             if isinstance(v, dict) and v.get("is_visible", True)
         }
     return doc
@@ -97,7 +98,9 @@ async def register_user(
     token: dict = Depends(get_current_user),
 ):
     if token.get("uid") != user_data.user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to create this user")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to create this user"
+        )
 
     users_col = collection("users")
     if users_col is None:
@@ -145,7 +148,9 @@ async def get_my_profile(token: dict = Depends(get_current_user)):
 
 
 @router.put("/me", response_model=UserResponse)
-async def update_my_profile(update_data: UserUpdate, token: dict = Depends(get_current_user)):
+async def update_my_profile(
+    update_data: UserUpdate, token: dict = Depends(get_current_user)
+):
     users_col = collection("users")
     if users_col is None:
         raise HTTPException(status_code=500, detail="Database not available")
@@ -153,7 +158,9 @@ async def update_my_profile(update_data: UserUpdate, token: dict = Depends(get_c
     user_id = token.get("uid")
 
     if update_data.username:
-        existing = users_col.find_one({"username": update_data.username, "user_id": {"$ne": user_id}})
+        existing = users_col.find_one(
+            {"username": update_data.username, "user_id": {"$ne": user_id}}
+        )
         if existing:
             raise HTTPException(status_code=400, detail="Username already taken")
 
@@ -193,7 +200,10 @@ async def get_my_activity(token: dict = Depends(get_current_user)):
     history = user.get("login_history") or []
     return ActivityResponse(
         last_login=user.get("last_login"),
-        login_history=[LoginEvent(**h) if isinstance(h, dict) else h for h in history[:MAX_LOGIN_HISTORY]],
+        login_history=[
+            LoginEvent(**h) if isinstance(h, dict) else h
+            for h in history[:MAX_LOGIN_HISTORY]
+        ],
         email_verified=bool(token.get("email_verified")),
         auth_providers=user.get("auth_providers") or _auth_providers_from_token(token),
     )
@@ -207,8 +217,13 @@ async def revoke_all_sessions(token: dict = Depends(get_current_user)):
 
         firebase_auth.revoke_refresh_tokens(user_id)
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to revoke sessions: {exc}") from exc
-    return {"status": "success", "message": "All sessions revoked. Sign in again on this device."}
+        raise HTTPException(
+            status_code=500, detail=f"Failed to revoke sessions: {exc}"
+        ) from exc
+    return {
+        "status": "success",
+        "message": "All sessions revoked. Sign in again on this device.",
+    }
 
 
 @router.post("/me/notify/password-changed")
@@ -257,7 +272,9 @@ async def get_public_profile(username: str):
         raise HTTPException(status_code=403, detail="This profile is private")
 
     if user.get("links"):
-        user["links"] = {k: v for k, v in user["links"].items() if v.get("is_visible", True)}
+        user["links"] = {
+            k: v for k, v in user["links"].items() if v.get("is_visible", True)
+        }
 
     return _sanitize_user(user)
 
@@ -268,7 +285,11 @@ async def get_my_datasets(token: dict = Depends(get_current_user)):
     datasets_col = collection("datasets")
     if datasets_col is None:
         return {"datasets": []}
-    docs = list(datasets_col.find({"user_id": user_id}, {"_id": 0}).sort("updated_at", -1).limit(50))
+    docs = list(
+        datasets_col.find({"user_id": user_id}, {"_id": 0})
+        .sort("updated_at", -1)
+        .limit(50)
+    )
     return {"datasets": docs}
 
 

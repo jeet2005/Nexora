@@ -79,8 +79,9 @@ QUICK_START_COMMANDS = [
     ("Train Models", "nexora train data.csv --target price"),
     ("Make Predictions", "nexora predict model.nx new_data.csv"),
     ("Deploy API", "nexora serve model.nx --port 8000"),
-    ("View Python Docs", "python -c \"from nexora import Nexora; help(Nexora)\""),
+    ("View Python Docs", 'python -c "from nexora import Nexora; help(Nexora)"'),
 ]
+
 
 def print_section(title: str, color: str = "green"):
     """Print a formatted section header."""
@@ -96,6 +97,7 @@ def print_section(title: str, color: str = "green"):
     print(f"\n{color_code}{'=' * 80}")
     print(f"  {title}")
     print(f"{'=' * 80}{reset_code}\n")
+
 
 def print_installation_info():
     """Print installation information."""
@@ -130,12 +132,16 @@ def print_installation_info():
     print("  3. Read documentation:")
     print("     $ nexora --help\n")
     print("  4. View Python API:")
-    print("     $ python -c \"from nexora import Nexora; help(Nexora)\"\n")
+    print('     $ python -c "from nexora import Nexora; help(Nexora)"\n')
 
     # Resources
     print_section("Resources", "cyan")
-    print("  Documentation:  https://github.com/jeet2005/nexora/blob/main/QUICK_START.md")
-    print("  CLI Reference:  https://github.com/jeet2005/nexora/blob/main/CLI_FEATURES.md")
+    print(
+        "  Documentation:  https://github.com/jeet2005/nexora/blob/main/QUICK_START.md"
+    )
+    print(
+        "  CLI Reference:  https://github.com/jeet2005/nexora/blob/main/CLI_FEATURES.md"
+    )
     print("  GitHub:         https://github.com/jeet2005/nexora")
     print("  Issues/Support: https://github.com/jeet2005/nexora/issues\n")
 
@@ -154,6 +160,7 @@ def print_installation_info():
     print_section("Version & Status", "green")
     try:
         import nexora
+
         print(f"  Nexora Version:  {nexora.__version__}")
     except Exception:
         print("  Nexora Version:  0.1.1")
@@ -162,6 +169,7 @@ def print_installation_info():
 
     print_section("You're All Set!", "green")
     print("  Start analyzing your data in seconds!\n")
+
 
 if __name__ == "__main__":
     print_installation_info()

@@ -36,7 +36,9 @@ def test_run_returns_report_and_leaderboard(regression_csv):
     assert isinstance(report.best_score, float)
     assert report.best_score_label == "r2"
     assert not report.leaderboard.empty
-    assert {"model_name", "primary_score", "status"}.issubset(report.leaderboard.columns)
+    assert {"model_name", "primary_score", "status"}.issubset(
+        report.leaderboard.columns
+    )
     assert report.profile.health_score > 0
 
 
@@ -45,7 +47,11 @@ def test_predict_and_session_load(regression_csv, tmp_path):
     report = Nexora(path, target="revenue").run(max_models=2)
 
     predictions = report.predict(df.drop(columns=["revenue"]).head(5))
-    assert list(predictions.columns) == ["revenue_predicted", "confidence", "model_used"]
+    assert list(predictions.columns) == [
+        "revenue_predicted",
+        "confidence",
+        "model_used",
+    ]
     assert len(predictions) == 5
 
     session = report.save(tmp_path / "session.nx")

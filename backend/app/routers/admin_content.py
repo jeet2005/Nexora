@@ -9,31 +9,39 @@ from app.services.audit_service import log_admin_action
 from app.services.email_service import notify_users_announcement
 from app.services.persistence_service import collection
 
-router = APIRouter(prefix="/api/admin/content", tags=["admin", "content"], dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/api/admin/content",
+    tags=["admin", "content"],
+    dependencies=[Depends(require_admin)],
+)
+
 
 class SiteContentUpdate(BaseModel):
     value: Any
     notify_users: bool = False
+
 
 @router.get("")
 def get_all_content():
     col = collection("site_content")
     if col is None:
         return []
-    
+
     docs = list(col.find({}, {"_id": 0}))
     return docs
+
 
 @router.get("/{key}")
 def get_content(key: str):
     col = collection("site_content")
     if col is None:
         return {"key": key, "value": None}
-        
+
     doc = col.find_one({"key": key}, {"_id": 0})
     if doc:
         return doc
     return {"key": key, "value": None}
+
 
 def _admin_display(admin: dict) -> dict:
     admins_col = collection("admins")
@@ -86,8 +94,12 @@ def update_content(
     if key == "announcement_banner" and data.notify_users and data.value:
         users_col = collection("users")
         if users_col is not None:
-            recipients = [u["email"] for u in users_col.find({}, {"email": 1}) if u.get("email")]
-            emails_sent = notify_users_announcement(recipients, str(data.value), profile["name"])
+            recipients = [
+                u["email"] for u in users_col.find({}, {"email": 1}) if u.get("email")
+            ]
+            emails_sent = notify_users_announcement(
+                recipients, str(data.value), profile["name"]
+            )
 
     return {
         "success": True,

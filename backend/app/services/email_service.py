@@ -13,7 +13,9 @@ def _is_configured() -> bool:
     return bool(settings.smtp_host and settings.smtp_from_email)
 
 
-def send_email(to: str, subject: str, html_body: str, text_body: str | None = None) -> bool:
+def send_email(
+    to: str, subject: str, html_body: str, text_body: str | None = None
+) -> bool:
     if not _is_configured():
         logger.info("SMTP not configured; skipping email to %s: %s", to, subject)
         return False
@@ -50,7 +52,7 @@ def notify_users_announcement(
       <h2 style="color:#059669;">Nexora Announcement</h2>
       <p><strong>{admin_name}</strong> posted a new update:</p>
       <div style="background:#f3f4f6;padding:16px;border-radius:8px;margin:16px 0;">
-        {announcement.replace(chr(10), '<br>')}
+        {announcement.replace(chr(10), "<br>")}
       </div>
       <p><a href="{settings.public_app_url}">Open Nexora</a></p>
     </div>

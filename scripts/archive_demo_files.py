@@ -1,4 +1,5 @@
 """Safe cleanup script: moves notebooks and demo artifacts to examples/archive/ with timestamp."""
+
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -10,7 +11,9 @@ def main():
     archive = examples / "archive"
     archive.mkdir(parents=True, exist_ok=True)
     ts = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-    targets = [p for p in examples.glob("*.ipynb")] + list((examples / "codegen_demo").glob("**/*"))
+    targets = [p for p in examples.glob("*.ipynb")] + list(
+        (examples / "codegen_demo").glob("**/*")
+    )
     moved = 0
     for t in targets:
         if t.is_file():

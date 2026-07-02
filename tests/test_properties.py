@@ -10,9 +10,19 @@ from nexora.core import Nexora
 regression_df_strategy = data_frames(
     index=range_indexes(min_size=30, max_size=50),
     columns=[
-        column("feature_num", elements=st.floats(min_value=-100, max_value=100, allow_nan=False, allow_infinity=False)),
+        column(
+            "feature_num",
+            elements=st.floats(
+                min_value=-100, max_value=100, allow_nan=False, allow_infinity=False
+            ),
+        ),
         column("feature_cat", elements=st.sampled_from(["A", "B", "C"])),
-        column("target", elements=st.floats(min_value=-1000, max_value=1000, allow_nan=False, allow_infinity=False)),
+        column(
+            "target",
+            elements=st.floats(
+                min_value=-1000, max_value=1000, allow_nan=False, allow_infinity=False
+            ),
+        ),
     ],
 )
 
@@ -41,14 +51,23 @@ def test_nexora_regression_properties(df):
 classification_df_strategy = data_frames(
     index=range_indexes(min_size=30, max_size=50),
     columns=[
-        column("feature_num", elements=st.floats(min_value=-100, max_value=100, allow_nan=False, allow_infinity=False)),
+        column(
+            "feature_num",
+            elements=st.floats(
+                min_value=-100, max_value=100, allow_nan=False, allow_infinity=False
+            ),
+        ),
         column("feature_cat", elements=st.sampled_from(["A", "B", "C"])),
         column("target", elements=st.sampled_from([0, 1])),
     ],
 )
 
 
-@settings(max_examples=5, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
+@settings(
+    max_examples=5,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much],
+)
 @given(classification_df_strategy)
 def test_nexora_classification_properties(df):
     """Property: Nexora should successfully profile and train on any valid classification DataFrame."""

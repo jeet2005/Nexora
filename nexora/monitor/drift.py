@@ -11,14 +11,15 @@ import pandas as pd
 @dataclass
 class DriftAlert:
     """Alert object containing details of detected data drift."""
-    
+
     drifted_features: list[str]
     severity: str
     recommendation: str
     details: dict[str, Any]
-    
+
     def __repr__(self) -> str:
         return f"DriftAlert(severity='{self.severity}', features={len(self.drifted_features)})"
+
 
 def _run_evidently(training_df: pd.DataFrame, new_df: pd.DataFrame) -> Any:
     """Run Evidently Data Drift preset."""
@@ -26,14 +27,18 @@ def _run_evidently(training_df: pd.DataFrame, new_df: pd.DataFrame) -> Any:
         from evidently.metric_preset import DataDriftPreset
         from evidently.report import Report
     except ImportError as e:
-        raise ImportError("Evidently is required for drift detection. Run `pip install evidently`.") from e
+        raise ImportError(
+            "Evidently is required for drift detection. Run `pip install evidently`."
+        ) from e
 
     report = Report(metrics=[DataDriftPreset()])
     report.run(reference_data=training_df, current_data=new_df)
     return report
 
 
-def detect_drift(training_df: pd.DataFrame, new_df: pd.DataFrame, threshold: float = 0.1) -> DriftAlert:
+def detect_drift(
+    training_df: pd.DataFrame, new_df: pd.DataFrame, threshold: float = 0.1
+) -> DriftAlert:
     """Detect drift between two DataFrames.
 
     A lightweight fallback that works without the *evidently* library.
@@ -103,19 +108,21 @@ def detect_drift(training_df: pd.DataFrame, new_df: pd.DataFrame, threshold: flo
     )
 
 
-def full_monitoring_report(training_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
+def full_monitoring_report(
+    training_df: pd.DataFrame, new_df: pd.DataFrame
+) -> pd.DataFrame:
     """Generate a tabular monitoring report of drift using Evidently.
-    
+
     Args:
         training_df: Original dataset.
         new_df: New dataset.
-        
+
     Returns:
         DataFrame summarizing drift metrics per column.
     """
     alert = detect_drift(training_df, new_df)
-    
+
     rows = []
     for col, data in alert.details.items():
-        rows.append({"feature": col, **data})        
+        rows.append({"feature": col, **data})
     return pd.DataFrame(rows)

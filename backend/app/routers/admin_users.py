@@ -5,7 +5,11 @@ from fastapi import APIRouter, Depends
 from app.middleware.admin_auth_guard import require_admin
 from app.services.persistence_service import collection
 
-router = APIRouter(prefix="/api/admin/users", tags=["admin", "users"], dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/api/admin/users",
+    tags=["admin", "users"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 @router.get("")
@@ -57,11 +61,17 @@ def user_growth_stats(days: int = 7):
     datasets_col = collection("datasets")
     if datasets_col is not None:
         cutoff = datetime.utcnow() - timedelta(hours=24)
-        training_jobs_24h = datasets_col.count_documents({
-            "$or": [
-                {"updated_at": {"$gte": cutoff}},
-                {"created_at": {"$gte": cutoff}},
-            ]
-        })
+        training_jobs_24h = datasets_col.count_documents(
+            {
+                "$or": [
+                    {"updated_at": {"$gte": cutoff}},
+                    {"created_at": {"$gte": cutoff}},
+                ]
+            }
+        )
 
-    return {"daily": daily_series, "total": total, "training_jobs_24h": training_jobs_24h}
+    return {
+        "daily": daily_series,
+        "total": total,
+        "training_jobs_24h": training_jobs_24h,
+    }

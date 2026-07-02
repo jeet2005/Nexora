@@ -37,6 +37,7 @@ console = Console()
 # HELPERS
 # ═══════════════════════════════════════════════════════════════
 
+
 def _bar(value: float, width: int = 20, color: str = "green") -> str:
     filled = int(value / 100 * width)
     return f"[{color}]{'█' * filled}[/{color}][dim]{'░' * (width - filled)}[/dim] {value:.0f}%"
@@ -92,7 +93,8 @@ def _parse_model_selection(choice: str, options: list[dict]) -> list[str]:
             matches = [
                 option["model_id"]
                 for option in options
-                if option["model_id"] == raw or option["model_name"].lower() == raw.lower()
+                if option["model_id"] == raw
+                or option["model_name"].lower() == raw.lower()
             ]
             selected.extend(matches)
             continue
@@ -120,16 +122,19 @@ def _dataframe_table(df: pd.DataFrame, title: str, max_rows: int = 20) -> Table:
 # STAGE 1 — DATA UPLOAD & PROFILING
 # ═══════════════════════════════════════════════════════════════
 
+
 def _stage_data_upload() -> tuple[pd.DataFrame, Path, object]:
     """Prompt for CSV and profile instantly."""
-    console.print(Panel.fit(
-        "[bold magenta]✦ NEXORA[/bold magenta]  [dim]Autonomous Predictive Analytics Engine[/dim]\n"
-        "[dim]Drop your CSV. We handle everything.[/dim]",
-        border_style="magenta",
-    ))
+    console.print(
+        Panel.fit(
+            "[bold magenta]✦ NEXORA[/bold magenta]  [dim]Autonomous Predictive Analytics Engine[/dim]\n"
+            "[dim]Drop your CSV. We handle everything.[/dim]",
+            border_style="magenta",
+        )
+    )
 
     data_path_str = Prompt.ask("\n[bold cyan]Enter path to your CSV file[/bold cyan]")
-    data_path = Path(data_path_str.strip('"\''))
+    data_path = Path(data_path_str.strip("\"'"))
 
     if not data_path.exists():
         console.print(f"[bold red]✗ File not found:[/] {data_path}")
@@ -137,26 +142,32 @@ def _stage_data_upload() -> tuple[pd.DataFrame, Path, object]:
 
     console.print(f"\n[dim]Loading {data_path.name}...[/dim]")
     df = pd.read_csv(data_path)
-    console.print(f"[green]✓[/green] Loaded {len(df):,} rows × {len(df.columns)} columns\n")
+    console.print(
+        f"[green]✓[/green] Loaded {len(df):,} rows × {len(df.columns)} columns\n"
+    )
 
     with console.status("[bold green]Profiling dataset..."):
         prof = profile_dataset(df, source_name=data_path.name)
 
     # ── Health Score Panel ──
     sc = prof.health.overall
-    console.print(Panel(
-        f"[bold]Dataset Health Score[/bold]\n\n"
-        f"  Overall          {_bar(sc, 30, _score_color(sc))}\n"
-        f"  Missing Values   {_bar(prof.health.missing_values, 30, _score_color(prof.health.missing_values))}\n"
-        f"  Data Quality     {_bar(prof.health.data_quality, 30, _score_color(prof.health.data_quality))}\n"
-        f"  Prediction Ready {_bar(prof.health.prediction_readiness, 30, _score_color(prof.health.prediction_readiness))}\n"
-        f"  Feature Quality  {_bar(prof.health.feature_quality, 30, _score_color(prof.health.feature_quality))}",
-        title="[bold magenta]Data Quality Scorecard[/bold magenta]",
-        border_style="magenta",
-    ))
+    console.print(
+        Panel(
+            f"[bold]Dataset Health Score[/bold]\n\n"
+            f"  Overall          {_bar(sc, 30, _score_color(sc))}\n"
+            f"  Missing Values   {_bar(prof.health.missing_values, 30, _score_color(prof.health.missing_values))}\n"
+            f"  Data Quality     {_bar(prof.health.data_quality, 30, _score_color(prof.health.data_quality))}\n"
+            f"  Prediction Ready {_bar(prof.health.prediction_readiness, 30, _score_color(prof.health.prediction_readiness))}\n"
+            f"  Feature Quality  {_bar(prof.health.feature_quality, 30, _score_color(prof.health.feature_quality))}",
+            title="[bold magenta]Data Quality Scorecard[/bold magenta]",
+            border_style="magenta",
+        )
+    )
 
     # ── Missing Values by Column ──
-    miss_table = Table(title="Missing Values by Column", show_header=True, header_style="bold cyan")
+    miss_table = Table(
+        title="Missing Values by Column", show_header=True, header_style="bold cyan"
+    )
     miss_table.add_column("Column", style="white")
     miss_table.add_column("Missing", justify="right")
     miss_table.add_column("Pct", justify="right")
@@ -164,7 +175,9 @@ def _stage_data_upload() -> tuple[pd.DataFrame, Path, object]:
     for cp in prof.column_profiles:
         if cp.missing_count > 0:
             pct = cp.missing_pct
-            miss_table.add_row(cp.name, str(cp.missing_count), f"{pct:.1f}%", _bar(pct, 15, "red"))
+            miss_table.add_row(
+                cp.name, str(cp.missing_count), f"{pct:.1f}%", _bar(pct, 15, "red")
+            )
     if miss_table.row_count == 0:
         console.print("[green]✓ No missing values detected![/green]\n")
     else:
@@ -172,7 +185,9 @@ def _stage_data_upload() -> tuple[pd.DataFrame, Path, object]:
         console.print()
 
     # ── Column Roles ──
-    roles_table = Table(title="Column Roles", show_header=True, header_style="bold cyan")
+    roles_table = Table(
+        title="Column Roles", show_header=True, header_style="bold cyan"
+    )
     roles_table.add_column("Column", style="white")
     roles_table.add_column("Type", style="green")
     roles_table.add_column("Role", style="yellow")
@@ -206,13 +221,21 @@ def _stage_data_upload() -> tuple[pd.DataFrame, Path, object]:
                     pairs.append((r, c, abs(v), v))
         pairs.sort(key=lambda x: x[2], reverse=True)
         if pairs:
-            rel_table = Table(title="Strongest Relationships", show_header=True, header_style="bold cyan")
+            rel_table = Table(
+                title="Strongest Relationships",
+                show_header=True,
+                header_style="bold cyan",
+            )
             rel_table.add_column("Feature A")
             rel_table.add_column("Feature B")
             rel_table.add_column("Correlation", justify="right")
             rel_table.add_column("Strength")
             for a, b, absv, v in pairs[:5]:
-                strength = "🔴 Strong" if absv > 0.7 else ("🟡 Moderate" if absv > 0.4 else "🟢 Weak")
+                strength = (
+                    "🔴 Strong"
+                    if absv > 0.7
+                    else ("🟡 Moderate" if absv > 0.4 else "🟢 Weak")
+                )
                 rel_table.add_row(a, b, f"{v:+.4f}", strength)
             console.print(rel_table)
             console.print()
@@ -220,11 +243,17 @@ def _stage_data_upload() -> tuple[pd.DataFrame, Path, object]:
     # ── Outlier Signals ──
     outlier_data = prof.stats.get("outlier_counts", {})
     if outlier_data and any(v > 0 for v in outlier_data.values()):
-        out_table = Table(title="Outlier Signals (IQR Method)", show_header=True, header_style="bold cyan")
+        out_table = Table(
+            title="Outlier Signals (IQR Method)",
+            show_header=True,
+            header_style="bold cyan",
+        )
         out_table.add_column("Column")
         out_table.add_column("Outliers", justify="right")
         out_table.add_column("% of rows", justify="right")
-        for col, count in sorted(outlier_data.items(), key=lambda x: x[1], reverse=True):
+        for col, count in sorted(
+            outlier_data.items(), key=lambda x: x[1], reverse=True
+        ):
             if count > 0:
                 pct = count / len(df) * 100
                 out_table.add_row(col, str(count), f"{pct:.1f}%")
@@ -234,7 +263,11 @@ def _stage_data_upload() -> tuple[pd.DataFrame, Path, object]:
     # ── Numeric Distribution ──
     numeric_cols = [cp.name for cp in prof.column_profiles if cp.is_numeric]
     if numeric_cols:
-        dist_table = Table(title="Numeric Distribution by Percentile", show_header=True, header_style="bold cyan")
+        dist_table = Table(
+            title="Numeric Distribution by Percentile",
+            show_header=True,
+            header_style="bold cyan",
+        )
         dist_table.add_column("Column")
         dist_table.add_column("Min", justify="right")
         dist_table.add_column("25%", justify="right")
@@ -250,56 +283,91 @@ def _stage_data_upload() -> tuple[pd.DataFrame, Path, object]:
             q = s.quantile([0, 0.25, 0.5, 0.75, 1.0])
             dist_table.add_row(
                 col,
-                f"{q[0]:.2f}", f"{q[0.25]:.2f}", f"{q[0.5]:.2f}",
-                f"{q[0.75]:.2f}", f"{q[1.0]:.2f}",
-                f"{s.mean():.2f}", f"{s.std():.2f}",
+                f"{q[0]:.2f}",
+                f"{q[0.25]:.2f}",
+                f"{q[0.5]:.2f}",
+                f"{q[0.75]:.2f}",
+                f"{q[1.0]:.2f}",
+                f"{s.mean():.2f}",
+                f"{s.std():.2f}",
             )
         console.print(dist_table)
         console.print()
 
     # ── Categorical Value Distribution ──
-    cat_cols = [cp.name for cp in prof.column_profiles if cp.is_categorical and not cp.is_id_like]
+    cat_cols = [
+        cp.name
+        for cp in prof.column_profiles
+        if cp.is_categorical and not cp.is_id_like
+    ]
     if cat_cols:
         for col in cat_cols[:4]:
             counts = df[col].value_counts().head(6)
-            cat_table = Table(title=f"'{col}' Value Distribution", show_header=True, header_style="bold cyan")
+            cat_table = Table(
+                title=f"'{col}' Value Distribution",
+                show_header=True,
+                header_style="bold cyan",
+            )
             cat_table.add_column("Value")
             cat_table.add_column("Count", justify="right")
             cat_table.add_column("Pct", justify="right")
             cat_table.add_column("Bar", min_width=15)
             for val, cnt in counts.items():
                 pct = cnt / len(df) * 100
-                cat_table.add_row(str(val), str(cnt), f"{pct:.1f}%", _bar(pct, 15, "cyan"))
+                cat_table.add_row(
+                    str(val), str(cnt), f"{pct:.1f}%", _bar(pct, 15, "cyan")
+                )
             console.print(cat_table)
         console.print()
 
     # ── Suggested Targets ──
     suggested = _suggest_targets(df, prof)
     if suggested:
-        console.print(Panel(
-            "\n".join(f"  [bold yellow]→[/bold yellow] {t['name']}  [dim]({t['reason']})[/dim]" for t in suggested),
-            title="[bold green]Suggested Targets[/bold green]",
-            border_style="green",
-        ))
+        console.print(
+            Panel(
+                "\n".join(
+                    f"  [bold yellow]→[/bold yellow] {t['name']}  [dim]({t['reason']})[/dim]"
+                    for t in suggested
+                ),
+                title="[bold green]Suggested Targets[/bold green]",
+                border_style="green",
+            )
+        )
 
     # ── Model Readiness ──
-    usable = sum(1 for cp in prof.column_profiles if not cp.is_id_like and not cp.is_datetime and cp.unique_count > 1)
+    usable = sum(
+        1
+        for cp in prof.column_profiles
+        if not cp.is_id_like and not cp.is_datetime and cp.unique_count > 1
+    )
     readiness_text = (
         f"  Usable Features: [bold]{usable}[/bold]\n"
         f"  Rows:            [bold]{len(df):,}[/bold]\n"
     )
     if len(df) >= 100 and usable >= 2:
-        readiness_text += "  Status:          [bold green]✓ Ready for training[/bold green]\n"
+        readiness_text += (
+            "  Status:          [bold green]✓ Ready for training[/bold green]\n"
+        )
         families = ["Linear", "Tree-based", "Boosting (XGB/LGBM/CatBoost)"]
         if len(df) >= 500:
             families.append("Neural Networks")
         readiness_text += f"  Recommended:     {', '.join(families)}"
     else:
         readiness_text += "  Status:          [bold yellow]⚠ Limited — consider more data[/bold yellow]"
-    console.print(Panel(readiness_text, title="[bold green]Model Readiness[/bold green]", border_style="green"))
+    console.print(
+        Panel(
+            readiness_text,
+            title="[bold green]Model Readiness[/bold green]",
+            border_style="green",
+        )
+    )
 
     # ── Dataset Preview ──
-    preview_table = Table(title="Dataset Preview (first 5 rows)", show_header=True, header_style="bold cyan")
+    preview_table = Table(
+        title="Dataset Preview (first 5 rows)",
+        show_header=True,
+        header_style="bold cyan",
+    )
     for col in df.columns:
         preview_table.add_column(col, max_width=15)
     for _, row in df.head(5).iterrows():
@@ -317,21 +385,53 @@ def _suggest_targets(df: pd.DataFrame, prof) -> list[dict]:
             continue
         name_lower = cp.name.lower()
         # Common target names
-        if any(kw in name_lower for kw in ["target", "label", "class", "churn", "price", "revenue", "outcome", "result", "status", "default", "fraud"]):
-            task = "classification" if cp.is_categorical or cp.unique_count <= 10 else "regression"
-            suggestions.append({"name": cp.name, "reason": f"{task} — name suggests target", "task": task})
+        if any(
+            kw in name_lower
+            for kw in [
+                "target",
+                "label",
+                "class",
+                "churn",
+                "price",
+                "revenue",
+                "outcome",
+                "result",
+                "status",
+                "default",
+                "fraud",
+            ]
+        ):
+            task = (
+                "classification"
+                if cp.is_categorical or cp.unique_count <= 10
+                else "regression"
+            )
+            suggestions.append(
+                {
+                    "name": cp.name,
+                    "reason": f"{task} — name suggests target",
+                    "task": task,
+                }
+            )
         # Last column heuristic
     if not suggestions and len(prof.column_profiles) > 1:
         last = prof.column_profiles[-1]
         if not last.is_id_like:
-            task = "classification" if last.is_categorical or last.unique_count <= 10 else "regression"
-            suggestions.append({"name": last.name, "reason": f"{task} — last column", "task": task})
+            task = (
+                "classification"
+                if last.is_categorical or last.unique_count <= 10
+                else "regression"
+            )
+            suggestions.append(
+                {"name": last.name, "reason": f"{task} — last column", "task": task}
+            )
     return suggestions[:5]
 
 
 # ═══════════════════════════════════════════════════════════════
 # STAGE 2 — ADVANCED SETTINGS
 # ═══════════════════════════════════════════════════════════════
+
 
 def _stage_settings() -> dict:
     """Ask for advanced training settings."""
@@ -347,7 +447,9 @@ def _stage_settings() -> dict:
         "preprocessing": PreprocessingConfig(),
     }
 
-    settings_table = Table(title="Current Settings", show_header=True, header_style="bold cyan")
+    settings_table = Table(
+        title="Current Settings", show_header=True, header_style="bold cyan"
+    )
     settings_table.add_column("Setting")
     settings_table.add_column("Value", justify="right", style="green")
     settings_table.add_row("Test Split Ratio", str(defaults["test_size"]))
@@ -355,7 +457,9 @@ def _stage_settings() -> dict:
     settings_table.add_row("Max Models", str(defaults["max_models"]))
     settings_table.add_row("Timeout (seconds)", str(defaults["timeout"] or "None"))
     settings_table.add_row("Random Seed", str(defaults["random_seed"]))
-    settings_table.add_row("Early Stopping", "✓ On" if defaults["early_stopping"] else "✗ Off")
+    settings_table.add_row(
+        "Early Stopping", "✓ On" if defaults["early_stopping"] else "✗ Off"
+    )
     console.print(settings_table)
 
     if Confirm.ask("Would you like to customize these settings?", default=False):
@@ -370,13 +474,19 @@ def _stage_settings() -> dict:
                     "early_stopping": True,
                     "preprocessing": PreprocessingConfig(),
                 }
-            defaults["test_size"] = FloatPrompt.ask("Test Split Ratio (0.1–0.4)", default=0.2)
+            defaults["test_size"] = FloatPrompt.ask(
+                "Test Split Ratio (0.1–0.4)", default=0.2
+            )
             defaults["cv_folds"] = IntPrompt.ask("Cross-Validation Folds", default=5)
             defaults["max_models"] = IntPrompt.ask("Max Models to train", default=6)
-            timeout = Prompt.ask("Timeout per model in seconds (blank for none)", default="")
+            timeout = Prompt.ask(
+                "Timeout per model in seconds (blank for none)", default=""
+            )
             defaults["timeout"] = int(timeout) if timeout.strip() else None
             defaults["random_seed"] = IntPrompt.ask("Random Seed", default=42)
-            defaults["early_stopping"] = Confirm.ask("Enable Early Stopping?", default=True)
+            defaults["early_stopping"] = Confirm.ask(
+                "Enable Early Stopping?", default=True
+            )
             scaling = Prompt.ask(
                 "Feature Scaling",
                 choices=["standard", "minmax", "none"],
@@ -400,6 +510,7 @@ def _stage_settings() -> dict:
 # STAGE 3 — TARGET SELECTION & TASK DETECTION
 # ═══════════════════════════════════════════════════════════════
 
+
 def _stage_target(df: pd.DataFrame, prof, suggested: list[dict]) -> tuple[str, str]:
     """Let user select target and confirm task type."""
     _header("Target Selection", 3)
@@ -408,7 +519,9 @@ def _stage_target(df: pd.DataFrame, prof, suggested: list[dict]) -> tuple[str, s
     if suggested:
         console.print("[bold]Detected Targets:[/bold]")
         for i, s in enumerate(suggested, 1):
-            console.print(f"  [bold yellow]{i}.[/bold yellow] {s['name']}  [dim]({s['reason']})[/dim]")
+            console.print(
+                f"  [bold yellow]{i}.[/bold yellow] {s['name']}  [dim]({s['reason']})[/dim]"
+            )
         console.print()
 
     # List all columns
@@ -443,19 +556,23 @@ def _stage_target(df: pd.DataFrame, prof, suggested: list[dict]) -> tuple[str, s
     else:
         confidence = 92 if is_num and unique_count > 50 else 78
 
-    console.print(Panel(
-        f"  Problem Type:  [bold green]{task.upper()}[/bold green]\n"
-        f"  Confidence:    [bold]{confidence}%[/bold]\n"
-        f"  Target:        [bold]{target}[/bold] · {unique_count} unique values · "
-        f"{len([cp for cp in prof.column_profiles if cp.name != target and not cp.is_id_like])} features selected\n\n"
-        f"  → {'Categorical target' if task == 'classification' else 'Continuous numeric target'}"
-        f"{f' with {unique_count} classes' if task == 'classification' else ''}.",
-        title="[bold magenta]Problem Type Detector[/bold magenta]",
-        border_style="magenta",
-    ))
+    console.print(
+        Panel(
+            f"  Problem Type:  [bold green]{task.upper()}[/bold green]\n"
+            f"  Confidence:    [bold]{confidence}%[/bold]\n"
+            f"  Target:        [bold]{target}[/bold] · {unique_count} unique values · "
+            f"{len([cp for cp in prof.column_profiles if cp.name != target and not cp.is_id_like])} features selected\n\n"
+            f"  → {'Categorical target' if task == 'classification' else 'Continuous numeric target'}"
+            f"{f' with {unique_count} classes' if task == 'classification' else ''}.",
+            title="[bold magenta]Problem Type Detector[/bold magenta]",
+            border_style="magenta",
+        )
+    )
 
     if not Confirm.ask(f"Is [bold]{task}[/bold] correct?", default=True):
-        task = Prompt.ask("Override problem type", choices=["classification", "regression"])
+        task = Prompt.ask(
+            "Override problem type", choices=["classification", "regression"]
+        )
 
     return target, task
 
@@ -464,11 +581,13 @@ def _stage_target(df: pd.DataFrame, prof, suggested: list[dict]) -> tuple[str, s
 # STAGE 4 — PREPROCESSING PIPELINE DISPLAY
 # ═══════════════════════════════════════════════════════════════
 
+
 def _stage_pipeline(df: pd.DataFrame, target: str, settings: dict) -> object:
     """Show preprocessing decisions and return the bundle."""
     _header("Automated Preprocessing Engine", 4)
 
     from nexora.preprocessing.pipeline_builder import build_preprocessing
+
     config = settings.get("preprocessing") or PreprocessingConfig()
     bundle = build_preprocessing(df, target, config=config)
     schema = bundle.schema
@@ -488,13 +607,21 @@ def _stage_pipeline(df: pd.DataFrame, target: str, settings: dict) -> object:
     for col in schema.categorical_features:
         encode_branch.add(f"[dim]{col}[/dim] → OneHotEncoder")
 
-    scale_label = {"standard": "StandardScaler", "minmax": "MinMaxScaler", "none": "None"}[config.scaling]
+    scale_label = {
+        "standard": "StandardScaler",
+        "minmax": "MinMaxScaler",
+        "none": "None",
+    }[config.scaling]
     scale_branch = tree.add(f"📏 Feature Scaling → [green]{scale_label}[/green]")
     for col in schema.numeric_features:
         scale_branch.add(f"[dim]{col}[/dim] → StandardScaler")
 
-    tree.add(f"📊 Outliers → [green]{'IQR capping' if config.outlier_cap else 'Disabled'}[/green]")
-    tree.add(f"🧹 Duplicates → [green]{'Deduplicate rows' if config.remove_duplicates else 'Keep rows'}[/green]")
+    tree.add(
+        f"📊 Outliers → [green]{'IQR capping' if config.outlier_cap else 'Disabled'}[/green]"
+    )
+    tree.add(
+        f"🧹 Duplicates → [green]{'Deduplicate rows' if config.remove_duplicates else 'Keep rows'}[/green]"
+    )
 
     if schema.id_columns:
         drop_branch = tree.add("🗑️  Dropped Columns")
@@ -509,15 +636,17 @@ def _stage_pipeline(df: pd.DataFrame, target: str, settings: dict) -> object:
     console.print()
 
     # Summary panel
-    console.print(Panel(
-        f"  Features selected:  [bold]{len(schema.feature_columns)}[/bold]\n"
-        f"  Numeric:            [bold]{len(schema.numeric_features)}[/bold]\n"
-        f"  Categorical:        [bold]{len(schema.categorical_features)}[/bold]\n"
-        f"  Dropped:            [bold]{len(schema.dropped_columns)}[/bold]  "
-        f"[dim]({', '.join(schema.dropped_columns) if schema.dropped_columns else 'none'})[/dim]",
-        title="[bold green]Pipeline Summary[/bold green]",
-        border_style="green",
-    ))
+    console.print(
+        Panel(
+            f"  Features selected:  [bold]{len(schema.feature_columns)}[/bold]\n"
+            f"  Numeric:            [bold]{len(schema.numeric_features)}[/bold]\n"
+            f"  Categorical:        [bold]{len(schema.categorical_features)}[/bold]\n"
+            f"  Dropped:            [bold]{len(schema.dropped_columns)}[/bold]  "
+            f"[dim]({', '.join(schema.dropped_columns) if schema.dropped_columns else 'none'})[/dim]",
+            title="[bold green]Pipeline Summary[/bold green]",
+            border_style="green",
+        )
+    )
 
     return bundle
 
@@ -526,18 +655,27 @@ def _stage_pipeline(df: pd.DataFrame, target: str, settings: dict) -> object:
 # STAGE 5 — MODEL BATTLE ARENA
 # ═══════════════════════════════════════════════════════════════
 
-def _stage_battle_arena(df: pd.DataFrame, target: str, task: str, settings: dict) -> object:
+
+def _stage_battle_arena(
+    df: pd.DataFrame, target: str, task: str, settings: dict
+) -> object:
     """Train models with a live leaderboard."""
     _header("Model Battle Arena", 5)
 
     estimate = _estimate_training_seconds(df, settings.get("max_models", 6))
     console.print("[bold]🏟️  Launching Model Battle Arena...[/bold]")
-    console.print(f"[dim]Expected time: about {_format_seconds(estimate)} for {settings.get('max_models', 6)} model(s).[/dim]\n")
+    console.print(
+        f"[dim]Expected time: about {_format_seconds(estimate)} for {settings.get('max_models', 6)} model(s).[/dim]\n"
+    )
 
     progress_state = {"leaderboard": [], "current": "waiting"}
 
     def render_live() -> Table:
-        table = Table(title=f"Live Leaderboard - {progress_state['current']}", show_header=True, header_style="bold yellow")
+        table = Table(
+            title=f"Live Leaderboard - {progress_state['current']}",
+            show_header=True,
+            header_style="bold yellow",
+        )
         table.add_column("Rank", justify="center")
         table.add_column("Model")
         table.add_column("Family")
@@ -557,16 +695,21 @@ def _stage_battle_arena(df: pd.DataFrame, target: str, task: str, settings: dict
 
     def on_progress(event: dict) -> None:
         if event["event"] == "model_started":
-            progress_state["current"] = f"training {event['model_name']} ({event['index']}/{event['total']})"
+            progress_state["current"] = (
+                f"training {event['model_name']} ({event['index']}/{event['total']})"
+            )
         elif event["event"] == "model_completed":
             result = event["result"]
             progress_state["current"] = f"finished {result.model_name}"
-            progress_state["leaderboard"] = event.get("leaderboard", progress_state["leaderboard"])
+            progress_state["leaderboard"] = event.get(
+                "leaderboard", progress_state["leaderboard"]
+            )
         elif event["event"] == "training_complete":
             progress_state["current"] = "complete"
 
     nx = Nexora(df, target=target)
     with Live(render_live(), console=console, refresh_per_second=4) as live:
+
         def live_progress(event: dict) -> None:
             on_progress(event)
             live.update(render_live())
@@ -585,7 +728,9 @@ def _stage_battle_arena(df: pd.DataFrame, target: str, task: str, settings: dict
 
     # ── Live Leaderboard ──
     lb = report.leaderboard
-    lb_table = Table(title="🏆 Live Leaderboard", show_header=True, header_style="bold yellow")
+    lb_table = Table(
+        title="🏆 Live Leaderboard", show_header=True, header_style="bold yellow"
+    )
     lb_table.add_column("Rank", justify="center", style="bold")
     lb_table.add_column("Model", style="white")
     lb_table.add_column("Family", style="cyan")
@@ -595,24 +740,34 @@ def _stage_battle_arena(df: pd.DataFrame, target: str, task: str, settings: dict
 
     for _, row in lb.iterrows():
         rank = str(int(row["rank"])) if pd.notna(row["rank"]) else "-"
-        medal = "🥇" if rank == "1" else ("🥈" if rank == "2" else ("🥉" if rank == "3" else f" {rank}"))
+        medal = (
+            "🥇"
+            if rank == "1"
+            else ("🥈" if rank == "2" else ("🥉" if rank == "3" else f" {rank}"))
+        )
         speed_icon = "⚡" if row["speed"] == "fast" else "🔄"
         lb_table.add_row(
-            medal, row["model_name"], row["family"],
-            f"{row['primary_score']:.4f}", f"{row['train_time_sec']:.3f}", speed_icon,
+            medal,
+            row["model_name"],
+            row["family"],
+            f"{row['primary_score']:.4f}",
+            f"{row['train_time_sec']:.3f}",
+            speed_icon,
         )
     console.print(lb_table)
     console.print()
 
     # ── Champion Declaration ──
-    console.print(Panel(
-        f"  🏆 Champion:  [bold yellow]{report.best_model}[/bold yellow]\n"
-        f"  📊 Score:     [bold green]{report.best_score:.4f}[/bold green] ({report.best_score_label})\n"
-        f"  ⏱️  Time:     {report.best_result.train_time_sec:.3f}s\n"
-        f"  🏷️  Family:   {report.best_result.family}",
-        title="[bold yellow]🏆 Champion Model[/bold yellow]",
-        border_style="yellow",
-    ))
+    console.print(
+        Panel(
+            f"  🏆 Champion:  [bold yellow]{report.best_model}[/bold yellow]\n"
+            f"  📊 Score:     [bold green]{report.best_score:.4f}[/bold green] ({report.best_score_label})\n"
+            f"  ⏱️  Time:     {report.best_result.train_time_sec:.3f}s\n"
+            f"  🏷️  Family:   {report.best_result.family}",
+            title="[bold yellow]🏆 Champion Model[/bold yellow]",
+            border_style="yellow",
+        )
+    )
 
     # ── Speed vs Score ──
     console.print("\n[bold]Speed vs Score Comparison:[/bold]")
@@ -637,10 +792,14 @@ def _stage_battle_arena(df: pd.DataFrame, target: str, task: str, settings: dict
     fam_table = Table(show_header=True, header_style="bold cyan")
     fam_table.add_column("Family")
     fam_table.add_column("Models", justify="right")
-    fam_table.add_column(f"Best {report.best_score_label}", justify="right", style="green")
+    fam_table.add_column(
+        f"Best {report.best_score_label}", justify="right", style="green"
+    )
     fam_table.add_column(f"Avg {report.best_score_label}", justify="right")
     for fam, scores in sorted(families.items(), key=lambda x: max(x[1]), reverse=True):
-        fam_table.add_row(fam, str(len(scores)), f"{max(scores):.4f}", f"{np.mean(scores):.4f}")
+        fam_table.add_row(
+            fam, str(len(scores)), f"{max(scores):.4f}", f"{np.mean(scores):.4f}"
+        )
     console.print(fam_table)
 
     return report
@@ -649,6 +808,7 @@ def _stage_battle_arena(df: pd.DataFrame, target: str, task: str, settings: dict
 # ═══════════════════════════════════════════════════════════════
 # STAGE 6 — PREDICTION STUDIO
 # ═══════════════════════════════════════════════════════════════
+
 
 def _stage_prediction_studio(report, df: pd.DataFrame) -> None:
     """Interactive prediction with model selection and explanation."""
@@ -659,11 +819,17 @@ def _stage_prediction_studio(report, df: pd.DataFrame) -> None:
 
     model_options = report.available_prediction_models(limit=10)
     if not model_options:
-        console.print("[yellow]No completed models are available for Prediction Studio.[/yellow]")
+        console.print(
+            "[yellow]No completed models are available for Prediction Studio.[/yellow]"
+        )
         return
     suggested = report.suggest_models(max_models=min(5, len(model_options)))
     suggested_ids = [item["model_id"] for item in suggested]
-    model_table = Table(title="Select Models (choose one to five)", show_header=True, header_style="bold cyan")
+    model_table = Table(
+        title="Select Models (choose one to five)",
+        show_header=True,
+        header_style="bold cyan",
+    )
     model_table.add_column("#", justify="right")
     model_table.add_column("Model")
     model_table.add_column("Family")
@@ -678,8 +844,14 @@ def _stage_prediction_studio(report, df: pd.DataFrame) -> None:
             "yes" if option["model_id"] in suggested_ids else "",
         )
     console.print(model_table)
-    default_choice = ",".join(str(model_options.index(opt) + 1) for opt in model_options if opt["model_id"] in suggested_ids[:3])
-    choice = Prompt.ask("Models to use (numbers separated by comma)", default=default_choice or "1")
+    default_choice = ",".join(
+        str(model_options.index(opt) + 1)
+        for opt in model_options
+        if opt["model_id"] in suggested_ids[:3]
+    )
+    choice = Prompt.ask(
+        "Models to use (numbers separated by comma)", default=default_choice or "1"
+    )
     selected_models = _parse_model_selection(choice, model_options)
 
     console.print("\n[bold]Select prediction mode:[/bold]")
@@ -689,7 +861,7 @@ def _stage_prediction_studio(report, df: pd.DataFrame) -> None:
 
     if mode == "1":
         csv_path = Prompt.ask("Path to new CSV file")
-        path = Path(csv_path.strip('"\''))
+        path = Path(csv_path.strip("\"'"))
         if not path.exists():
             console.print("[bold red]File not found.[/]")
             return
@@ -708,11 +880,17 @@ def _stage_prediction_studio(report, df: pd.DataFrame) -> None:
         row_data = {}
         for field in report.prediction_input_fields():
             suffix = ""
-            if field.kind == "number" and field.min_value is not None and field.max_value is not None:
+            if (
+                field.kind == "number"
+                and field.min_value is not None
+                and field.max_value is not None
+            ):
                 suffix = f" [{field.min_value} to {field.max_value}]"
             elif field.options:
                 suffix = f" [{', '.join(field.options[:6])}]"
-            val = Prompt.ask(f"  {field.name}{suffix}", default=str(field.default or ""))
+            val = Prompt.ask(
+                f"  {field.name}{suffix}", default=str(field.default or "")
+            )
             # Try numeric
             try:
                 val = float(val)
@@ -724,7 +902,9 @@ def _stage_prediction_studio(report, df: pd.DataFrame) -> None:
     with console.status("[bold green]Running prediction..."):
         receipt = report.prediction_receipt(row_data, models=selected_models)
 
-    receipt_table = Table(title="Prediction Receipt", show_header=True, header_style="bold green")
+    receipt_table = Table(
+        title="Prediction Receipt", show_header=True, header_style="bold green"
+    )
     receipt_table.add_column("Model", style="cyan")
     receipt_table.add_column("Family")
     receipt_table.add_column("Prediction", style="bold yellow")
@@ -738,25 +918,35 @@ def _stage_prediction_studio(report, df: pd.DataFrame) -> None:
             confidence,
         )
     console.print(receipt_table)
-    console.print(Panel(
-        f"Consensus: [bold yellow]{receipt.consensus}[/bold yellow]\n"
-        f"Rule: {receipt.consensus_label}\n\n"
-        f"{receipt.why}",
-        title="[bold green]Why this prediction?[/bold green]",
-        border_style="green",
-    ))
+    console.print(
+        Panel(
+            f"Consensus: [bold yellow]{receipt.consensus}[/bold yellow]\n"
+            f"Rule: {receipt.consensus_label}\n\n"
+            f"{receipt.why}",
+            title="[bold green]Why this prediction?[/bold green]",
+            border_style="green",
+        )
+    )
 
     if receipt.contributions:
-        contrib_table = Table(title="Local Contribution Signals", show_header=True, header_style="bold cyan")
+        contrib_table = Table(
+            title="Local Contribution Signals",
+            show_header=True,
+            header_style="bold cyan",
+        )
         contrib_table.add_column("Feature")
         contrib_table.add_column("Direction")
         contrib_table.add_column("Delta", justify="right")
         for item in receipt.contributions[:8]:
-            contrib_table.add_row(item.feature, item.direction, f"{item.contribution:+.4f}")
+            contrib_table.add_row(
+                item.feature, item.direction, f"{item.contribution:+.4f}"
+            )
         console.print(contrib_table)
 
     # Why this prediction?
-    if Confirm.ask("\nWould you like to see why these predictions were made?", default=True):
+    if Confirm.ask(
+        "\nWould you like to see why these predictions were made?", default=True
+    ):
         try:
             importance = report.explain()
             console.print("\n[bold]Top contributing features:[/bold]")
@@ -781,6 +971,7 @@ def _stage_prediction_studio(report, df: pd.DataFrame) -> None:
 # STAGE 7 — SHAP EXPLANATION
 # ═══════════════════════════════════════════════════════════════
 
+
 def _stage_explain(report) -> None:
     """Show SHAP feature importance analysis."""
     _header("SHAP Explanation", 7)
@@ -795,11 +986,13 @@ def _stage_explain(report) -> None:
             console.print(f"[yellow]⚠ SHAP unavailable: {e}[/yellow]")
             return
 
-    if importance is None or (hasattr(importance, 'empty') and importance.empty):
+    if importance is None or (hasattr(importance, "empty") and importance.empty):
         console.print("[yellow]No importance data available.[/yellow]")
         return
 
-    shap_table = Table(title="SHAP Feature Importance", show_header=True, header_style="bold magenta")
+    shap_table = Table(
+        title="SHAP Feature Importance", show_header=True, header_style="bold magenta"
+    )
     shap_table.add_column("Rank", justify="center", style="bold")
     shap_table.add_column("Feature", style="white")
     shap_table.add_column("Importance", justify="right", style="green")
@@ -810,30 +1003,36 @@ def _stage_explain(report) -> None:
         imp_val = float(row.iloc[-1]) if len(row) > 0 else 0
         bar_len = max(1, int(imp_val * 40))
         shap_table.add_row(
-            str(i), feat_name, f"{imp_val:.4f}",
+            str(i),
+            feat_name,
+            f"{imp_val:.4f}",
             f"[magenta]{'█' * bar_len}[/magenta]",
         )
     console.print(shap_table)
 
-    console.print(Panel(
-        f"The model [bold]{report.best_model}[/bold] relies most heavily on the features above.\n"
-        f"Higher SHAP values indicate stronger influence on predictions.",
-        title="[bold]Why does the champion model win?[/bold]",
-        border_style="magenta",
-    ))
+    console.print(
+        Panel(
+            f"The model [bold]{report.best_model}[/bold] relies most heavily on the features above.\n"
+            f"Higher SHAP values indicate stronger influence on predictions.",
+            title="[bold]Why does the champion model win?[/bold]",
+            border_style="magenta",
+        )
+    )
 
 
 def _stage_advanced_tracks(nx: Nexora, report, df: pd.DataFrame) -> None:
     """Optional experiment tracking, charts, clustering, and forecasts."""
     _header("Experiment Tracking & Advanced Tracks", 8, total=9)
 
-    console.print(Panel(
-        f"Run ID: [bold]{getattr(report.experiment_record, 'run_id', 'saved')}[/bold]\n"
-        f"Best model: [bold]{report.best_model}[/bold]\n"
-        f"Tracked runs: [bold]{len(Nexora.experiments())}[/bold]",
-        title="[bold cyan]Experiment Tracking[/bold cyan]",
-        border_style="cyan",
-    ))
+    console.print(
+        Panel(
+            f"Run ID: [bold]{getattr(report.experiment_record, 'run_id', 'saved')}[/bold]\n"
+            f"Best model: [bold]{report.best_model}[/bold]\n"
+            f"Tracked runs: [bold]{len(Nexora.experiments())}[/bold]",
+            title="[bold cyan]Experiment Tracking[/bold cyan]",
+            border_style="cyan",
+        )
+    )
 
     if Confirm.ask("Save PNG charts for this terminal run?", default=False):
         chart_dir = Prompt.ask("Chart folder", default="nexora_charts")
@@ -848,35 +1047,68 @@ def _stage_advanced_tracks(nx: Nexora, report, df: pd.DataFrame) -> None:
         try:
             n_clusters = IntPrompt.ask("Number of clusters", default=3)
             result = nx.cluster(n_clusters=n_clusters)
-            table = Table(title="Cluster Profiles", show_header=True, header_style="bold cyan")
+            table = Table(
+                title="Cluster Profiles", show_header=True, header_style="bold cyan"
+            )
             table.add_column("Cluster", justify="right")
             table.add_column("Size", justify="right")
             table.add_column("Pct", justify="right")
             table.add_column("Profile")
             for item in result["clusters"]:
                 profile = ", ".join(f"{k}={v}" for k, v in item["profile"].items())
-                table.add_row(str(item["cluster"]), str(item["size"]), f"{item['percentage']}%", profile[:100])
+                table.add_row(
+                    str(item["cluster"]),
+                    str(item["size"]),
+                    f"{item['percentage']}%",
+                    profile[:100],
+                )
             console.print(table)
-            console.print(f"[dim]Silhouette: {result['metrics']['silhouette']} | Inertia: {result['metrics']['inertia']}[/dim]")
+            console.print(
+                f"[dim]Silhouette: {result['metrics']['silhouette']} | Inertia: {result['metrics']['inertia']}[/dim]"
+            )
         except Exception as e:
             console.print(f"[yellow]Clustering skipped: {e}[/yellow]")
 
-    date_cols = [col for col in df.columns if pd.to_datetime(df[col].dropna().head(20), errors="coerce", format="mixed").notna().mean() > 0.8 if len(df[col].dropna().head(20))]
+    date_cols = [
+        col
+        for col in df.columns
+        if pd.to_datetime(df[col].dropna().head(20), errors="coerce", format="mixed")
+        .notna()
+        .mean()
+        > 0.8
+        if len(df[col].dropna().head(20))
+    ]
     numeric_cols = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
-    if date_cols and numeric_cols and Confirm.ask("Run simple forecast?", default=False):
+    if (
+        date_cols
+        and numeric_cols
+        and Confirm.ask("Run simple forecast?", default=False)
+    ):
         try:
             date_col = Prompt.ask("Date column", default=date_cols[0])
-            target_col = Prompt.ask("Numeric target column", default=report.target if report.target in numeric_cols else numeric_cols[0])
+            target_col = Prompt.ask(
+                "Numeric target column",
+                default=report.target
+                if report.target in numeric_cols
+                else numeric_cols[0],
+            )
             periods = IntPrompt.ask("Forecast periods", default=12)
             freq = Prompt.ask("Frequency", choices=["D", "W", "M"], default="M")
-            forecast = nx.forecast(date_column=date_col, target_column=target_col, periods=periods, frequency=freq)
+            forecast = nx.forecast(
+                date_column=date_col,
+                target_column=target_col,
+                periods=periods,
+                frequency=freq,
+            )
             table = Table(title="Forecast", show_header=True, header_style="bold cyan")
             table.add_column("Date")
             table.add_column("Prediction", justify="right")
             for row in forecast["forecast"][:24]:
                 table.add_row(row["date"], str(row["prediction"]))
             console.print(table)
-            console.print(f"[dim]MAE: {forecast['metrics']['mae']} | R2: {forecast['metrics']['r2']}[/dim]")
+            console.print(
+                f"[dim]MAE: {forecast['metrics']['mae']} | R2: {forecast['metrics']['r2']}[/dim]"
+            )
         except Exception as e:
             console.print(f"[yellow]Forecast skipped: {e}[/yellow]")
 
@@ -884,6 +1116,7 @@ def _stage_advanced_tracks(nx: Nexora, report, df: pd.DataFrame) -> None:
 # ═══════════════════════════════════════════════════════════════
 # STAGE 8 — EXPORT
 # ═══════════════════════════════════════════════════════════════
+
 
 def _stage_export(report, data_path: Path) -> None:
     """Save the terminal session and optionally export files."""
@@ -913,18 +1146,21 @@ def _stage_export(report, data_path: Path) -> None:
         console.print(f"[green]✓ Model pickle:[/green] {pkl_path}")
 
     console.print()
-    console.print(Panel.fit(
-        "[bold green]✦ All done![/bold green]\n\n"
-        f"  Session: {session_path}\n"
-        f"  Best:    {report.best_model} ({report.best_score_label}={report.best_score:.4f})\n\n"
-        "[dim]Run `nexora predict <session.nx> <new_data.csv>` to predict anytime.[/dim]",
-        border_style="green",
-    ))
+    console.print(
+        Panel.fit(
+            "[bold green]✦ All done![/bold green]\n\n"
+            f"  Session: {session_path}\n"
+            f"  Best:    {report.best_model} ({report.best_score_label}={report.best_score:.4f})\n\n"
+            "[dim]Run `nexora predict <session.nx> <new_data.csv>` to predict anytime.[/dim]",
+            border_style="green",
+        )
+    )
 
 
 # ═══════════════════════════════════════════════════════════════
 # MAIN WIZARD ENTRY POINT
 # ═══════════════════════════════════════════════════════════════
+
 
 def run_wizard() -> None:
     """Run the full interactive Nexora wizard."""

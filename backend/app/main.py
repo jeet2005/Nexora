@@ -63,6 +63,7 @@ app.include_router(admin_audit.router)
 app.include_router(admin_drift.router)
 app.include_router(admin_users.router)
 
+
 def _hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
@@ -106,6 +107,7 @@ async def seed_admin_users():
                     "last_login": None,
                 }
             )
+
 
 from fastapi.responses import HTMLResponse
 

@@ -105,8 +105,8 @@ def _profile_column(series: pd.Series, row_count: int) -> ColumnProfile:
     unique = int(series.nunique(dropna=True))
     is_dt = infer_datetime(series)
     is_num = bool(
-        pd.api.types.is_numeric_dtype(series) 
-        and not is_dt 
+        pd.api.types.is_numeric_dtype(series)
+        and not is_dt
         and not pd.api.types.is_bool_dtype(series)
     )
     is_cat = bool(not is_num and not is_dt and unique < max(50, row_count * 0.5))

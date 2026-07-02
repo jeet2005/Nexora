@@ -22,14 +22,31 @@ ANOMALY_FLAGS = ["RST", "URG", "SYN"]  # port scan / flood signatures
 
 INTERNAL_SUBNETS = ["10.0.1.", "10.0.2.", "10.0.3.", "192.168.1.", "192.168.10."]
 EXTERNAL_IPS = [
-    "203.0.113.", "198.51.100.", "185.220.101.", "45.33.32.", "91.189.89.",
-    "8.8.8.", "1.1.1.", "104.16.249.", "151.101.1.", "172.217.14.",
+    "203.0.113.",
+    "198.51.100.",
+    "185.220.101.",
+    "45.33.32.",
+    "91.189.89.",
+    "8.8.8.",
+    "1.1.1.",
+    "104.16.249.",
+    "151.101.1.",
+    "172.217.14.",
 ]
 
 FIELDNAMES = [
-    "timestamp", "src_ip", "dst_ip", "src_port", "dst_port",
-    "protocol", "bytes_sent", "bytes_received", "duration_ms",
-    "packet_count", "tcp_flags", "is_encrypted",
+    "timestamp",
+    "src_ip",
+    "dst_ip",
+    "src_port",
+    "dst_port",
+    "protocol",
+    "bytes_sent",
+    "bytes_received",
+    "duration_ms",
+    "packet_count",
+    "tcp_flags",
+    "is_encrypted",
 ]
 
 
@@ -129,7 +146,9 @@ def _anomaly_row(ts: datetime) -> dict:
         }
 
 
-def generate(num_rows: int = 1000, anomaly_rate: float = 0.05, seed: int = 42) -> list[dict]:
+def generate(
+    num_rows: int = 1000, anomaly_rate: float = 0.05, seed: int = 42
+) -> list[dict]:
     random.seed(seed)
     rows: list[dict] = []
     base_time = datetime.now(timezone.utc) - timedelta(hours=1)
@@ -145,11 +164,17 @@ def generate(num_rows: int = 1000, anomaly_rate: float = 0.05, seed: int = 42) -
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate synthetic network traffic CSV")
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic network traffic CSV"
+    )
     parser.add_argument("--rows", type=int, default=1000, help="Number of rows")
-    parser.add_argument("--anomaly-rate", type=float, default=0.05, help="Fraction of anomalous rows")
+    parser.add_argument(
+        "--anomaly-rate", type=float, default=0.05, help="Fraction of anomalous rows"
+    )
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
-    parser.add_argument("--output", type=str, default="network_traffic.csv", help="Output file")
+    parser.add_argument(
+        "--output", type=str, default="network_traffic.csv", help="Output file"
+    )
     args = parser.parse_args()
 
     rows = generate(args.rows, args.anomaly_rate, args.seed)

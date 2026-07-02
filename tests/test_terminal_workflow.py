@@ -38,7 +38,9 @@ def test_prediction_receipt_uses_selected_models(regression_csv):
     assert "nexora_consensus" in batch.columns
 
 
-def test_pipeline_controls_charts_experiments_and_advanced_tracks(regression_csv, tmp_path):
+def test_pipeline_controls_charts_experiments_and_advanced_tracks(
+    regression_csv, tmp_path
+):
     path, df = regression_csv
     config = PreprocessingConfig(
         scaling="minmax",

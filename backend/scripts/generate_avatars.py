@@ -1,4 +1,5 @@
 """Generate preset avatar PNGs for Nexora (u1-u20 users, a1-a5 admins)."""
+
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -6,18 +7,34 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parent.parent.parent / "frontend" / "public" / "avatars"
 
 USER_PALETTE = [
-    ("#6366F1", "#818CF8"), ("#8B5CF6", "#A78BFA"), ("#EC4899", "#F472B6"),
-    ("#EF4444", "#F87171"), ("#F97316", "#FB923C"), ("#EAB308", "#FACC15"),
-    ("#22C55E", "#4ADE80"), ("#14B8A6", "#2DD4BF"), ("#06B6D4", "#22D3EE"),
-    ("#3B82F6", "#60A5FA"), ("#6366F1", "#A5B4FC"), ("#7C3AED", "#C4B5FD"),
-    ("#DB2777", "#F9A8D4"), ("#DC2626", "#FCA5A5"), ("#EA580C", "#FDBA74"),
-    ("#CA8A04", "#FDE047"), ("#16A34A", "#86EFAC"), ("#0D9488", "#5EEAD4"),
-    ("#0284C7", "#7DD3FC"), ("#2563EB", "#93C5FD"),
+    ("#6366F1", "#818CF8"),
+    ("#8B5CF6", "#A78BFA"),
+    ("#EC4899", "#F472B6"),
+    ("#EF4444", "#F87171"),
+    ("#F97316", "#FB923C"),
+    ("#EAB308", "#FACC15"),
+    ("#22C55E", "#4ADE80"),
+    ("#14B8A6", "#2DD4BF"),
+    ("#06B6D4", "#22D3EE"),
+    ("#3B82F6", "#60A5FA"),
+    ("#6366F1", "#A5B4FC"),
+    ("#7C3AED", "#C4B5FD"),
+    ("#DB2777", "#F9A8D4"),
+    ("#DC2626", "#FCA5A5"),
+    ("#EA580C", "#FDBA74"),
+    ("#CA8A04", "#FDE047"),
+    ("#16A34A", "#86EFAC"),
+    ("#0D9488", "#5EEAD4"),
+    ("#0284C7", "#7DD3FC"),
+    ("#2563EB", "#93C5FD"),
 ]
 
 ADMIN_PALETTE = [
-    ("#1E293B", "#475569"), ("#7C2D12", "#C2410C"), ("#14532D", "#15803D"),
-    ("#1E3A8A", "#2563EB"), ("#581C87", "#9333EA"),
+    ("#1E293B", "#475569"),
+    ("#7C2D12", "#C2410C"),
+    ("#14532D", "#15803D"),
+    ("#1E3A8A", "#2563EB"),
+    ("#581C87", "#9333EA"),
 ]
 
 
@@ -39,7 +56,9 @@ def make_avatar(path: Path, label: str, c1: str, c2: str, size: int = 128) -> No
         draw.line([(0, y), (size, y)], fill=(r, g, b, 255))
 
     margin = size // 8
-    draw.ellipse([margin, margin, size - margin, size - margin], fill=(255, 255, 255, 40))
+    draw.ellipse(
+        [margin, margin, size - margin, size - margin], fill=(255, 255, 255, 40)
+    )
 
     text = label.upper()
     bbox = draw.textbbox((0, 0), text)

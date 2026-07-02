@@ -12,10 +12,12 @@ def log_admin_action(
     col = collection("audit_log")
     if col is None:
         return
-    col.insert_one({
-        "admin_email": admin_email,
-        "action": action,
-        "target": target,
-        "timestamp": datetime.utcnow(),
-        "ip_address": ip_address,
-    })
+    col.insert_one(
+        {
+            "admin_email": admin_email,
+            "action": action,
+            "target": target,
+            "timestamp": datetime.utcnow(),
+            "ip_address": ip_address,
+        }
+    )

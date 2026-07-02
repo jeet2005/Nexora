@@ -63,7 +63,9 @@ def _issue_token(response: Response, email: str) -> None:
     now = datetime.utcnow()
     token_exp = now + timedelta(hours=8)
     payload = {"sub": email, "exp": token_exp}
-    token = jwt.encode(payload, settings.admin_jwt_secret, algorithm=settings.admin_jwt_algorithm)
+    token = jwt.encode(
+        payload, settings.admin_jwt_secret, algorithm=settings.admin_jwt_algorithm
+    )
     response.set_cookie(
         key="admin_token",
         value=token,
@@ -75,7 +77,9 @@ def _issue_token(response: Response, email: str) -> None:
 
 
 def _admin_login_response(email: str) -> AdminLoginResponse:
-    return AdminLoginResponse(success=True, email=email, message="Logged in successfully")
+    return AdminLoginResponse(
+        success=True, email=email, message="Logged in successfully"
+    )
 
 
 @router.post("/login", response_model=AdminLoginResponse)
@@ -95,14 +99,18 @@ async def login(request: Request, response: Response, login_data: AdminLoginRequ
         login_attempts[client_ip] = (1, now)
 
     if settings.persistence_backend != "mongodb":
-        raise HTTPException(status_code=500, detail="MongoDB is required for Admin Panel")
+        raise HTTPException(
+            status_code=500, detail="MongoDB is required for Admin Panel"
+        )
 
     admins_coll = _admin_collection()
     if admins_coll is None:
         raise HTTPException(status_code=500, detail="Database connection failed")
 
     admin_doc = admins_coll.find_one({"email": login_data.email})
-    if not admin_doc or not _verify_password(login_data.password, admin_doc["password_hash"]):
+    if not admin_doc or not _verify_password(
+        login_data.password, admin_doc["password_hash"]
+    ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     if client_ip in login_attempts:
@@ -116,7 +124,9 @@ async def login(request: Request, response: Response, login_data: AdminLoginRequ
 @router.post("/request-otp")
 async def request_otp(request_data: AdminOtpRequest):
     if settings.persistence_backend != "mongodb":
-        raise HTTPException(status_code=500, detail="MongoDB is required for Admin Panel")
+        raise HTTPException(
+            status_code=500, detail="MongoDB is required for Admin Panel"
+        )
 
     admins_coll = _admin_collection()
     if admins_coll is None:
@@ -131,8 +141,11 @@ async def request_otp(request_data: AdminOtpRequest):
                 {"email": request_data.email},
                 {
                     "$set": {
-                        "code_hash": bcrypt.hashpw(otp_code.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
-                        "expires_at": datetime.utcnow() + timedelta(minutes=OTP_EXPIRY_MINUTES),
+                        "code_hash": bcrypt.hashpw(
+                            otp_code.encode("utf-8"), bcrypt.gensalt()
+                        ).decode("utf-8"),
+                        "expires_at": datetime.utcnow()
+                        + timedelta(minutes=OTP_EXPIRY_MINUTES),
                         "used": False,
                     }
                 },
@@ -146,13 +159,20 @@ async def request_otp(request_data: AdminOtpRequest):
                     f"Your Nexora admin login code is {otp_code}.",
                 )
 
-    return {"success": True, "message": "If the account exists, an OTP has been sent to the registered email address."}
+    return {
+        "success": True,
+        "message": "If the account exists, an OTP has been sent to the registered email address.",
+    }
 
 
 @router.post("/login-otp", response_model=AdminLoginResponse)
-async def login_otp(request: Request, response: Response, request_data: AdminOtpLoginRequest):
+async def login_otp(
+    request: Request, response: Response, request_data: AdminOtpLoginRequest
+):
     if settings.persistence_backend != "mongodb":
-        raise HTTPException(status_code=500, detail="MongoDB is required for Admin Panel")
+        raise HTTPException(
+            status_code=500, detail="MongoDB is required for Admin Panel"
+        )
 
     otp_coll = _otp_collection()
     admins_coll = _admin_collection()
@@ -164,7 +184,9 @@ async def login_otp(request: Request, response: Response, request_data: AdminOtp
         not otp_doc
         or otp_doc.get("expires_at") is None
         or otp_doc["expires_at"] < datetime.utcnow()
-        or not bcrypt.checkpw(request_data.code.encode("utf-8"), otp_doc["code_hash"].encode("utf-8"))
+        or not bcrypt.checkpw(
+            request_data.code.encode("utf-8"), otp_doc["code_hash"].encode("utf-8")
+        )
     ):
         raise HTTPException(status_code=401, detail="Invalid OTP code")
 
@@ -173,7 +195,9 @@ async def login_otp(request: Request, response: Response, request_data: AdminOtp
         raise HTTPException(status_code=401, detail="Invalid OTP code")
 
     otp_coll.update_one({"email": request_data.email}, {"$set": {"used": True}})
-    admins_coll.update_one({"_id": admin_doc["_id"]}, {"$set": {"last_login": datetime.utcnow()}})
+    admins_coll.update_one(
+        {"_id": admin_doc["_id"]}, {"$set": {"last_login": datetime.utcnow()}}
+    )
     _issue_token(response, request_data.email)
     return _admin_login_response(request_data.email)
 
@@ -181,7 +205,9 @@ async def login_otp(request: Request, response: Response, request_data: AdminOtp
 @router.post("/forgot-password")
 async def forgot_password(request_data: AdminForgotPasswordRequest):
     if settings.persistence_backend != "mongodb":
-        raise HTTPException(status_code=500, detail="MongoDB is required for Admin Panel")
+        raise HTTPException(
+            status_code=500, detail="MongoDB is required for Admin Panel"
+        )
 
     admins_coll = _admin_collection()
     reset_coll = _reset_collection()
@@ -191,7 +217,9 @@ async def forgot_password(request_data: AdminForgotPasswordRequest):
     admin_doc = admins_coll.find_one({"email": request_data.email})
     if admin_doc:
         token = _generate_token()
-        expires_at = datetime.utcnow() + timedelta(minutes=PASSWORD_RESET_EXPIRY_MINUTES)
+        expires_at = datetime.utcnow() + timedelta(
+            minutes=PASSWORD_RESET_EXPIRY_MINUTES
+        )
         reset_coll.update_one(
             {"email": request_data.email},
             {
@@ -208,17 +236,22 @@ async def forgot_password(request_data: AdminForgotPasswordRequest):
             send_email(
                 request_data.email,
                 "Nexora Admin Password Reset",
-                f"<p>A password reset was requested for your Nexora admin account.</p><p>Click the link below to reset your password:</p><p><a href=\"{reset_link}\">Reset my password</a></p><p>This link expires in {PASSWORD_RESET_EXPIRY_MINUTES} minutes.</p>",
+                f'<p>A password reset was requested for your Nexora admin account.</p><p>Click the link below to reset your password:</p><p><a href="{reset_link}">Reset my password</a></p><p>This link expires in {PASSWORD_RESET_EXPIRY_MINUTES} minutes.</p>',
                 f"Use this link to reset your admin password: {reset_link}",
             )
 
-    return {"success": True, "message": "If the account exists, a password reset link has been sent to the registered email address."}
+    return {
+        "success": True,
+        "message": "If the account exists, a password reset link has been sent to the registered email address.",
+    }
 
 
 @router.post("/reset-password")
 async def reset_password(request_data: AdminResetPasswordRequest):
     if settings.persistence_backend != "mongodb":
-        raise HTTPException(status_code=500, detail="MongoDB is required for Admin Panel")
+        raise HTTPException(
+            status_code=500, detail="MongoDB is required for Admin Panel"
+        )
 
     admins_coll = _admin_collection()
     reset_coll = _reset_collection()
@@ -226,7 +259,11 @@ async def reset_password(request_data: AdminResetPasswordRequest):
         raise HTTPException(status_code=500, detail="Database connection failed")
 
     reset_doc = reset_coll.find_one({"token": request_data.token, "used": False})
-    if not reset_doc or reset_doc.get("expires_at") is None or reset_doc["expires_at"] < datetime.utcnow():
+    if (
+        not reset_doc
+        or reset_doc.get("expires_at") is None
+        or reset_doc["expires_at"] < datetime.utcnow()
+    ):
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
 
     updated = admins_coll.update_one(
@@ -250,10 +287,20 @@ async def logout(response: Response):
 async def get_me(admin: dict = Depends(require_admin)):
     admins_coll = _admin_collection()
     if admins_coll is None:
-        return {"email": admin["email"], "name": admin["email"].split("@")[0], "avatar_url": "/avatars/admins/a1.png"}
-    doc = admins_coll.find_one({"email": admin["email"]}, {"_id": 0, "password_hash": 0})
+        return {
+            "email": admin["email"],
+            "name": admin["email"].split("@")[0],
+            "avatar_url": "/avatars/admins/a1.png",
+        }
+    doc = admins_coll.find_one(
+        {"email": admin["email"]}, {"_id": 0, "password_hash": 0}
+    )
     if not doc:
-        return {"email": admin["email"], "name": admin["email"].split("@")[0], "avatar_url": "/avatars/admins/a1.png"}
+        return {
+            "email": admin["email"],
+            "name": admin["email"].split("@")[0],
+            "avatar_url": "/avatars/admins/a1.png",
+        }
     return {
         "email": doc["email"],
         "name": doc.get("name") or doc["email"].split("@")[0],
@@ -264,7 +311,9 @@ async def get_me(admin: dict = Depends(require_admin)):
 
 
 @router.put("/me")
-async def update_profile(update: AdminProfileUpdate, admin: dict = Depends(require_admin)):
+async def update_profile(
+    update: AdminProfileUpdate, admin: dict = Depends(require_admin)
+):
     admins_coll = _admin_collection()
     if admins_coll is None:
         raise HTTPException(status_code=500, detail="Database connection failed")
@@ -275,14 +324,21 @@ async def update_profile(update: AdminProfileUpdate, admin: dict = Depends(requi
 
 
 @router.put("/me/password")
-async def change_password(data: AdminPasswordChange, admin: dict = Depends(require_admin)):
+async def change_password(
+    data: AdminPasswordChange, admin: dict = Depends(require_admin)
+):
     admins_coll = _admin_collection()
     if admins_coll is None:
         raise HTTPException(status_code=500, detail="Database connection failed")
 
     admin_doc = admins_coll.find_one({"email": admin["email"]})
-    if not admin_doc or not _verify_password(data.current_password, admin_doc["password_hash"]):
+    if not admin_doc or not _verify_password(
+        data.current_password, admin_doc["password_hash"]
+    ):
         raise HTTPException(status_code=401, detail="Invalid current password")
 
-    admins_coll.update_one({"email": admin["email"]}, {"$set": {"password_hash": _hash_password(data.new_password)}})
+    admins_coll.update_one(
+        {"email": admin["email"]},
+        {"$set": {"password_hash": _hash_password(data.new_password)}},
+    )
     return {"success": True, "message": "Password updated successfully."}

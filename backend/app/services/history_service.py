@@ -56,7 +56,9 @@ def set_archived(dataset_id: str, archived: bool) -> None:
         upsert("datasets", {"dataset_id": dataset_id}, record.model_dump())
 
 
-def history_item(dataset_id: str, user_id: str | None = None) -> DatasetHistoryItem | None:
+def history_item(
+    dataset_id: str, user_id: str | None = None
+) -> DatasetHistoryItem | None:
     analysis = load_analysis(dataset_id)
     if not analysis:
         return None

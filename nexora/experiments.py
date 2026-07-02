@@ -62,7 +62,9 @@ def list_experiments(path: str | Path | None = None) -> list[ExperimentRecord]:
     return records
 
 
-def create_training_experiment(report, *, path: str | Path | None = None) -> ExperimentRecord:
+def create_training_experiment(
+    report, *, path: str | Path | None = None
+) -> ExperimentRecord:
     """Create and persist an experiment record from a NexoraReport."""
 
     best = report.best_result
@@ -84,7 +86,9 @@ def create_training_experiment(report, *, path: str | Path | None = None) -> Exp
         metrics={
             "primary_metric": report.best_score_label,
             "best_primary_score": report.best_score,
-            "model_count": len([item for item in report.results if item.status == "completed"]),
+            "model_count": len(
+                [item for item in report.results if item.status == "completed"]
+            ),
         },
         models=[
             {

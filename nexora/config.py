@@ -13,7 +13,9 @@ class NexoraConfig:
             "llm_provider": os.environ.get("NEXORA_LLM_PROVIDER", "ollama"),
             "llm_model": os.environ.get("NEXORA_LLM_MODEL", "llama3"),
             "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
-            "ollama_base_url": os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434"),
+            "ollama_base_url": os.environ.get(
+                "OLLAMA_BASE_URL", "http://localhost:11434"
+            ),
         }
 
     def set(self, **kwargs) -> None:

@@ -122,7 +122,10 @@ def suggest_targets(
         if any(hint in lower for hint in TARGET_NAME_HINTS):
             confidence += 0.28
             reasons.append("name suggests an outcome")
-        if any(hint in lower for hint in REGRESSION_NAME_HINTS) and task == "regression":
+        if (
+            any(hint in lower for hint in REGRESSION_NAME_HINTS)
+            and task == "regression"
+        ):
             confidence += 0.16
             reasons.append("numeric business metric")
         if name == last_column:
@@ -185,13 +188,19 @@ def model_readiness(
         f"{rows:,} rows available for training",
     ]
     if missing_pct > 0.2:
-        warnings.append("More than 20% of cells are missing; imputation may dominate signal.")
+        warnings.append(
+            "More than 20% of cells are missing; imputation may dominate signal."
+        )
     if rows < 30:
-        warnings.append("Very small dataset; prefer simple models and validate carefully.")
+        warnings.append(
+            "Very small dataset; prefer simple models and validate carefully."
+        )
     if len(categorical) > len(numeric) * 2 and categorical:
         reasons.append("categorical-heavy data; encoding-aware models are useful")
     if numeric:
-        reasons.append(f"{len(numeric)} numeric feature(s) support scaling and linear/tree models")
+        reasons.append(
+            f"{len(numeric)} numeric feature(s) support scaling and linear/tree models"
+        )
 
     families = ["baseline"]
     if numeric:
@@ -289,7 +298,17 @@ def numeric_distributions(
         if series.empty:
             output[column.name] = {
                 key: None
-                for key in ("min", "p5", "p25", "p50", "p75", "p95", "max", "mean", "std")
+                for key in (
+                    "min",
+                    "p5",
+                    "p25",
+                    "p50",
+                    "p75",
+                    "p95",
+                    "max",
+                    "mean",
+                    "std",
+                )
             }
             continue
         quantiles = series.quantile([0, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0])
@@ -319,7 +338,13 @@ def categorical_distributions(
     for column in profile.column_profiles:
         if not column.is_categorical or column.is_id_like:
             continue
-        counts = df[column.name].astype("string").fillna("<missing>").value_counts().head(limit)
+        counts = (
+            df[column.name]
+            .astype("string")
+            .fillna("<missing>")
+            .value_counts()
+            .head(limit)
+        )
         output[column.name] = [
             {
                 "value": str(value),
@@ -358,10 +383,14 @@ def column_intelligence(
             recommendation = "Impute with median, cap extreme outliers, and scale for distance/linear models."
         elif column.is_categorical:
             role = "categorical"
-            recommendation = "Impute with mode and encode with one-hot or label encoding."
+            recommendation = (
+                "Impute with mode and encode with one-hot or label encoding."
+            )
         else:
             role = "text"
-            recommendation = "Treat as free text or exclude until text embeddings are enabled."
+            recommendation = (
+                "Treat as free text or exclude until text embeddings are enabled."
+            )
 
         if column.is_id_like:
             quality = min(quality, 60)

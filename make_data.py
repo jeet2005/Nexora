@@ -9,7 +9,7 @@ data = {
     "price": np.random.uniform(10, 100, n_samples),
     "category": np.random.choice(["A", "B", "C"], n_samples),
     "is_active": np.random.choice([True, False], n_samples),
-    "target": np.random.uniform(0, 1, n_samples)
+    "target": np.random.uniform(0, 1, n_samples),
 }
 
 df = pd.DataFrame(data)

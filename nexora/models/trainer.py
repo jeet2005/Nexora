@@ -98,14 +98,18 @@ def train_models(
         # Choose appropriate dummy model based on task type.
         if task_type == "classification":
             from sklearn.dummy import DummyClassifier
+
             dummy_model = DummyClassifier(strategy="most_frequent")
         else:
             from sklearn.dummy import DummyRegressor
+
             dummy_model = DummyRegressor()
-        pipeline = Pipeline([
-            ("preprocess", clone(preprocessing.transformer)),
-            ("model", dummy_model),
-        ])
+        pipeline = Pipeline(
+            [
+                ("preprocess", clone(preprocessing.transformer)),
+                ("model", dummy_model),
+            ]
+        )
         pipeline.fit(X, y)
         pred = pipeline.predict(X)
         metrics = _score_predictions(pipeline, X, y, pred, task_type)
@@ -140,7 +144,20 @@ def train_models(
             results=results,
             best_result=best_result,
             best_pipeline=best_pipeline,
-            model_specs={"dummy": ModelSpec(model_id="dummy", model_name="DummyModel", family="dummy", task_type=task_type, import_path="sklearn.dummy", class_name="DummyClassifier" if task_type == "classification" else "DummyRegressor", params={}, speed="fast")},
+            model_specs={
+                "dummy": ModelSpec(
+                    model_id="dummy",
+                    model_name="DummyModel",
+                    family="dummy",
+                    task_type=task_type,
+                    import_path="sklearn.dummy",
+                    class_name="DummyClassifier"
+                    if task_type == "classification"
+                    else "DummyRegressor",
+                    params={},
+                    speed="fast",
+                )
+            },
             preprocessing=preprocessing,
             pipelines={"dummy": pipeline},
             settings=settings,
@@ -164,6 +181,7 @@ def train_models(
     mlflow_available = False
     try:
         import mlflow
+
         mlflow_available = True
         mlflow.autolog(silent=True, disable=False)
         mlflow.start_run(run_name=f"nexora_session_{int(time.time())}")
@@ -194,10 +212,10 @@ def train_models(
                         "family": spec.family,
                     }
                 )
-            
+
             if mlflow_available:
                 mlflow.start_run(run_name=spec.model_name, nested=True)
-                
+
             try:
                 pipeline = Pipeline(
                     steps=[
@@ -222,12 +240,15 @@ def train_models(
                     train_time_sec=elapsed,
                     speed=spec.speed,
                 )
-                
+
                 if mlflow_available:
                     mlflow.log_metrics(metrics)
-                    
+
                 pipelines[spec.model_id] = pipeline
-                if best_result is None or result.primary_score > best_result.primary_score:
+                if (
+                    best_result is None
+                    or result.primary_score > best_result.primary_score
+                ):
                     best_result = result
                     best_pipeline = pipeline
             except Exception as exc:
@@ -246,7 +267,7 @@ def train_models(
             finally:
                 if mlflow_available:
                     mlflow.end_run()
-                    
+
             results.append(result)
             if on_progress:
                 completed = sorted(
@@ -262,16 +283,20 @@ def train_models(
                         "result": result,
                         "leaderboard": completed,
                         "completed_count": len(completed),
-                        "failed_count": sum(item.status != "completed" for item in results),
+                        "failed_count": sum(
+                            item.status != "completed" for item in results
+                        ),
                     }
                 )
 
         if best_pipeline is None or best_result is None:
             errors = "; ".join(
-                f"{result.model_name}: {result.error}" for result in results if result.error
+                f"{result.model_name}: {result.error}"
+                for result in results
+                if result.error
             )
             raise RuntimeError(f"All models failed during training. {errors}")
-            
+
     finally:
         if mlflow_available:
             mlflow.end_run()
@@ -325,7 +350,9 @@ def _select_specs(
         for name in model_names:
             match = next((spec for spec in selected if spec.matches(name)), None)
             if match is None:
-                raise ValueError(f"Model is not in the {selected[0].task_type} registry: {name}")
+                raise ValueError(
+                    f"Model is not in the {selected[0].task_type} registry: {name}"
+                )
             requested.append(match)
         selected = requested
     if max_models is not None:
@@ -352,7 +379,9 @@ def _score_predictions(
     if task_type == "classification":
         metrics = {
             "accuracy": round(float(accuracy_score(y_test, pred)), 4),
-            "f1": round(float(f1_score(y_test, pred, average="weighted", zero_division=0)), 4),
+            "f1": round(
+                float(f1_score(y_test, pred, average="weighted", zero_division=0)), 4
+            ),
         }
         try:
             model = pipeline.named_steps["model"]

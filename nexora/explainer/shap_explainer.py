@@ -44,8 +44,15 @@ def explain_report(report, *, plot: bool = False) -> pd.DataFrame:
 
     frame = _importance_frame(feature_names, raw)
     if plot and not frame.empty:
-        ax = frame.head(15).sort_values("importance").plot.barh(
-            x="feature", y="importance", legend=False, title="Nexora Feature Importance"
+        ax = (
+            frame.head(15)
+            .sort_values("importance")
+            .plot.barh(
+                x="feature",
+                y="importance",
+                legend=False,
+                title="Nexora Feature Importance",
+            )
         )
         ax.set_xlabel("Importance")
     return frame
@@ -62,7 +69,9 @@ def _native_importance(model) -> np.ndarray | None:
     return None
 
 
-def _permutation_importance(pipeline, X_raw, y, feature_count: int) -> np.ndarray | None:
+def _permutation_importance(
+    pipeline, X_raw, y, feature_count: int
+) -> np.ndarray | None:
     try:
         result = permutation_importance(
             pipeline,
@@ -91,4 +100,8 @@ def _importance_frame(feature_names: list[str], raw: np.ndarray) -> pd.DataFrame
         }
         for feature, value in zip(feature_names, values, strict=False)
     ]
-    return pd.DataFrame(rows).sort_values("importance", ascending=False).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values("importance", ascending=False)
+        .reset_index(drop=True)
+    )

@@ -11,8 +11,8 @@ df.to_csv("test_data.csv", index=False)
 nx = Nexora("test_data.csv", target="MedHouseVal")
 report = nx.quick()
 
-assert report.best_model is not None,  "FAIL: best_model is None"
-assert report.best_score > 0,          "FAIL: best_score <= 0"
+assert report.best_model is not None, "FAIL: best_model is None"
+assert report.best_score > 0, "FAIL: best_score <= 0"
 
 report.save_code("model.py")
 result = subprocess.run(["python", "model.py"], capture_output=True, text=True)

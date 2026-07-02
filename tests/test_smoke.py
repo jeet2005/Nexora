@@ -17,16 +17,19 @@ from nexora import Nexora, NexoraReport, __version__
 
 # ───────── fixtures ─────────
 
+
 @pytest.fixture(scope="module")
 def sample_df():
     rng = np.random.default_rng(42)
     n = 80
-    return pd.DataFrame({
-        "price": rng.uniform(10, 500, n).round(2),
-        "quantity": rng.integers(1, 50, n),
-        "category": rng.choice(["electronics", "clothing", "food"], n),
-        "revenue": (rng.uniform(100, 5000, n)).round(2),
-    })
+    return pd.DataFrame(
+        {
+            "price": rng.uniform(10, 500, n).round(2),
+            "quantity": rng.integers(1, 50, n),
+            "category": rng.choice(["electronics", "clothing", "food"], n),
+            "revenue": (rng.uniform(100, 5000, n)).round(2),
+        }
+    )
 
 
 @pytest.fixture(scope="module")
@@ -35,6 +38,7 @@ def trained_report(sample_df):
 
 
 # ───────── smoke tests ─────────
+
 
 class TestSmoke:
     """Quick sanity checks for the critical path."""

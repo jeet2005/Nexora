@@ -273,19 +273,19 @@ def _numeric_input_block(numeric_features: list[str]) -> str:
 
     lines = []
     cols = {}
-    
+
     for idx, col in enumerate(numeric_features):
         col_obj = "col_left" if idx % 2 == 0 else "col_right"
         if col_obj not in cols:
             cols[col_obj] = []
-        
+
         lines.append(f"""    with {col_obj}:
         numeric_inputs[{col!r}] = st.number_input(
             label={col!r},
             value=0.0,
             step=1.0,
         )""")
-    
+
     return "\n".join(lines)
 
 
@@ -293,16 +293,16 @@ def _categorical_input_block(categorical_features: list[str]) -> str:
     """Generate code for categorical input widgets."""
 
     lines = []
-    
+
     for idx, col in enumerate(categorical_features):
         col_obj = "col_left" if idx % 2 == 0 else "col_right"
-        
+
         lines.append(f"""    with {col_obj}:
         categorical_inputs[{col!r}] = st.selectbox(
             label={col!r},
             options=["<select value>"],  # nexora: populate with actual unique values from training data
         )""")
-    
+
     return "\n".join(lines)
 
 
