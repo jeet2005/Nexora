@@ -32,6 +32,7 @@ from app.routers import (
 from app.services.auth_service import _firebase_app, firebase_enabled
 from app.services.persistence_service import collection
 
+
 def _hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
