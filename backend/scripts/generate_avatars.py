@@ -40,7 +40,8 @@ ADMIN_PALETTE = [
 
 def _hex(c: str) -> tuple[int, int, int]:
     c = c.lstrip("#")
-    return tuple(int(c[i : i + 2], 16) for i in (0, 2, 4))
+    r, g, b = (int(c[i : i + 2], 16) for i in (0, 2, 4))
+    return r, g, b
 
 
 def make_avatar(path: Path, label: str, c1: str, c2: str, size: int = 128) -> None:
