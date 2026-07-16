@@ -211,12 +211,12 @@ class AnomalyScorer:
 
         # Isolation Forest: score_samples returns negative anomaly score
         # More negative = more anomalous. Normalize to [0, 1].
-        if_raw = -self._iso_forest.score_samples(X)[0]
+        if_raw = -self._iso_forest.score_samples(cast(Any, X))[0]
         # Typical range is roughly [-0.5, 0.5] after negation; map to [0, 1]
         if_score = float(np.clip((if_raw + 0.5) / 1.0, 0.0, 1.0))
 
         # Autoencoder: reconstruction error, normalized
-        ae_error = float(self._autoencoder.reconstruction_error(X)[0])
+        ae_error = float(self._autoencoder.reconstruction_error(cast(Any, X))[0])
         # Normalize using a sigmoid-like mapping
         ae_score = float(1.0 / (1.0 + np.exp(-2.0 * (ae_error - 1.0))))
 
