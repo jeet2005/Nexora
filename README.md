@@ -163,6 +163,12 @@ graph TD
 * **Drift Detection** - Compares historical prediction request signatures to highlight potential target concept drift.
 * **Grounded LLM Chat** - Integrates local Ollama models (Phi-3 Mini) to act as a database context tutor answering questions regarding data distribution trends.
 
+### 6. Administration & Security (New)
+* **Admin Dashboard** - Dedicated interface to monitor system health, audit logs, and user activity.
+* **User Management & Profiles** - Full user authentication flows (Login/OTP), profile avatars, and public profile pages.
+* **Dataset & Content Moderation** - Admin controls for overseeing deployed models and data assets.
+* **API Key Rotation** - Secure management and rotation of API keys directly within the production UI.
+
 ---
 
 ## Technical Stack
@@ -276,8 +282,6 @@ To enable the dataset assistant using a local LLM instance:
 - [ ] Implement multi-file comparison dashboards within the Frontend page.
 - [ ] Add support for automated time-series forecasting hyperparameter tuning.
 - [ ] Integrate PostgreSQL database schema mappings for enterprise persistence layers.
-- [ ] Add REST API key rotation options inside the Production UI.
-- [ ] Create automated end-to-end integration tests using Playwright.
 
 ---
 
