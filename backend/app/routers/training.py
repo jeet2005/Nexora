@@ -115,7 +115,8 @@ async def batch_predict(
 ):
     try:
         content = await file.read()
-        selected = [item.strip() for item in model_ids.split(",") if item.strip()]
+        selected = [item.strip()
+                    for item in model_ids.split(",") if item.strip()]
         return BatchPredictionSummary(
             **run_batch_prediction(
                 dataset_id, content, file.filename or "batch.csv", selected or None
@@ -131,7 +132,8 @@ async def batch_predict(
 )
 async def get_batches(dataset_id: str):
     return BatchPredictionListResponse(
-        batches=[BatchPredictionSummary(**item) for item in list_batches(dataset_id)]
+        batches=[BatchPredictionSummary(**item)
+                 for item in list_batches(dataset_id)]
     )
 
 
@@ -182,7 +184,8 @@ async def get_deployments(dataset_id: str):
 )
 async def create_prediction_deployment(dataset_id: str, body: CreateDeploymentRequest):
     try:
-        deployment, api_key = create_deployment(dataset_id, body.name, body.model_ids)
+        deployment, api_key = create_deployment(
+            dataset_id, body.name, body.model_ids)
         return CreateDeploymentResponse(deployment=deployment, api_key=api_key)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -207,7 +210,8 @@ async def public_prediction(
     x_nexora_key: str | None = Header(default=None, alias="X-Nexora-Key"),
 ):
     if not x_nexora_key:
-        raise HTTPException(status_code=401, detail="X-Nexora-Key header is required.")
+        raise HTTPException(
+            status_code=401, detail="X-Nexora-Key header is required.")
     try:
         return predict_deployment(
             deployment_id, x_nexora_key, body.inputs, body.model_ids
@@ -225,7 +229,8 @@ async def public_prediction_root(
     x_nexora_key: str | None = Header(default=None, alias="X-Nexora-Key"),
 ):
     if not x_nexora_key:
-        raise HTTPException(status_code=401, detail="X-Nexora-Key header is required.")
+        raise HTTPException(
+            status_code=401, detail="X-Nexora-Key header is required.")
     try:
         return predict_deployment(
             deployment_id, x_nexora_key, body.inputs, body.model_ids

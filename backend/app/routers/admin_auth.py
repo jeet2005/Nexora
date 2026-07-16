@@ -92,7 +92,8 @@ async def login(request: Request, response: Response, login_data: AdminLoginRequ
         attempts, last_attempt = login_attempts[client_ip]
         if (now - last_attempt).total_seconds() < RATE_LIMIT_MINUTES * 60:
             if attempts >= MAX_ATTEMPTS:
-                raise HTTPException(status_code=429, detail="Too many login attempts")
+                raise HTTPException(
+                    status_code=429, detail="Too many login attempts")
             login_attempts[client_ip] = (attempts + 1, now)
         else:
             login_attempts[client_ip] = (1, now)
@@ -106,7 +107,8 @@ async def login(request: Request, response: Response, login_data: AdminLoginRequ
 
     admins_coll = _admin_collection()
     if admins_coll is None:
-        raise HTTPException(status_code=500, detail="Database connection failed")
+        raise HTTPException(
+            status_code=500, detail="Database connection failed")
 
     admin_doc = admins_coll.find_one({"email": login_data.email})
     if not admin_doc or not _verify_password(
@@ -117,7 +119,8 @@ async def login(request: Request, response: Response, login_data: AdminLoginRequ
     if client_ip in login_attempts:
         del login_attempts[client_ip]
 
-    admins_coll.update_one({"_id": admin_doc["_id"]}, {"$set": {"last_login": now}})
+    admins_coll.update_one({"_id": admin_doc["_id"]}, {
+                           "$set": {"last_login": now}})
     _issue_token(response, login_data.email)
     return _admin_login_response(login_data.email)
 
@@ -131,7 +134,8 @@ async def request_otp(request_data: AdminOtpRequest):
 
     admins_coll = _admin_collection()
     if admins_coll is None:
-        raise HTTPException(status_code=500, detail="Database connection failed")
+        raise HTTPException(
+            status_code=500, detail="Database connection failed")
 
     admin_doc = admins_coll.find_one({"email": request_data.email})
     if admin_doc:
@@ -178,7 +182,8 @@ async def login_otp(
     otp_coll = _otp_collection()
     admins_coll = _admin_collection()
     if otp_coll is None or admins_coll is None:
-        raise HTTPException(status_code=500, detail="Database connection failed")
+        raise HTTPException(
+            status_code=500, detail="Database connection failed")
 
     otp_doc = otp_coll.find_one({"email": request_data.email, "used": False})
     if (
@@ -186,7 +191,8 @@ async def login_otp(
         or otp_doc.get("expires_at") is None
         or otp_doc["expires_at"] < datetime.utcnow()
         or not bcrypt.checkpw(
-            request_data.code.encode("utf-8"), otp_doc["code_hash"].encode("utf-8")
+            request_data.code.encode(
+                "utf-8"), otp_doc["code_hash"].encode("utf-8")
         )
     ):
         raise HTTPException(status_code=401, detail="Invalid OTP code")
@@ -195,7 +201,8 @@ async def login_otp(
     if not admin_doc:
         raise HTTPException(status_code=401, detail="Invalid OTP code")
 
-    otp_coll.update_one({"email": request_data.email}, {"$set": {"used": True}})
+    otp_coll.update_one({"email": request_data.email},
+                        {"$set": {"used": True}})
     admins_coll.update_one(
         {"_id": admin_doc["_id"]}, {"$set": {"last_login": datetime.utcnow()}}
     )
@@ -213,7 +220,8 @@ async def forgot_password(request_data: AdminForgotPasswordRequest):
     admins_coll = _admin_collection()
     reset_coll = _reset_collection()
     if admins_coll is None or reset_coll is None:
-        raise HTTPException(status_code=500, detail="Database connection failed")
+        raise HTTPException(
+            status_code=500, detail="Database connection failed")
 
     admin_doc = admins_coll.find_one({"email": request_data.email})
     if admin_doc:
@@ -257,15 +265,18 @@ async def reset_password(request_data: AdminResetPasswordRequest):
     admins_coll = _admin_collection()
     reset_coll = _reset_collection()
     if admins_coll is None or reset_coll is None:
-        raise HTTPException(status_code=500, detail="Database connection failed")
+        raise HTTPException(
+            status_code=500, detail="Database connection failed")
 
-    reset_doc = reset_coll.find_one({"token": request_data.token, "used": False})
+    reset_doc = reset_coll.find_one(
+        {"token": request_data.token, "used": False})
     if (
         not reset_doc
         or reset_doc.get("expires_at") is None
         or reset_doc["expires_at"] < datetime.utcnow()
     ):
-        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+        raise HTTPException(
+            status_code=400, detail="Invalid or expired reset token")
 
     updated = admins_coll.update_one(
         {"email": reset_doc["email"]},
@@ -274,7 +285,8 @@ async def reset_password(request_data: AdminResetPasswordRequest):
     if updated.matched_count == 0:
         raise HTTPException(status_code=404, detail="Admin user not found")
 
-    reset_coll.update_one({"token": request_data.token}, {"$set": {"used": True}})
+    reset_coll.update_one({"token": request_data.token},
+                          {"$set": {"used": True}})
     return {"success": True, "message": "Password reset successfully."}
 
 
@@ -322,10 +334,12 @@ async def update_profile(
 ):
     admins_coll = _admin_collection()
     if admins_coll is None:
-        raise HTTPException(status_code=500, detail="Database connection failed")
+        raise HTTPException(
+            status_code=500, detail="Database connection failed")
     update_dict = {k: v for k, v in update.dict().items() if v is not None}
     if update_dict:
-        admins_coll.update_one({"email": admin["email"]}, {"$set": update_dict})
+        admins_coll.update_one({"email": admin["email"]}, {
+                               "$set": update_dict})
     return await get_me(admin)
 
 
@@ -335,7 +349,8 @@ async def change_password(
 ):
     admins_coll = _admin_collection()
     if admins_coll is None:
-        raise HTTPException(status_code=500, detail="Database connection failed")
+        raise HTTPException(
+            status_code=500, detail="Database connection failed")
 
     admin_doc = admins_coll.find_one({"email": admin["email"]})
     if not admin_doc or not _verify_password(

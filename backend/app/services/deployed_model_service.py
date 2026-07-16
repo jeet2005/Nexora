@@ -192,7 +192,8 @@ def train_selected_models(dataset_id: str, model_ids: list[str]) -> ProductionSt
     if len(model_ids) > 5:
         raise ValueError("Select up to five models for Prediction Studio.")
 
-    all_specs = {spec.id: spec for spec in get_models_for_problem(problem_type)}
+    all_specs = {
+        spec.id: spec for spec in get_models_for_problem(problem_type)}
     unknown = [model_id for model_id in model_ids if model_id not in all_specs]
     if unknown:
         raise ValueError(f"Unknown model selection: {', '.join(unknown)}")
@@ -215,7 +216,8 @@ def train_selected_models(dataset_id: str, model_ids: list[str]) -> ProductionSt
             "At least 10 rows with a target value are required for model training."
         )
     if problem_type == "classification" and y.nunique(dropna=True) < 2:
-        raise ValueError("The selected target must contain at least two classes.")
+        raise ValueError(
+            "The selected target must contain at least two classes.")
 
     if len(X) > 50_000:
         sampled = X.sample(50_000, random_state=42).index
@@ -236,7 +238,8 @@ def train_selected_models(dataset_id: str, model_ids: list[str]) -> ProductionSt
             errors.append(f"{spec.name}: {str(exc)[:120]}")
 
     if not trained:
-        raise ValueError("Selected models could not be trained. " + " ".join(errors))
+        raise ValueError(
+            "Selected models could not be trained. " + " ".join(errors))
 
     status = ProductionStatus(
         dataset_id=dataset_id,
@@ -265,7 +268,8 @@ def train_selected_models(dataset_id: str, model_ids: list[str]) -> ProductionSt
             "best_primary_score": max(model.primary_score for model in trained),
         },
         models=[model.model_dump() for model in trained],
-        best_model=max(trained, key=lambda model: model.primary_score).model_dump(),
+        best_model=max(
+            trained, key=lambda model: model.primary_score).model_dump(),
         artifact_refs={
             model.model_id: str(_artifact_path(dataset_id, model.model_id))
             for model in trained
@@ -293,22 +297,26 @@ def run_saved_prediction(
     selected = set(model_ids or [model.model_id for model in status.models])
     models = [model for model in status.models if model.model_id in selected]
     if not models:
-        raise ValueError("None of the requested models are trained and available.")
+        raise ValueError(
+            "None of the requested models are trained and available.")
 
-    submitted, assumed, warnings = _prepare_input_values(inputs, status.input_fields)
+    submitted, assumed, warnings = _prepare_input_values(
+        inputs, status.input_fields)
     raw_row = {**assumed, **submitted}
     raw_df = pd.DataFrame([raw_row])
 
     # Convert numeric fields to numeric dtype to avoid pandas object dtypes when None is present
     for field in status.input_fields:
         if field.name in raw_df.columns and field.kind == "number":
-            raw_df[field.name] = pd.to_numeric(raw_df[field.name], errors="coerce")
+            raw_df[field.name] = pd.to_numeric(
+                raw_df[field.name], errors="coerce")
 
     outputs: list[PredictionOutput] = []
     for descriptor in models:
         artifact = joblib.load(_artifact_path(dataset_id, descriptor.model_id))
         row = _feature_frame(
-            raw_df, artifact["raw_features"], artifact.get("datetime_features", [])
+            raw_df, artifact["raw_features"], artifact.get(
+                "datetime_features", [])
         )
         pipeline: Pipeline = artifact["pipeline"]
         value = pipeline.predict(row)[0]
@@ -362,12 +370,14 @@ def run_batch_prediction(
     _, target, problem_type = _require_prediction_context(dataset_id)
     status = load_production_status(dataset_id)
     if not status or not status.models:
-        raise ValueError("Train selected models before running batch predictions.")
+        raise ValueError(
+            "Train selected models before running batch predictions.")
 
     selected = set(model_ids or [model.model_id for model in status.models])
     models = [model for model in status.models if model.model_id in selected]
     if not models:
-        raise ValueError("None of the requested models are trained and available.")
+        raise ValueError(
+            "None of the requested models are trained and available.")
 
     raw_batch, warnings = _prepare_batch_frame(df, status.input_fields)
     output = df.copy()
@@ -375,7 +385,8 @@ def run_batch_prediction(
     for descriptor in models:
         artifact = joblib.load(_artifact_path(dataset_id, descriptor.model_id))
         features = _feature_frame(
-            raw_batch, artifact["raw_features"], artifact.get("datetime_features", [])
+            raw_batch, artifact["raw_features"], artifact.get(
+                "datetime_features", [])
         )
         pipeline: Pipeline = artifact["pipeline"]
         preds = pipeline.predict(features)
@@ -390,7 +401,8 @@ def run_batch_prediction(
 
     if problem_type == "regression":
         output["nexora_consensus"] = output[prediction_columns].apply(
-            lambda row: round(float(pd.to_numeric(row, errors="coerce").mean()), 6),
+            lambda row: round(
+                float(pd.to_numeric(row, errors="coerce").mean()), 6),
             axis=1,
         )
     else:
@@ -445,21 +457,24 @@ def explain_saved_prediction(
 ) -> PredictionExplainResponse:
     status = load_production_status(dataset_id)
     if not status or not status.models:
-        raise ValueError("Train selected models before explaining predictions.")
+        raise ValueError(
+            "Train selected models before explaining predictions.")
     descriptor = next(
         (model for model in status.models if model.model_id == model_id),
         status.models[0],
     )
     artifact = joblib.load(_artifact_path(dataset_id, descriptor.model_id))
 
-    submitted, assumed, warnings = _prepare_input_values(inputs, status.input_fields)
+    submitted, assumed, warnings = _prepare_input_values(
+        inputs, status.input_fields)
     raw_row = {**assumed, **submitted}
     baseline_row = {field.name: field.default for field in status.input_fields}
     raw_df = pd.DataFrame([raw_row])
     baseline_df = pd.DataFrame([baseline_row])
     for field in status.input_fields:
         if field.kind == "number":
-            raw_df[field.name] = pd.to_numeric(raw_df[field.name], errors="coerce")
+            raw_df[field.name] = pd.to_numeric(
+                raw_df[field.name], errors="coerce")
             baseline_df[field.name] = pd.to_numeric(
                 baseline_df[field.name], errors="coerce"
             )
@@ -468,14 +483,16 @@ def explain_saved_prediction(
     pred_value, pred_score = _prediction_score(
         pipeline,
         _feature_frame(
-            raw_df, artifact["raw_features"], artifact.get("datetime_features", [])
+            raw_df, artifact["raw_features"], artifact.get(
+                "datetime_features", [])
         ),
         status.problem_type,
     )
     base_value, base_score = _prediction_score(
         pipeline,
         _feature_frame(
-            baseline_df, artifact["raw_features"], artifact.get("datetime_features", [])
+            baseline_df, artifact["raw_features"], artifact.get(
+                "datetime_features", [])
         ),
         status.problem_type,
         target_label=pred_value,
@@ -558,10 +575,12 @@ def calculate_drift(
             if len(train_num) == 0 or len(batch_num) == 0:
                 continue
             std = float(train_num.std()) or 1.0
-            mean_shift = abs(float(batch_num.mean()) - float(train_num.mean())) / std
+            mean_shift = abs(float(batch_num.mean()) -
+                             float(train_num.mean())) / std
             below = batch_num < float(train_num.min())
             above = batch_num > float(train_num.max())
-            out_range = float((below | above).mean()) if len(batch_num) else 0.0
+            out_range = float((below | above).mean()
+                              ) if len(batch_num) else 0.0
             score = min(1.0, mean_shift / 3 + out_range)
             features.append(
                 {
@@ -577,7 +596,8 @@ def calculate_drift(
         elif field.kind == "category" and field.options:
             known = set(map(str, field.options))
             values = batch.dropna().astype(str)
-            unseen = float((~values.isin(known)).mean()) if len(values) else 0.0
+            unseen = float((~values.isin(known)).mean()
+                           ) if len(values) else 0.0
             features.append(
                 {
                     "feature": field.name,
@@ -617,12 +637,14 @@ def create_deployment(
 ) -> tuple[ModelDeployment, str]:
     status = load_production_status(dataset_id)
     if not status or not status.models:
-        raise ValueError("Train selected models before creating a deployment endpoint.")
+        raise ValueError(
+            "Train selected models before creating a deployment endpoint.")
     selected = model_ids or [model.model_id for model in status.models]
     trained = {model.model_id for model in status.models}
     missing = [model_id for model_id in selected if model_id not in trained]
     if missing:
-        raise ValueError(f"Models are not trained for deployment: {', '.join(missing)}")
+        raise ValueError(
+            f"Models are not trained for deployment: {', '.join(missing)}")
 
     api_key = f"nx_{secrets.token_urlsafe(32)}"
     raw = _load_deployment_records(dataset_id)
@@ -770,7 +792,8 @@ def _input_fields(df: pd.DataFrame, columns: list[str]) -> list[PredictionInputF
     for column in columns:
         series = df[column]
         if _infer_datetime(series):
-            parsed = pd.to_datetime(series, errors="coerce", format="mixed").dropna()
+            parsed = pd.to_datetime(
+                series, errors="coerce", format="mixed").dropna()
             fields.append(
                 PredictionInputField(
                     name=column,
@@ -785,9 +808,12 @@ def _input_fields(df: pd.DataFrame, columns: list[str]) -> list[PredictionInputF
                 PredictionInputField(
                     name=column,
                     kind="number",
-                    default=round(float(numbers.median()), 4) if len(numbers) else None,
-                    min_value=round(float(numbers.min()), 4) if len(numbers) else None,
-                    max_value=round(float(numbers.max()), 4) if len(numbers) else None,
+                    default=round(float(numbers.median()),
+                                  4) if len(numbers) else None,
+                    min_value=round(float(numbers.min()), 4) if len(
+                        numbers) else None,
+                    max_value=round(float(numbers.max()), 4) if len(
+                        numbers) else None,
                 )
             )
         elif series.nunique(dropna=True) <= 40:

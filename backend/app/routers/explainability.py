@@ -24,11 +24,13 @@ async def run_explainability(dataset_id: str, model_id: str | None = None):
 
     training_result = load_training_result(dataset_id)
     if not training_result or not training_result.best_model:
-        raise HTTPException(status_code=400, detail="No training results available.")
+        raise HTTPException(
+            status_code=400, detail="No training results available.")
 
     df = load_processed_df(dataset_id)
     if df is None:
-        raise HTTPException(status_code=404, detail="Processed dataset not found.")
+        raise HTTPException(
+            status_code=404, detail="Processed dataset not found.")
 
     target_model_id = model_id or training_result.best_model.model_id
     problem_type = session.problem_type or "classification"
@@ -65,11 +67,13 @@ async def generate_report(dataset_id: str, include_shap: bool = True):
 
     analysis = load_analysis(dataset_id)
     if not analysis:
-        raise HTTPException(status_code=404, detail="Dataset analysis not found.")
+        raise HTTPException(
+            status_code=404, detail="Dataset analysis not found.")
 
     training_result = load_training_result(dataset_id)
     if not training_result:
-        raise HTTPException(status_code=400, detail="No training results available.")
+        raise HTTPException(
+            status_code=400, detail="No training results available.")
 
     # Build dataset info
     dataset_info = {

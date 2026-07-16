@@ -32,12 +32,14 @@ def _client():
         from pymongo import MongoClient
         from pymongo.errors import PyMongoError
     except ImportError:
-        logger.error("PyMongo is not installed; MongoDB persistence is unavailable.")
+        logger.error(
+            "PyMongo is not installed; MongoDB persistence is unavailable.")
         return None
 
     for attempt in range(3):
         try:
-            client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=5000)
+            client = MongoClient(settings.mongodb_uri,
+                                 serverSelectionTimeoutMS=5000)
             client.admin.command("ping")
             _client_instance = client
             return client

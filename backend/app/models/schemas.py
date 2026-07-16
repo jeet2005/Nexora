@@ -21,7 +21,8 @@ class DatasetStats(BaseModel):
     median: dict[str, float | None] = Field(default_factory=dict)
     std: dict[str, float | None] = Field(default_factory=dict)
     skewness: dict[str, float | None] = Field(default_factory=dict)
-    correlation: dict[str, dict[str, float | None]] = Field(default_factory=dict)
+    correlation: dict[str, dict[str, float | None]
+                      ] = Field(default_factory=dict)
     outlier_counts: dict[str, int] = Field(default_factory=dict)
 
 
@@ -59,7 +60,8 @@ class DatasetAnalysis(BaseModel):
     stats: DatasetStats
     health: HealthScore
     prediction_suggestions: list[PredictionSuggestion]
-    model_eligibility: list[ModelEligibilityFinding] = Field(default_factory=list)
+    model_eligibility: list[ModelEligibilityFinding] = Field(
+        default_factory=list)
     semantic_summary: str
     preview: list[dict[str, Any]]
 
@@ -78,7 +80,8 @@ class ErrorResponse(BaseModel):
 
 # --- Phase 2: Session & Preprocessing ---
 
-ProblemType = Literal["classification", "regression", "time_series", "clustering"]
+ProblemType = Literal["classification",
+                      "regression", "time_series", "clustering"]
 
 
 class ConfigureTargetRequest(BaseModel):
@@ -170,7 +173,8 @@ class DatasetSession(BaseModel):
     problem_type: str | None = None
     problem_detection: ProblemDetection | None = None
     feature_selection: FeatureSelection | None = None
-    status: Literal["analyzed", "configured", "preprocessed", "trained"] = "analyzed"
+    status: Literal["analyzed", "configured",
+                    "preprocessed", "trained"] = "analyzed"
     preprocess_result: PreprocessResult | None = None
     training_result: TrainingResult | None = None
 
@@ -265,7 +269,8 @@ class ProductionModelsResponse(BaseModel):
 
 
 class ProductionTrainRequest(BaseModel):
-    model_ids: list[str] = Field(default_factory=list, min_length=1, max_length=5)
+    model_ids: list[str] = Field(
+        default_factory=list, min_length=1, max_length=5)
 
 
 class PredictionRunRequest(BaseModel):

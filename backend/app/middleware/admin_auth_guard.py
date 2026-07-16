@@ -14,7 +14,8 @@ def require_admin(token: str | None = Security(cookie_sec)):
         )
     try:
         payload = jwt.decode(
-            token, settings.admin_jwt_secret, algorithms=[settings.admin_jwt_algorithm]
+            token, settings.admin_jwt_secret, algorithms=[
+                settings.admin_jwt_algorithm]
         )
         subject = payload.get("sub")
         if not isinstance(subject, str):

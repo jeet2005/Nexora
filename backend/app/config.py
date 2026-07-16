@@ -45,7 +45,8 @@ class Settings(BaseSettings):
     # Ollama
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "phi3:mini"
-    ollama_timeout: float = 150.0  # 150 seconds (2.5 mins) for full quality responses
+    # 150 seconds (2.5 mins) for full quality responses
+    ollama_timeout: float = 150.0
     ollama_max_tokens: int = 256  # Full token budget for detailed explanations
 
     # Training

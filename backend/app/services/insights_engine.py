@@ -134,7 +134,8 @@ def generate_insights(
     warnings = _quality_warnings(
         raw_df, target_column, raw_feature_columns or feature_columns
     )
-    difficulty = _difficulty_score(df, target_column, problem_type, correlations)
+    difficulty = _difficulty_score(
+        df, target_column, problem_type, correlations)
 
     narrative_parts = [
         f"Target '{target_column}' configured for {problem_type}.",

@@ -47,7 +47,8 @@ def _select_specs(
         fast = [s for s in specs if s.speed == "fast"]
         medium = [s for s in specs if s.speed == "medium"]
         slow = [s for s in specs if s.speed == "slow"]
-        specs = fast + medium + slow[: max(0, max_models - len(fast) - len(medium))]
+        specs = fast + medium + \
+            slow[: max(0, max_models - len(fast) - len(medium))]
         specs = specs[:max_models]
     return specs
 
@@ -60,7 +61,8 @@ def estimate_benchmark_seconds(
     n_rows, n_cols = len(df), len(df.columns)
     use_cv = n_rows < 5000
     specs = _select_specs(df, problem_type, max_models)
-    per_model = [estimate_model_seconds(s, n_rows, n_cols, use_cv) for s in specs]
+    per_model = [estimate_model_seconds(
+        s, n_rows, n_cols, use_cv) for s in specs]
     total = sum(per_model)
     return {
         "seconds": max(5, int(round(total))),

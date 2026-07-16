@@ -18,7 +18,8 @@ def detect_problem_type(df: pd.DataFrame, target_column: str) -> dict:
     if is_dt:
         problem_type = "time_series"
         confidence = 0.88
-        hints.append("Target appears to be temporal — time-series models recommended.")
+        hints.append(
+            "Target appears to be temporal — time-series models recommended.")
     elif is_numeric and nunique > max(20, n * 0.05):
         problem_type = "regression"
         confidence = 0.9
@@ -36,7 +37,8 @@ def detect_problem_type(df: pd.DataFrame, target_column: str) -> dict:
     else:
         problem_type = "classification"
         confidence = 0.5
-        hints.append("Low cardinality target — verify this is the correct column.")
+        hints.append(
+            "Low cardinality target — verify this is the correct column.")
 
     datetime_cols = [
         c for c in df.columns if c != target_column and _infer_datetime(df[c])
@@ -57,8 +59,10 @@ def detect_problem_type(df: pd.DataFrame, target_column: str) -> dict:
 
 def suggest_feature_columns(df: pd.DataFrame, target_column: str) -> dict:
     exclude = {target_column}
-    id_cols = [c for c in df.columns if c != target_column and _is_id_like(df[c])]
-    dt_cols = [c for c in df.columns if c != target_column and _infer_datetime(df[c])]
+    id_cols = [c for c in df.columns if c !=
+               target_column and _is_id_like(df[c])]
+    dt_cols = [c for c in df.columns if c !=
+               target_column and _infer_datetime(df[c])]
 
     features = [
         c

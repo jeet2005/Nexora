@@ -4,7 +4,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-ROOT = Path(__file__).resolve().parent.parent.parent / "frontend" / "public" / "avatars"
+ROOT = Path(__file__).resolve().parent.parent.parent / \
+    "frontend" / "public" / "avatars"
 
 USER_PALETTE = [
     ("#6366F1", "#818CF8"),
@@ -40,7 +41,7 @@ ADMIN_PALETTE = [
 
 def _hex(c: str) -> tuple[int, int, int]:
     c = c.lstrip("#")
-    return tuple(int(c[i : i + 2], 16) for i in (0, 2, 4))
+    return tuple(int(c[i: i + 2], 16) for i in (0, 2, 4))
 
 
 def make_avatar(path: Path, label: str, c1: str, c2: str, size: int = 128) -> None:
@@ -63,7 +64,8 @@ def make_avatar(path: Path, label: str, c1: str, c2: str, size: int = 128) -> No
     text = label.upper()
     bbox = draw.textbbox((0, 0), text)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    draw.text(((size - tw) // 2, (size - th) // 2 - 4), text, fill=(255, 255, 255, 230))
+    draw.text(((size - tw) // 2, (size - th) // 2 - 4),
+              text, fill=(255, 255, 255, 230))
 
     img.save(path, "PNG")
 

@@ -99,7 +99,8 @@ def _compute_stats(df: pd.DataFrame, profiles: list[ColumnProfile]) -> DatasetSt
         return stats
 
     num_df = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
-    bool_cols = [col for col in numeric_cols if pd.api.types.is_bool_dtype(df[col])]
+    bool_cols = [
+        col for col in numeric_cols if pd.api.types.is_bool_dtype(df[col])]
     if bool_cols:
         num_df[bool_cols] = num_df[bool_cols].astype(float)
     stats.mean = {c: _safe_float(num_df[c].mean()) for c in numeric_cols}
@@ -290,8 +291,10 @@ def _model_eligibility(
             )
         )
 
-    date_columns = [profile.name for profile in profiles if profile.is_datetime]
-    numeric_columns = [profile.name for profile in profiles if profile.is_numeric]
+    date_columns = [
+        profile.name for profile in profiles if profile.is_datetime]
+    numeric_columns = [
+        profile.name for profile in profiles if profile.is_numeric]
     ts_targets = [c for c in numeric_columns if c not in date_columns]
     ts_eligible = bool(date_columns and ts_targets)
     time_reason = (

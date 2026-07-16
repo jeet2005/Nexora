@@ -1,3 +1,4 @@
+from fastapi.responses import HTMLResponse
 import json
 from datetime import datetime
 from urllib.parse import urlparse
@@ -109,9 +110,6 @@ async def seed_admin_users():
                     "last_login": None,
                 }
             )
-
-
-from fastapi.responses import HTMLResponse
 
 
 @app.get("/", response_class=HTMLResponse)

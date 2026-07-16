@@ -152,7 +152,8 @@ def start_training(
                 },
                 models=summary.get("leaderboard", []),
                 best_model=best,
-                artifact_refs={"training_result": str(_training_path(dataset_id))},
+                artifact_refs={"training_result": str(
+                    _training_path(dataset_id))},
             )
 
             sess = load_session(dataset_id)
@@ -172,7 +173,8 @@ def start_training(
             with _lock:
                 _jobs[dataset_id]["status"] = "failed"
                 _jobs[dataset_id]["error"] = str(e)
-            _broadcast_sync(dataset_id, {"event": "training_failed", "error": str(e)})
+            _broadcast_sync(
+                dataset_id, {"event": "training_failed", "error": str(e)})
 
     thread = threading.Thread(target=_run, daemon=True)
     thread.start()

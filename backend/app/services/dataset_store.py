@@ -23,7 +23,8 @@ def save_dataset(df: pd.DataFrame, filename: str, analysis: DatasetAnalysis) -> 
     from app.services.persistence_service import upsert
 
     upsert(
-        "dataset_analyses", {"dataset_id": analysis.dataset_id}, analysis.model_dump()
+        "dataset_analyses", {
+            "dataset_id": analysis.dataset_id}, analysis.model_dump()
     )
 
 
@@ -39,13 +40,15 @@ def load_analysis(dataset_id: str) -> DatasetAnalysis | None:
             except Exception:
                 pass
         return None
-    analysis = DatasetAnalysis.model_validate_json(path.read_text(encoding="utf-8"))
+    analysis = DatasetAnalysis.model_validate_json(
+        path.read_text(encoding="utf-8"))
     if not analysis.model_eligibility:
         df = load_dataframe(dataset_id)
         if df is not None:
             analysis = analyze_dataset(df, analysis.filename, dataset_id)
             try:
-                path.write_text(analysis.model_dump_json(indent=2), encoding="utf-8")
+                path.write_text(analysis.model_dump_json(
+                    indent=2), encoding="utf-8")
                 from app.services.persistence_service import upsert
 
                 upsert(
