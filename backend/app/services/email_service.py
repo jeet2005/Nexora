@@ -19,8 +19,7 @@ def send_email(
     smtp_host = settings.smtp_host
     smtp_from_email = settings.smtp_from_email
     if not smtp_host or not smtp_from_email:
-        logger.info(
-            "SMTP not configured; skipping email to %s: %s", to, subject)
+        logger.info("SMTP not configured; skipping email to %s: %s", to, subject)
         return False
     try:
         msg = MIMEMultipart("alternative")

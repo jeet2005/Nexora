@@ -53,8 +53,7 @@ def user_growth_stats(days: int = 7):
     labels = []
     daily_series = []
     for i in range(days):
-        day = (datetime.utcnow() - timedelta(days=days - 1 - i)
-               ).strftime("%Y-%m-%d")
+        day = (datetime.utcnow() - timedelta(days=days - 1 - i)).strftime("%Y-%m-%d")
         labels.append(day)
         daily_series.append({"date": day, "users": daily.get(day, 0)})
 

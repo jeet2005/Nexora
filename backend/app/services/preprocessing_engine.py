@@ -64,8 +64,7 @@ def preprocess(
         removed = before - len(work)
         if removed:
             steps.append(
-                _step("remove_duplicates",
-                      f"Removed {removed} duplicate rows", removed)
+                _step("remove_duplicates", f"Removed {removed} duplicate rows", removed)
             )
 
     # --- Remove constant columns ---
@@ -186,8 +185,7 @@ def preprocess(
                 dummies = pd.get_dummies(
                     work[col].astype(str), prefix=col, drop_first=True
                 )
-                dummies.columns = [str(c).replace(" ", "_")
-                                   for c in dummies.columns]
+                dummies.columns = [str(c).replace(" ", "_") for c in dummies.columns]
                 work = work.drop(columns=[col])
                 work = pd.concat([work, dummies], axis=1)
                 encoders[col] = "onehot"

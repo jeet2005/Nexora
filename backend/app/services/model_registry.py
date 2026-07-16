@@ -109,8 +109,7 @@ def _classification_specs() -> list[ModelSpec]:
             f"sgd_hinge_a{alpha}",
             f"SGD Hinge (α={alpha})",
             "linear",
-            lambda a=alpha: SGDClassifier(
-                loss="hinge", alpha=a, max_iter=1500),
+            lambda a=alpha: SGDClassifier(loss="hinge", alpha=a, max_iter=1500),
             "fast",
         )
     for alpha in (0.0001, 0.01, 0.1):
@@ -118,8 +117,7 @@ def _classification_specs() -> list[ModelSpec]:
             f"sgd_log_a{alpha}",
             f"SGD Log Loss (α={alpha})",
             "linear",
-            lambda a=alpha: SGDClassifier(
-                loss="log_loss", alpha=a, max_iter=1500),
+            lambda a=alpha: SGDClassifier(loss="log_loss", alpha=a, max_iter=1500),
             "fast",
         )
     for c in (0.1, 1.0, 10.0):
@@ -138,8 +136,7 @@ def _classification_specs() -> list[ModelSpec]:
             lambda c=c: LinearSVC(C=c, max_iter=3000),
             "medium",
         )
-    add("perceptron", "Perceptron", "linear",
-        lambda: Perceptron(max_iter=1500), "fast")
+    add("perceptron", "Perceptron", "linear", lambda: Perceptron(max_iter=1500), "fast")
     for c in (0.01, 0.1, 1.0):
         add(
             f"passive_aggressive_c{c}",
@@ -199,8 +196,7 @@ def _classification_specs() -> list[ModelSpec]:
             lambda dep=depth: DecisionTreeClassifier(max_depth=dep),
             "fast",
         )
-    add("extra_tree", "Extra Tree", "tree",
-        lambda: ExtraTreeClassifier(), "fast")
+    add("extra_tree", "Extra Tree", "tree", lambda: ExtraTreeClassifier(), "fast")
 
     for n in (50, 100, 200, 300):
         for depth in (5, 10, 20):
@@ -258,10 +254,8 @@ def _classification_specs() -> list[ModelSpec]:
         )
 
     # --- Naive Bayes ---
-    add("gaussian_nb", "Gaussian Naive Bayes",
-        "bayes", lambda: GaussianNB(), "fast")
-    add("bernoulli_nb", "Bernoulli Naive Bayes",
-        "bayes", lambda: BernoulliNB(), "fast")
+    add("gaussian_nb", "Gaussian Naive Bayes", "bayes", lambda: GaussianNB(), "fast")
+    add("bernoulli_nb", "Bernoulli Naive Bayes", "bayes", lambda: BernoulliNB(), "fast")
     add(
         "multinomial_nb",
         "Multinomial Naive Bayes",
@@ -284,8 +278,7 @@ def _classification_specs() -> list[ModelSpec]:
             f"mlp_{hid}",
             f"MLP ({hid})",
             "neural",
-            lambda hidden=h: MLPClassifier(
-                hidden_layer_sizes=hidden, max_iter=500),
+            lambda hidden=h: MLPClassifier(hidden_layer_sizes=hidden, max_iter=500),
             "medium",
             max_samples=50_000,
         )
@@ -325,8 +318,7 @@ def _classification_specs() -> list[ModelSpec]:
         "calibrated_lr",
         "Calibrated Logistic",
         "calibration",
-        lambda: CalibratedClassifierCV(
-            LogisticRegression(max_iter=2000), cv=3),
+        lambda: CalibratedClassifierCV(LogisticRegression(max_iter=2000), cv=3),
         "medium",
     )
 
@@ -399,8 +391,7 @@ def _classification_specs() -> list[ModelSpec]:
                     f"catboost_{iters}_d{depth}",
                     f"CatBoost ({iters}, d={depth})",
                     "catboost",
-                    lambda i=iters, d=depth: CBC(
-                        iterations=i, depth=d, verbose=0),
+                    lambda i=iters, d=depth: CBC(iterations=i, depth=d, verbose=0),
                     "medium",
                 )
 
@@ -495,8 +486,7 @@ def _regression_specs() -> list[ModelSpec]:
             lambda a=alpha: SGDRegressor(alpha=a, max_iter=2000),
             "fast",
         )
-    add("huber", "Huber Regressor", "linear",
-        lambda: HuberRegressor(), "medium")
+    add("huber", "Huber Regressor", "linear", lambda: HuberRegressor(), "medium")
     add(
         "passive_aggressive_reg",
         "Passive Aggressive Regressor",
@@ -523,8 +513,7 @@ def _regression_specs() -> list[ModelSpec]:
             "slow",
             max_samples=30_000,
         )
-    add("linearsvr", "Linear SVR", "svm",
-        lambda: LinearSVR(max_iter=5000), "medium")
+    add("linearsvr", "Linear SVR", "svm", lambda: LinearSVR(max_iter=5000), "medium")
     for nu in (0.3, 0.5):
         add(
             f"nusvr_nu{nu}",
@@ -623,8 +612,7 @@ def _regression_specs() -> list[ModelSpec]:
             f"mlp_reg_{hid}",
             f"MLP Reg ({hid})",
             "neural",
-            lambda hidden=h: MLPRegressor(
-                hidden_layer_sizes=hidden, max_iter=500),
+            lambda hidden=h: MLPRegressor(hidden_layer_sizes=hidden, max_iter=500),
             "medium",
             max_samples=50_000,
         )
@@ -702,8 +690,7 @@ def _regression_specs() -> list[ModelSpec]:
                     f"catboost_reg_{iters}_d{depth}",
                     f"CatBoost Reg ({iters}, d={depth})",
                     "catboost",
-                    lambda i=iters, d=depth: CBR(
-                        iterations=i, depth=d, verbose=0),
+                    lambda i=iters, d=depth: CBR(iterations=i, depth=d, verbose=0),
                     "medium",
                 )
 

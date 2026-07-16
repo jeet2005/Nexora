@@ -141,12 +141,10 @@ def _generate_report(
     pdf.ln(20)
     pdf.set_font("Helvetica", "B", 28)
     pdf.set_text_color(*NexoraReport.TEXT)
-    pdf.cell(0, 14, "Predictive Analytics",
-             align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 14, "Predictive Analytics", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "B", 28)
     pdf.set_text_color(*NexoraReport.ACCENT)
-    pdf.cell(0, 14, "Intelligence Report", align="C",
-             new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 14, "Intelligence Report", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(8)
 
     pdf.set_font("Helvetica", "", 11)
@@ -251,10 +249,8 @@ def _generate_report(
     pdf.metric_row("Rows", f"{dataset_info.get('rows', 0):,}")
     pdf.metric_row("Columns", str(dataset_info.get("columns", 0)))
     pdf.metric_row("Target Column", dataset_info.get("target_column", "N/A"))
-    pdf.metric_row("Problem Type", dataset_info.get(
-        "problem_type", "N/A").title())
-    pdf.metric_row("Duplicate Rows", str(
-        dataset_info.get("duplicate_rows", 0)))
+    pdf.metric_row("Problem Type", dataset_info.get("problem_type", "N/A").title())
+    pdf.metric_row("Duplicate Rows", str(dataset_info.get("duplicate_rows", 0)))
     pdf.metric_row("Memory", f"{dataset_info.get('memory_mb', 0)} MB")
 
     if insights:
@@ -275,20 +271,17 @@ def _generate_report(
     # ── Training Results ──
     pdf.add_page()
     pdf.section_title("2. Model Training Results")
-    pdf.metric_row("Models Attempted", str(
-        training_result.get("total_attempted", 0)))
+    pdf.metric_row("Models Attempted", str(training_result.get("total_attempted", 0)))
     pdf.metric_row(
         "Models Completed",
         str(training_result.get("total_completed", 0)),
         highlight=True,
     )
-    pdf.metric_row("Models Failed", str(
-        training_result.get("total_failed", 0)))
+    pdf.metric_row("Models Failed", str(training_result.get("total_failed", 0)))
     pdf.metric_row(
         "Registry Available", str(training_result.get("registry_available", 0))
     )
-    pdf.metric_row("Primary Metric", training_result.get(
-        "primary_metric", "N/A"))
+    pdf.metric_row("Primary Metric", training_result.get("primary_metric", "N/A"))
 
     best = training_result.get("best_model")
     if best:
@@ -299,8 +292,7 @@ def _generate_report(
         for k, v in best.get("metrics", {}).items():
             if k != "primary":
                 label = k.upper() if len(k) <= 4 else k.title()
-                pdf.metric_row(label, f"{v:.4f}" if isinstance(
-                    v, float) else str(v))
+                pdf.metric_row(label, f"{v:.4f}" if isinstance(v, float) else str(v))
         pdf.metric_row("Training Time", f"{best.get('train_time_sec', 0)}s")
 
     # ── Leaderboard ──
@@ -340,8 +332,7 @@ def _generate_report(
             pdf.cell(
                 col_w[1], 5, _pdf_text(str(m.get("model_name", ""))[:35]), new_x="END"
             )
-            pdf.cell(col_w[2], 5, _pdf_text(
-                str(m.get("family", ""))), new_x="END")
+            pdf.cell(col_w[2], 5, _pdf_text(str(m.get("family", ""))), new_x="END")
             score = m.get("primary_score", 0)
             pdf.cell(
                 col_w[3],
@@ -349,8 +340,7 @@ def _generate_report(
                 f"{score:.4f}" if isinstance(score, float) else str(score),
                 new_x="END",
             )
-            pdf.cell(
-                col_w[4], 5, f"{m.get('train_time_sec', 0)}s", new_x="END")
+            pdf.cell(col_w[4], 5, f"{m.get('train_time_sec', 0)}s", new_x="END")
             pdf.cell(
                 col_w[5],
                 5,
@@ -389,8 +379,7 @@ def _generate_report(
                     *(NexoraReport.GREEN if i < 3 else NexoraReport.TEXT)
                 )
                 pdf.cell(10, 5, str(i + 1), new_x="END")
-                pdf.cell(70, 5, _pdf_text(
-                    str(feat["feature"])[:40]), new_x="END")
+                pdf.cell(70, 5, _pdf_text(str(feat["feature"])[:40]), new_x="END")
                 pdf.cell(40, 5, f"{feat['importance']:.6f}", new_x="END")
                 pdf.cell(
                     30, 5, f"{feat['percentage']:.1f}%", new_x="LMARGIN", new_y="NEXT"

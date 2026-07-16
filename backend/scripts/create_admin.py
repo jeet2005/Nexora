@@ -49,8 +49,7 @@ def create_admin(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Create an admin user for Nexora")
+    parser = argparse.ArgumentParser(description="Create an admin user for Nexora")
     parser.add_argument("email", help="Admin email address")
     parser.add_argument("password", help="Admin password")
     parser.add_argument("--name", help="Display name", default=None)

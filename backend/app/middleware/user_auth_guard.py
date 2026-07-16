@@ -31,8 +31,7 @@ async def get_current_user(
 
 
 async def get_optional_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(
-        optional_security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(optional_security),
 ):
     if not credentials or not firebase_enabled():
         return None

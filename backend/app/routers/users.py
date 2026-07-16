@@ -95,8 +95,7 @@ def _upsert_local_user(user_id: str, updates: dict) -> dict:
 def _current_user_id(token: dict) -> str:
     user_id = token.get("uid")
     if not isinstance(user_id, str) or not user_id:
-        raise HTTPException(
-            status_code=401, detail="Invalid authentication token")
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
     return user_id
 
 
@@ -280,8 +279,7 @@ async def update_my_profile(
             if existing and existing.get("user_id") == user_id:
                 existing = None
         if existing:
-            raise HTTPException(
-                status_code=400, detail="Username already taken")
+            raise HTTPException(status_code=400, detail="Username already taken")
 
     if update_data.avatar_url and update_data.avatar_url not in VALID_AVATARS:
         raise HTTPException(status_code=400, detail="Invalid avatar selection")
@@ -293,8 +291,7 @@ async def update_my_profile(
                 if err:
                     raise HTTPException(status_code=400, detail=err)
 
-    update_dict = {k: v for k, v in update_data.dict().items()
-                   if v is not None}
+    update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
 
     if not update_dict:
         user = (
@@ -336,8 +333,7 @@ async def get_my_activity(token: dict = Depends(get_current_user)):
             for h in history[:MAX_LOGIN_HISTORY]
         ],
         email_verified=bool(token.get("email_verified")),
-        auth_providers=user.get(
-            "auth_providers") or _auth_providers_from_token(token),
+        auth_providers=user.get("auth_providers") or _auth_providers_from_token(token),
     )
 
 
@@ -432,8 +428,7 @@ async def export_my_data(token: dict = Depends(get_current_user)):
     users_col = collection("users")
     datasets_col = collection("datasets")
     user = (
-        users_col.find_one({"user_id": user_id}, {
-                           "_id": 0, "password_hash": 0})
+        users_col.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
         if users_col is not None
         else _find_local_user(user_id=user_id)
     )

@@ -63,8 +63,7 @@ def _score_model(
         try:
             if hasattr(model, "predict_proba") and len(np.unique(y_test)) == 2:
                 proba = model.predict_proba(X_test)[:, 1]
-                metrics["roc_auc"] = round(
-                    float(roc_auc_score(y_test, proba)), 4)
+                metrics["roc_auc"] = round(float(roc_auc_score(y_test, proba)), 4)
         except Exception:
             pass
         metrics["primary"] = metrics["accuracy"]
@@ -102,8 +101,7 @@ def _train_one(
                 model, X, y, cv=min(cv_folds, 5), scoring=scoring, n_jobs=1
             )
             primary = float(np.mean(scores))
-            metrics = {scoring: round(primary, 4),
-                       "primary": round(primary, 4)}
+            metrics = {scoring: round(primary, 4), "primary": round(primary, 4)}
             if problem_type == "classification":
                 metrics["accuracy"] = metrics["primary"]
             else:
@@ -120,8 +118,7 @@ def _train_one(
             )
 
         elapsed = round(time.perf_counter() - t0, 3)
-        speed_label = "fast" if elapsed < 2 else (
-            "medium" if elapsed < 10 else "slow")
+        speed_label = "fast" if elapsed < 2 else ("medium" if elapsed < 10 else "slow")
 
         return {
             "model_id": spec.id,
@@ -172,8 +169,7 @@ def run_training(
         fast = [s for s in specs if s.speed == "fast"]
         medium = [s for s in specs if s.speed == "medium"]
         slow = [s for s in specs if s.speed == "slow"]
-        specs = fast + medium + \
-            slow[: max(0, max_models - len(fast) - len(medium))]
+        specs = fast + medium + slow[: max(0, max_models - len(fast) - len(medium))]
         specs = specs[:max_models]
 
     use_cv = n < 5000
@@ -250,8 +246,7 @@ def run_training(
             elapsed = round(time.perf_counter() - training_started_at, 2)
             completed_count = i + 1
             avg_per_model = elapsed / max(completed_count, 1)
-            remaining = max(
-                0, int(round(avg_per_model * (total - completed_count))))
+            remaining = max(0, int(round(avg_per_model * (total - completed_count))))
             on_progress(
                 {
                     "event": "model_completed",
@@ -271,8 +266,7 @@ def run_training(
 
     completed = [r for r in results if r["status"] == "completed"]
     failed = [r for r in results if r["status"] != "completed"]
-    leaderboard = sorted(
-        completed, key=lambda r: r["primary_score"], reverse=True)
+    leaderboard = sorted(completed, key=lambda r: r["primary_score"], reverse=True)
 
     summary = {
         "total_attempted": total,

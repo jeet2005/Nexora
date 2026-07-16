@@ -47,8 +47,7 @@ def _admin_display(admin: dict) -> dict:
     admins_col = collection("admins")
     if admins_col is None:
         return {"name": admin["email"], "avatar_url": "/avatars/admins/a1.png"}
-    doc = admins_col.find_one({"email": admin["email"]}, {
-                              "_id": 0, "password_hash": 0})
+    doc = admins_col.find_one({"email": admin["email"]}, {"_id": 0, "password_hash": 0})
     if not doc:
         return {"name": admin["email"], "avatar_url": "/avatars/admins/a1.png"}
     return {

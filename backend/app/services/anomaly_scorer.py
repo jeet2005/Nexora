@@ -185,8 +185,7 @@ class AnomalyScorer:
                     mapped = []
                     for v in vals:
                         if v in le.classes_:
-                            mapped.append(
-                                int(np.asarray(le.transform([v]))[0]))
+                            mapped.append(int(np.asarray(le.transform([v]))[0]))
                         else:
                             mapped.append(len(le.classes_))
                     encoded = np.array(mapped)
@@ -218,8 +217,7 @@ class AnomalyScorer:
         if_score = float(np.clip((if_raw + 0.5) / 1.0, 0.0, 1.0))
 
         # Autoencoder: reconstruction error, normalized
-        ae_error = float(self._autoencoder.reconstruction_error(X)[
-                         0])  # type: ignore[union-attr]
+        ae_error = float(self._autoencoder.reconstruction_error(X)[0])  # type: ignore[union-attr]
         # Normalize using a sigmoid-like mapping
         ae_score = float(1.0 / (1.0 + np.exp(-2.0 * (ae_error - 1.0))))
 
@@ -228,8 +226,7 @@ class AnomalyScorer:
         combined = float(np.clip(combined, 0.0, 1.0))
 
         # Top features: largest absolute deviation from mean (z-score magnitude)
-        feature_deviations = np.abs(
-            X[0]) / (self._feature_stds + 1e-8)  # type: ignore[operator]
+        feature_deviations = np.abs(X[0]) / (self._feature_stds + 1e-8)  # type: ignore[operator]
         top_indices = np.argsort(feature_deviations)[-3:][::-1]
         top_feats = [
             self._feature_names[i] for i in top_indices if i < len(self._feature_names)

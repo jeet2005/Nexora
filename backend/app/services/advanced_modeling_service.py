@@ -72,13 +72,11 @@ def run_clustering(
 
     X_raw = _feature_frame(df, columns)
     X = StandardScaler().fit_transform(X_raw)
-    model = KMeans(n_clusters=n_clusters, n_init=10,
-                   random_state=settings.random_seed)
+    model = KMeans(n_clusters=n_clusters, n_init=10, random_state=settings.random_seed)
     labels = model.fit_predict(X)
     pca = PCA(n_components=2, random_state=settings.random_seed)
     coords = (
-        pca.fit_transform(X) if X.shape[1] >= 2 else np.c_[
-            X[:, 0], np.zeros(len(X))]
+        pca.fit_transform(X) if X.shape[1] >= 2 else np.c_[X[:, 0], np.zeros(len(X))]
     )
 
     silhouette = (
@@ -200,8 +198,7 @@ def run_time_series(
         series[date_column] = pd.to_datetime(
             series[date_column], errors="coerce", format="mixed"
         )
-    series[target_column] = pd.to_numeric(
-        series[target_column], errors="coerce")
+    series[target_column] = pd.to_numeric(series[target_column], errors="coerce")
     series = series.dropna().sort_values(date_column)
     if len(series) < 6:
         raise ValueError(
@@ -249,8 +246,7 @@ def run_time_series(
     }
 
     model.fit(t, y)
-    future_t = cast(Any, np.arange(
-        len(grouped), len(grouped) + periods).reshape(-1, 1))
+    future_t = cast(Any, np.arange(len(grouped), len(grouped) + periods).reshape(-1, 1))
     future_values = model.predict(future_t)
     offset = _freq_offset(frequency)
     current = grouped.index[-1]
@@ -285,8 +281,7 @@ def run_time_series(
         "time_series",
         "time_series",
         target_column=target_column,
-        config={"date_column": date_column,
-                "periods": periods, "frequency": frequency},
+        config={"date_column": date_column, "periods": periods, "frequency": frequency},
         metrics=metrics,
         artifact_refs={"result": str(_result_path(dataset_id, "time_series"))},
     )

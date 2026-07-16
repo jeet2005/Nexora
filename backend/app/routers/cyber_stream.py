@@ -34,8 +34,7 @@ _DATA_PATH = (
     / "sample-data"
     / "network_traffic.csv"
 )
-_MMDB_PATH = Path(__file__).resolve(
-).parent.parent.parent / "GeoLite2-City.mmdb"
+_MMDB_PATH = Path(__file__).resolve().parent.parent.parent / "GeoLite2-City.mmdb"
 _scorer: AnomalyScorer | None = None
 _geo_reader = None
 _ring_buffer = RingBuffer(maxsize=1000)

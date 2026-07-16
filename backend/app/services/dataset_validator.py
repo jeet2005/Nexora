@@ -15,8 +15,7 @@ class DatasetValidationError(Exception):
 
 def load_dataframe(content: bytes, filename: str) -> pd.DataFrame:
     if len(content) == 0:
-        raise DatasetValidationError(
-            "The uploaded file is empty.", "empty_file")
+        raise DatasetValidationError("The uploaded file is empty.", "empty_file")
 
     ext = filename.lower().split(".")[-1]
 
@@ -58,18 +57,15 @@ def load_dataframe(content: bytes, filename: str) -> pd.DataFrame:
                     f"Unsupported file format: .{ext}", "invalid_format"
                 )
     except pd.errors.EmptyDataError:
-        raise DatasetValidationError(
-            "The file contains no data.", "empty_dataset")
+        raise DatasetValidationError("The file contains no data.", "empty_dataset")
     except ValueError as e:
         if "No tables found" in str(e):
             raise DatasetValidationError(
                 "No data tables found in file.", "empty_dataset"
             )
-        raise DatasetValidationError(
-            f"Could not parse file: {e}", "parse_error")
+        raise DatasetValidationError(f"Could not parse file: {e}", "parse_error")
     except Exception as e:
-        raise DatasetValidationError(
-            f"Could not parse file: {e}", "parse_error")
+        raise DatasetValidationError(f"Could not parse file: {e}", "parse_error")
 
     if df.empty or len(df.columns) == 0:
         raise DatasetValidationError(

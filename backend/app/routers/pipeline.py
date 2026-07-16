@@ -48,8 +48,7 @@ async def get_timing_estimates(
 ):
     _, df = _require_dataset(dataset_id)
     session = load_session(dataset_id)
-    problem_type = (
-        session.problem_type if session else None) or "classification"
+    problem_type = (session.problem_type if session else None) or "classification"
     if problem_type not in ("classification", "regression"):
         problem_type = "classification"
     return TimingEstimatesResponse(
@@ -167,8 +166,7 @@ async def run_preprocess(dataset_id: str, body: PreprocessRequest | None = None)
         raw_feature_columns=raw_features,
     )
 
-    preview = processed.head(30).replace(
-        {np.nan: None}).to_dict(orient="records")
+    preview = processed.head(30).replace({np.nan: None}).to_dict(orient="records")
 
     result = PreprocessResult(
         steps=[PreprocessStep(**s) for s in steps_raw],
@@ -203,8 +201,7 @@ async def processed_preview(dataset_id: str, limit: int = 30):
 
     df = load_processed_df(dataset_id)
     if df is None:
-        raise HTTPException(
-            status_code=404, detail="Processed data not found.")
+        raise HTTPException(status_code=404, detail="Processed data not found.")
 
     rows = df.head(limit).replace({np.nan: None}).to_dict(orient="records")
     return {"rows": rows, "total_rows": len(df), "columns": list(df.columns)}

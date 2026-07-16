@@ -38,8 +38,7 @@ class ScoredRow(BaseModel):
 
     row_id: str = Field(description="Unique event identifier")
     timestamp: str = Field(description="ISO-8601 timestamp of the event")
-    anomaly_score: float = Field(
-        ge=0.0, le=1.0, description="Combined anomaly score")
+    anomaly_score: float = Field(ge=0.0, le=1.0, description="Combined anomaly score")
     threat_level: ThreatLevel
     top_features: list[str] = Field(
         description="Top 3 features contributing to anomaly score"

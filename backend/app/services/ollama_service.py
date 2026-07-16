@@ -52,8 +52,7 @@ def _build_dataset_context(dataset_id: str) -> str:
     if analysis.prediction_suggestions:
         lines.append("\nPrediction suggestions:")
         for s in analysis.prediction_suggestions[:5]:
-            lines.append(
-                f"  - {s.target_column} ({s.problem_type}): {s.description}")
+            lines.append(f"  - {s.target_column} ({s.problem_type}): {s.description}")
 
     if analysis.model_eligibility:
         lines.append("\nModel readiness:")
@@ -81,8 +80,7 @@ def _build_dataset_context(dataset_id: str) -> str:
                 f"\nBest model: {bm.model_name} "
                 f"({tr.primary_metric}={bm.primary_score})"
             )
-        lines.append(
-            f"Models trained: {tr.total_completed}/{tr.total_attempted}")
+        lines.append(f"Models trained: {tr.total_completed}/{tr.total_attempted}")
 
     deployed = load_production_status(dataset_id)
     if deployed and deployed.models:
@@ -496,8 +494,7 @@ def _prediction_studio_guidance(dataset_id: str) -> str:
             "the prediction; I can then help explain what it means."
         )
 
-    fields = ", ".join(
-        f"`{field.name}`" for field in deployed.input_fields[:10])
+    fields = ", ".join(f"`{field.name}`" for field in deployed.input_fields[:10])
     models = ", ".join(model.model_name for model in deployed.models)
     return (
         f"I recognized a request to predict `{deployed.target_column}`. Your saved models are {models}. "

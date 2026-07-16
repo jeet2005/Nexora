@@ -31,8 +31,7 @@ PLOT_BG = "#ffffff"
 TEXT = "#202124"
 MUTED = "#5f6368"
 GRID = "#e8eaed"
-GOOGLE_COLORS = ["#4285f4", "#34a853",
-                 "#fbbc05", "#ea4335", "#a142f4", "#00acc1"]
+GOOGLE_COLORS = ["#4285f4", "#34a853", "#fbbc05", "#ea4335", "#a142f4", "#00acc1"]
 
 
 def _fig_to_base64(fig: plt.Figure) -> str:
@@ -256,10 +255,8 @@ def _plot_prediction_distribution(y_test, y_pred, problem_type: str) -> str:
     fig, ax = plt.subplots(figsize=(10, 6))
 
     if problem_type == "regression":
-        ax.scatter(y_test, y_pred, alpha=0.72, s=18,
-                   c="#4285f4", edgecolors="none")
-        lims = [min(y_test.min(), y_pred.min()),
-                max(y_test.max(), y_pred.max())]
+        ax.scatter(y_test, y_pred, alpha=0.72, s=18, c="#4285f4", edgecolors="none")
+        lims = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
         ax.plot(
             lims,
             lims,
@@ -313,8 +310,7 @@ def _plot_residuals(y_test, y_pred) -> str:
 
     # Residual scatter
     ax = axes[0]
-    ax.scatter(y_pred, residuals, alpha=0.65, s=16,
-               c="#a142f4", edgecolors="none")
+    ax.scatter(y_pred, residuals, alpha=0.65, s=16, c="#a142f4", edgecolors="none")
     ax.axhline(0, color="#ea4335", linestyle="--", linewidth=1, alpha=0.7)
     ax.set_xlabel("Predicted", color=MUTED, fontsize=10)
     ax.set_ylabel("Residual", color=MUTED, fontsize=10)
@@ -330,8 +326,7 @@ def _plot_residuals(y_test, y_pred) -> str:
     ax.axvline(0, color="#ea4335", linestyle="--", linewidth=1, alpha=0.7)
     ax.set_xlabel("Residual", color=MUTED, fontsize=10)
     ax.set_ylabel("Frequency", color=MUTED, fontsize=10)
-    ax.set_title("Residual Distribution", color=TEXT,
-                 fontsize=12, fontweight="bold")
+    ax.set_title("Residual Distribution", color=TEXT, fontsize=12, fontweight="bold")
     ax.set_facecolor(PLOT_BG)
     for spine in ax.spines.values():
         spine.set_color(GRID)
@@ -414,12 +409,10 @@ def run_explainability(
     # fallback importances keep the feature usable instead of failing the request.
     sv = None
     try:
-        sv, _ = _compute_shap_values(
-            model, X_train, X_test, feature_cols, problem_type)
+        sv, _ = _compute_shap_values(model, X_train, X_test, feature_cols, problem_type)
         importances = _compute_feature_importance(sv, feature_cols)
     except Exception:
-        importances = _fallback_feature_importance(
-            model, X_test, y_test, feature_cols)
+        importances = _fallback_feature_importance(model, X_test, y_test, feature_cols)
 
     # Generate plots
     plots: dict[str, str] = {}
@@ -467,14 +460,12 @@ def run_explainability(
         try:
             if hasattr(model, "predict_proba") and len(np.unique(y_test)) == 2:
                 proba = model.predict_proba(X_test)[:, 1]
-                metrics["roc_auc"] = round(
-                    float(roc_auc_score(y_test, proba)), 4)
+                metrics["roc_auc"] = round(float(roc_auc_score(y_test, proba)), 4)
         except Exception:
             pass
     else:
         metrics["mae"] = round(float(mean_absolute_error(y_test, y_pred)), 4)
-        metrics["rmse"] = round(
-            float(np.sqrt(mean_squared_error(y_test, y_pred))), 4)
+        metrics["rmse"] = round(float(np.sqrt(mean_squared_error(y_test, y_pred))), 4)
         metrics["r2"] = round(float(r2_score(y_test, y_pred)), 4)
 
     return {
