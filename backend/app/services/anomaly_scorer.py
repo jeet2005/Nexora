@@ -204,7 +204,7 @@ class AnomalyScorer:
 
         Target: <10ms per row.
         """
-        if not self.ready:
+        if not self.ready or self._iso_forest is None or self._autoencoder is None:
             raise RuntimeError("Scorer not trained yet")
 
         t0 = time.perf_counter_ns()
