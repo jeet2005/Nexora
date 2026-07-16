@@ -39,7 +39,11 @@ def _hash_password(password: str) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if settings.persistence_backend == "mongodb" and settings.admin_seed_json and settings.admin_seed_password:
+    if (
+        settings.persistence_backend == "mongodb"
+        and settings.admin_seed_json
+        and settings.admin_seed_password
+    ):
         try:
             admins_to_seed = json.loads(settings.admin_seed_json)
             if isinstance(admins_to_seed, list):
@@ -54,7 +58,9 @@ async def lifespan(app: FastAPI):
                                     admins_coll.insert_one(
                                         {
                                             "email": email,
-                                            "password_hash": _hash_password(settings.admin_seed_password),
+                                            "password_hash": _hash_password(
+                                                settings.admin_seed_password
+                                            ),
                                             "name": name,
                                             "avatar_url": f"/avatars/admins/a{index}.png",
                                             "created_at": datetime.now(UTC),
