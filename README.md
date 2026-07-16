@@ -14,6 +14,7 @@ An autonomous predictive analytics platform that profiles datasets, builds optim
 
 ---
 
+[![CI Status](https://github.com/DhavalSolanki21/Nexora/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DhavalSolanki21/Nexora/actions/workflows/ci.yml)
 [![Backend CI](https://github.com/jeet2005/Nexora/actions/workflows/ci-backend.yml/badge.svg?branch=main)](https://github.com/jeet2005/Nexora/actions/workflows/ci-backend.yml)
 [![Frontend CI](https://github.com/jeet2005/Nexora/actions/workflows/ci-frontend.yml/badge.svg?branch=main)](https://github.com/jeet2005/Nexora/actions/workflows/ci-frontend.yml)
 [![GitHub stars](https://img.shields.io/github/stars/jeet2005/Nexora?style=social)](https://github.com/jeet2005/Nexora/stargazers)
