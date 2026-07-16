@@ -1,14 +1,6 @@
 """SHAP-based model explainability engine for Phase 4."""
 
 from __future__ import annotations
-from app.services.model_registry import ModelSpec, get_models_for_problem
-from app.config import settings
-from sklearn.model_selection import train_test_split
-from sklearn.inspection import permutation_importance
-import shap
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 
 import base64
 import io
@@ -16,6 +8,15 @@ import warnings
 from typing import Any
 
 import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import shap
+from sklearn.inspection import permutation_importance
+from sklearn.model_selection import train_test_split
+
+from app.config import settings
+from app.services.model_registry import ModelSpec, get_models_for_problem
 
 matplotlib.use("Agg")
 

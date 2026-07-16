@@ -1,4 +1,3 @@
-from fastapi.responses import HTMLResponse
 import json
 from datetime import datetime
 from urllib.parse import urlparse
@@ -6,6 +5,7 @@ from urllib.parse import urlparse
 import bcrypt
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 from app.config import settings
 from app.routers import (

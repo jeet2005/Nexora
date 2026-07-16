@@ -1,11 +1,12 @@
-from app.services.persistence_service import collection
-from app.config import settings
 import argparse
 import datetime
 import sys
 from pathlib import Path
 
 import bcrypt
+
+from app.config import settings
+from app.services.persistence_service import collection
 
 # Add backend directory to sys.path
 backend_dir = Path(__file__).resolve().parent.parent
