@@ -1,5 +1,6 @@
 import json
-from datetime import datetime
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 import bcrypt
@@ -35,6 +36,7 @@ app = FastAPI(
     title=settings.app_name,
     description="Autonomous AI-powered predictive analytics platform",
     version="0.4.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -71,45 +73,33 @@ def _hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
-@app.on_event("startup")
-async def seed_admin_users():
-    if settings.persistence_backend != "mongodb":
-        return
-
-    if not settings.admin_seed_json or not settings.admin_seed_password:
-        return
-
-    try:
-        admins_to_seed = json.loads(settings.admin_seed_json)
-    except ValueError:
-        return
-
-    if not isinstance(admins_to_seed, list):
-        return
-
-    admins_coll = collection("admins")
-    if admins_coll is None:
-        return
-
-    for index, admin in enumerate(admins_to_seed, start=1):
-        if not isinstance(admin, dict):
-            continue
-        email = admin.get("email")
-        name = admin.get("name")
-        if not isinstance(email, str) or not isinstance(name, str):
-            continue
-
-        if admins_coll.find_one({"email": email}) is None:
-            admins_coll.insert_one(
-                {
-                    "email": email,
-                    "password_hash": _hash_password(settings.admin_seed_password),
-                    "name": name,
-                    "avatar_url": f"/avatars/admins/a{index}.png",
-                    "created_at": datetime.utcnow(),
-                    "last_login": None,
-                }
-            )
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.persistence_backend == "mongodb" and settings.admin_seed_json and settings.admin_seed_password:
+        try:
+            admins_to_seed = json.loads(settings.admin_seed_json)
+            if isinstance(admins_to_seed, list):
+                admins_coll = collection("admins")
+                if admins_coll is not None:
+                    for index, admin in enumerate(admins_to_seed, start=1):
+                        if isinstance(admin, dict):
+                            email = admin.get("email")
+                            name = admin.get("name")
+                            if isinstance(email, str) and isinstance(name, str):
+                                if admins_coll.find_one({"email": email}) is None:
+                                    admins_coll.insert_one(
+                                        {
+                                            "email": email,
+                                            "password_hash": _hash_password(settings.admin_seed_password),
+                                            "name": name,
+                                            "avatar_url": f"/avatars/admins/a{index}.png",
+                                            "created_at": datetime.now(timezone.utc),
+                                            "last_login": None,
+                                        }
+                                    )
+        except ValueError:
+            pass
+    yield
 
 
 @app.get("/", response_class=HTMLResponse)
