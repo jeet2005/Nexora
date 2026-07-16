@@ -1,6 +1,6 @@
 import json
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from urllib.parse import urlparse
 
 import bcrypt
@@ -31,6 +31,39 @@ from app.routers import (
 )
 from app.services.auth_service import _firebase_app, firebase_enabled
 from app.services.persistence_service import collection
+
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.persistence_backend == "mongodb" and settings.admin_seed_json and settings.admin_seed_password:
+        try:
+            admins_to_seed = json.loads(settings.admin_seed_json)
+            if isinstance(admins_to_seed, list):
+                admins_coll = collection("admins")
+                if admins_coll is not None:
+                    for index, admin in enumerate(admins_to_seed, start=1):
+                        if isinstance(admin, dict):
+                            email = admin.get("email")
+                            name = admin.get("name")
+                            if isinstance(email, str) and isinstance(name, str):
+                                if admins_coll.find_one({"email": email}) is None:
+                                    admins_coll.insert_one(
+                                        {
+                                            "email": email,
+                                            "password_hash": _hash_password(settings.admin_seed_password),
+                                            "name": name,
+                                            "avatar_url": f"/avatars/admins/a{index}.png",
+                                            "created_at": datetime.now(UTC),
+                                            "last_login": None,
+                                        }
+                                    )
+        except ValueError:
+            pass
+    yield
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -67,39 +100,6 @@ app.include_router(admin_health.router)
 app.include_router(admin_audit.router)
 app.include_router(admin_drift.router)
 app.include_router(admin_users.router)
-
-
-def _hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    if settings.persistence_backend == "mongodb" and settings.admin_seed_json and settings.admin_seed_password:
-        try:
-            admins_to_seed = json.loads(settings.admin_seed_json)
-            if isinstance(admins_to_seed, list):
-                admins_coll = collection("admins")
-                if admins_coll is not None:
-                    for index, admin in enumerate(admins_to_seed, start=1):
-                        if isinstance(admin, dict):
-                            email = admin.get("email")
-                            name = admin.get("name")
-                            if isinstance(email, str) and isinstance(name, str):
-                                if admins_coll.find_one({"email": email}) is None:
-                                    admins_coll.insert_one(
-                                        {
-                                            "email": email,
-                                            "password_hash": _hash_password(settings.admin_seed_password),
-                                            "name": name,
-                                            "avatar_url": f"/avatars/admins/a{index}.png",
-                                            "created_at": datetime.now(timezone.utc),
-                                            "last_login": None,
-                                        }
-                                    )
-        except ValueError:
-            pass
-    yield
 
 
 @app.get("/", response_class=HTMLResponse)
