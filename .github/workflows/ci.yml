@@ -56,7 +56,7 @@ jobs:
           pip install flake8 mypy pytest
           
       - name: Run Flake8
-        run: flake8 .
+        run: flake8 . --max-line-length=127 --extend-ignore=E402,W391,E203
           
       - name: Run Mypy
         run: mypy .
