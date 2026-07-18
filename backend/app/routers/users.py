@@ -143,6 +143,7 @@ def _create_default_user(token: dict, request: Request | None = None) -> dict:
         return users_col.find_one({"user_id": user["user_id"]}) or user
     return _upsert_local_user(user["user_id"], user)
 
+
 def _record_local_login(user_id: str, token: dict, request: Request) -> dict | None:
     user = _find_local_user(user_id=user_id)
     if not user:
