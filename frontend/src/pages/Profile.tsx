@@ -131,7 +131,11 @@ export const Profile: React.FC = () => {
               <h2 className="text-lg font-bold text-gray-900">Community Reputation</h2>
               <p className="text-sm text-gray-500">Level {reputation.level} · {reputation.contribution_score} contribution points</p>
             </div>
-            <Link to="/feedback/new" className="btn-outline py-2 px-4 text-sm">Submit Feedback</Link>
+            <div className="flex items-center gap-2">
+              <Link to="/feedback/new" className="btn-outline py-2 px-4 text-sm">Submit Feedback</Link>
+              <Link to="/feedback" className="btn-outline py-2 px-4 text-sm">My Feedback</Link>
+              <Link to="/community" className="btn-outline py-2 px-4 text-sm">Leaderboard</Link>
+            </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-5">
             <MiniStat label="Accepted" value={reputation.feedback_accepted} />
