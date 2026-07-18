@@ -1,7 +1,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Send, UploadCloud } from 'lucide-react';
-import { categoryLabels, communityApi, FeedbackCategory, FeedbackPriority } from '../api/community';
+import { categoryLabels, communityApi, FeedbackCategory, FeedbackPriority, FeedbackAttachment } from '../api/community';
 import { useAuth } from '../contexts/AuthContext';
 
 const categories = Object.keys(categoryLabels) as FeedbackCategory[];
@@ -19,7 +19,7 @@ export default function SubmitFeedbackPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const attachments = useMemo(() => files.map((file) => ({ name: file.name, kind: file.type.startsWith('image/') ? 'screenshot' : 'file' })), [files]);
+
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
