@@ -32,6 +32,12 @@ class UserBase(BaseModel):
     auth_providers: list[str] | None = None
     last_login: datetime | None = None
     login_history: list[LoginEvent] | None = None
+    followers: list[str] = []
+    following: list[str] = []
+    pinned_achievements: list[str] | None = None
+    best_dataset: str | None = None
+    best_feedback: str | None = None
+    favorite_model: str | None = None
 
 
 class UserUpdate(BaseModel):
@@ -42,6 +48,10 @@ class UserUpdate(BaseModel):
     is_public: bool | None = None
     requires_2fa: bool | None = None
     links: dict[str, ExternalLink] | None = None
+    pinned_achievements: list[str] | None = None
+    best_dataset: str | None = None
+    best_feedback: str | None = None
+    favorite_model: str | None = None
 
 
 class UserCreate(UserBase):

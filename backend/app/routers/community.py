@@ -387,8 +387,11 @@ def _badge_objects(names: list[str]) -> list[dict]:
     ]
 
 
-def _stats_for_user(user_id: str) -> dict:
-    rows = [item for item in _all_feedback() if item.get("user_id") == user_id]
+def _stats_for_user(user_id: str, filtered_rows: list[dict] | None = None) -> dict:
+    if filtered_rows is None:
+        rows = [item for item in _all_feedback() if item.get("user_id") == user_id]
+    else:
+        rows = [item for item in filtered_rows if item.get("user_id") == user_id]
     stars = sum(int(item.get("stars") or 0) for item in rows)
     replies = sum(len(item.get("admin_replies") or []) for item in rows)
     badges = sorted(
@@ -455,6 +458,31 @@ def _stats_for_user(user_id: str) -> dict:
             )[:5]
         ],
     }
+
+
+@feedback_router.get("/profile/{user_id}/heatmap")
+def contribution_heatmap(user_id: str):
+    rows = [item for item in _all_feedback() if item.get("user_id") == user_id]
+    heatmap: dict[str, int] = {}
+    for item in rows:
+        created = _sort_datetime(item.get("created_at"))
+        date_str = created.strftime("%Y-%m-%d")
+        heatmap[date_str] = heatmap.get(date_str, 0) + 1
+        
+        for reply in item.get("admin_replies") or []:
+            reply_created = _sort_datetime(reply.get("created_at"))
+            reply_date = reply_created.strftime("%Y-%m-%d")
+            heatmap[reply_date] = heatmap.get(reply_date, 0) + 1
+            
+    return [{"date": k, "count": v} for k, v in heatmap.items()]
+
+
+@feedback_router.post("/upload")
+async def upload_files(
+    files: list[UploadFile], token: dict = Depends(get_current_user)
+):
+    stored = await _store_uploads(files)
+    return {"attachments": stored}
 
 
 @feedback_router.post("/feedback")
@@ -528,9 +556,9 @@ def profile_reputation(user_id: str):
 
 @feedback_router.get("/leaderboard")
 def leaderboard(period: str = "all"):
-    del period
+    base_rows = _filter_period(_all_feedback(), period)
     users: dict[str, dict] = {}
-    for item in _all_feedback():
+    for item in base_rows:
         user_id = item.get("user_id")
         if not user_id:
             continue
@@ -542,7 +570,7 @@ def leaderboard(period: str = "all"):
                 "email": item.get("user_email"),
             },
         )
-        entry.update(_stats_for_user(user_id))
+        entry.update(_stats_for_user(user_id, base_rows))
     rows = sorted(
         users.values(), key=lambda item: item.get("contribution_score", 0), reverse=True
     )
@@ -563,6 +591,39 @@ def list_notifications(token: dict = Depends(get_current_user)):
         rows = [_strip_id(item) for item in notes_col.find({"user_id": user_id})]
     rows.sort(key=lambda item: _sort_datetime(item.get("created_at")), reverse=True)
     return [_serialize(item) for item in rows[:50]]
+
+
+@feedback_router.post("/notifications/read")
+def mark_notifications_read(token: dict = Depends(get_current_user)):
+    user_id = _current_user_id(token)
+    notes_col = _notification_collection()
+    if notes_col is None:
+        rows = _load_local("notifications")
+        for item in rows:
+            if item.get("user_id") == user_id:
+                item["read"] = True
+        _save_local("notifications", rows)
+    else:
+        notes_col.update_many({"user_id": user_id}, {"$set": {"read": True}})
+    return {"success": True}
+
+
+@feedback_router.get("/feedback/public")
+def public_feedback(
+    query: str = "", category: str = "", status: str = ""
+):
+    rows = _all_feedback()
+    filtered = []
+    for item in rows:
+        if query and query.lower() not in item.get("title", "").lower() and query.lower() not in item.get("description", "").lower():
+            continue
+        if category and item.get("category") != category:
+            continue
+        if status and item.get("status") != status:
+            continue
+        filtered.append(item)
+    filtered.sort(key=lambda item: _sort_datetime(item.get("created_at")), reverse=True)
+    return [_serialize(item) for item in filtered[:100]]
 
 
 @admin_router.get("")
@@ -591,16 +652,23 @@ def admin_feedback_analytics():
     categories: dict[str, int] = {}
     research_topics: dict[str, int] = {}
     response_times = []
-    
+
     for item in rows:
         category = item.get("category") or "other"
         categories[category] = categories.get(category, 0) + 1
-        
+
         if category == "research":
             # Very simple topic extraction from title for trending research
             words = item.get("title", "").lower().split()
             for word in words:
-                if len(word) > 4 and word not in {"about", "using", "with", "from", "could", "would"}:
+                if len(word) > 4 and word not in {
+                    "about",
+                    "using",
+                    "with",
+                    "from",
+                    "could",
+                    "would",
+                }:
                     research_topics[word] = research_topics.get(word, 0) + 1
 
         if item.get("admin_replies"):
@@ -613,9 +681,13 @@ def admin_feedback_analytics():
             except Exception:
                 pass
 
-    top_categories = sorted(categories.items(), key=lambda item: item[1], reverse=True)[:5]
-    top_research = sorted(research_topics.items(), key=lambda item: item[1], reverse=True)[:5]
-    
+    top_categories = sorted(categories.items(), key=lambda item: item[1], reverse=True)[
+        :5
+    ]
+    top_research = sorted(
+        research_topics.items(), key=lambda item: item[1], reverse=True
+    )[:5]
+
     avg_response = sum(response_times) / len(response_times) if response_times else 0.0
 
     return {
@@ -631,7 +703,9 @@ def admin_feedback_analytics():
             {"topic": key.capitalize(), "count": value} for key, value in top_research
         ],
         "top_contributors": leaderboard()[:5],
-        "most_active_users": leaderboard()[:5], # Using leaderboard as proxy for active users
+        "most_active_users": leaderboard()[
+            :5
+        ],  # Using leaderboard as proxy for active users
     }
 
 
