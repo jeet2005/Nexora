@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fallbackProfileFromFirebaseUser, userApi, UserProfile } from '../api/users';
 import { communityApi, ReputationSummary } from '../api/community';
-import BadgeGrid from '../components/BadgeGrid';
+
 import { Database, Cpu, Clock, Settings, Github, Linkedin, ExternalLink, BadgeCheck } from 'lucide-react';
 import HeatmapChart from '../components/HeatmapChart';
 

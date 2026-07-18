@@ -140,7 +140,7 @@ export function FeedbackReview() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
               <label className="text-xs text-gray-500 flex flex-col gap-1">
                 Assigned To
-                <input value={(item as any).assigned_to || ''} onChange={(e) => update(item.id, { assigned_to: e.target.value } as any)} placeholder="Admin username or email" className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
+                <input value={item.assigned_to || ''} onChange={(e) => update(item.id, { assigned_to: e.target.value })} placeholder="Admin username or email" className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
               </label>
               <label className="text-xs text-gray-500 flex flex-col gap-1">
                 Duplicate Of
@@ -160,8 +160,8 @@ export function FeedbackReview() {
             <div className="border-t border-gray-100 pt-3">
               <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2"><StickyNote size={12} /> Internal Note</div>
               <div className="flex gap-2">
-                <input value={noteDrafts[item.id] ?? (item as any).internal_note ?? ''} onChange={(event) => setNoteDrafts((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Private admin note (not visible to user)" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
-                <button type="button" onClick={() => { const note = noteDrafts[item.id]?.trim(); if (note !== undefined) update(item.id, { internal_note: note } as any); }} className="btn-outline py-2 px-3 text-sm">Save</button>
+                <input value={noteDrafts[item.id] ?? item.internal_note ?? ''} onChange={(event) => setNoteDrafts((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Private admin note (not visible to user)" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
+                <button type="button" onClick={() => { const note = noteDrafts[item.id]?.trim(); if (note !== undefined) update(item.id, { internal_note: note }); }} className="btn-outline py-2 px-3 text-sm">Save</button>
               </div>
             </div>
 

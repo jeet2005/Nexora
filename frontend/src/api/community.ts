@@ -55,6 +55,8 @@ export interface FeedbackItem {
   badge_awarded?: string | null;
   reactions?: Record<string, string[]>;
   admin_replies?: FeedbackReply[];
+  assigned_to?: string | null;
+  internal_note?: string | null;
   created_at: string;
   updated_at: string;
 }

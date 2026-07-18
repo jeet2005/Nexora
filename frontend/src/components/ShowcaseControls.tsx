@@ -16,8 +16,8 @@ const ShowcaseControls: React.FC<ShowcaseControlsProps> = ({ userId }) => {
 
   // Load current showcase status on mount (placeholder – using reputation for now)
   useEffect(() => {
-    communityApi.getReputation(userId)
-      .then((rep) => setPinned(!!(rep as any).showcasePinned))
+    communityApi.getShowcase(userId)
+      .then((showcase) => setPinned(!!showcase?.pinned))
       .catch(() => setPinned(false));
   }, [userId]);
 
