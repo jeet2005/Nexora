@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Send, UploadCloud } from 'lucide-react';
 import { categoryLabels, communityApi, FeedbackCategory, FeedbackPriority, FeedbackAttachment } from '../api/community';
