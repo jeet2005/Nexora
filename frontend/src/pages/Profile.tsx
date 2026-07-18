@@ -3,7 +3,16 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fallbackProfileFromFirebaseUser, userApi, UserProfile } from '../api/users';
 import { communityApi, ReputationSummary } from '../api/community';
+import BadgeGrid from '../components/BadgeGrid';
 import { Database, Cpu, Clock, Settings, Github, Linkedin, ExternalLink, BadgeCheck } from 'lucide-react';
+import HeatmapChart from '../components/HeatmapChart';
+
+const MiniStat = ({ label, value }: { label: string; value: number }) => (
+  <div className="bg-white/50 border border-gray-100 rounded-lg p-3 text-center">
+    <div className="text-xl font-bold text-gray-900">{value}</div>
+    <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">{label}</div>
+  </div>
+);
 
 export const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -12,6 +21,7 @@ export const Profile: React.FC = () => {
   const [activity, setActivity] = useState<Awaited<ReturnType<typeof userApi.getActivity>> | null>(null);
   const [loading, setLoading] = useState(true);
   const [reputation, setReputation] = useState<ReputationSummary | null>(null);
+  const [heatmap, setHeatmap] = useState<{ date: string; contributions: number }[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -24,11 +34,19 @@ export const Profile: React.FC = () => {
         if (profileResult.status === 'fulfilled') {
           setProfile(profileResult.value);
           communityApi.getReputation(profileResult.value.user_id).then(setReputation).catch(() => setReputation(null));
+          communityApi.getHeatmap(profileResult.value.user_id).then(data => {
+            setHeatmap(data.map(d => ({ date: d.date, contributions: d.count })));
+          }).catch(() => setHeatmap([]));
         } else {
           console.error(profileResult.reason);
           const fallback = fallbackProfileFromFirebaseUser();
           setProfile(fallback);
-          if (fallback) communityApi.getReputation(fallback.user_id).then(setReputation).catch(() => setReputation(null));
+          if (fallback) {
+            communityApi.getReputation(fallback.user_id).then(setReputation).catch(() => setReputation(null));
+            communityApi.getHeatmap(fallback.user_id).then(data => {
+              setHeatmap(data.map(d => ({ date: d.date, contributions: d.count })));
+            }).catch(() => setHeatmap([]));
+          }
         }
         if (datasetsResult.status === 'fulfilled') {
           setHistory(datasetsResult.value);
@@ -139,6 +157,37 @@ export const Profile: React.FC = () => {
           </div>
         </div>
       )}
+{/* Heatmap */}
+<div className="glass rounded-2xl p-6 mb-12">
+  <h2 className="text-lg font-bold text-gray-900 mb-4">Contribution Heatmap</h2>
+  <HeatmapChart data={heatmap} />
+</div>
+
+{(profile?.best_dataset || profile?.favorite_model || (profile?.pinned_achievements && profile.pinned_achievements.length > 0)) && (
+  <div className="glass rounded-2xl p-6 mb-12">
+    <h2 className="text-lg font-bold text-gray-900 mb-4">Showcase</h2>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {profile.best_dataset && (
+        <div className="rounded-xl border border-gray-100 bg-white/70 p-4">
+          <p className="text-sm text-gray-500 font-medium">Best Dataset</p>
+          <p className="text-gray-900 mt-1 font-semibold">{profile.best_dataset}</p>
+        </div>
+      )}
+      {profile.favorite_model && (
+        <div className="rounded-xl border border-gray-100 bg-white/70 p-4">
+          <p className="text-sm text-gray-500 font-medium">Favorite Model</p>
+          <p className="text-gray-900 mt-1 font-semibold">{profile.favorite_model}</p>
+        </div>
+      )}
+      {profile.pinned_achievements && profile.pinned_achievements.length > 0 && (
+        <div className="rounded-xl border border-gray-100 bg-white/70 p-4">
+          <p className="text-sm text-gray-500 font-medium">Pinned Achievement</p>
+          <p className="text-gray-900 mt-1 font-semibold">{profile.pinned_achievements[0]}</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div className="glass rounded-2xl p-6 flex items-center gap-4">
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">

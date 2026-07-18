@@ -80,12 +80,33 @@ export default function NotificationsPage() {
               <Bell className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="font-semibold text-nexora-dark">Community notifications</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-nexora-dark flex items-center gap-2">
+                  Community notifications
+                  {communityNotifications.filter(n => !n.read).length > 0 && (
+                    <span className="bg-nexora-accent text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {communityNotifications.filter(n => !n.read).length} new
+                    </span>
+                  )}
+                </h2>
+                {communityNotifications.filter(n => !n.read).length > 0 && (
+                  <button
+                    onClick={() => {
+                      communityApi.markNotificationsRead().then(() => {
+                        setCommunityNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                      });
+                    }}
+                    className="text-xs text-nexora-accent hover:underline font-medium"
+                  >
+                    Mark all as read
+                  </button>
+                )}
+              </div>
               <div className="mt-3 space-y-3">
                 {communityNotifications.length === 0 ? (
                   <p className="text-sm text-nexora-dark/60">No feedback replies, stars, badges, or implementation updates yet.</p>
                 ) : communityNotifications.map((item) => (
-                  <div key={item.id} className="border-t border-nexora-border pt-3 first:border-t-0 first:pt-0">
+                  <div key={item.id} className={`border-t border-nexora-border pt-3 first:border-t-0 first:pt-0 ${!item.read ? 'border-l-2 border-l-nexora-accent bg-nexora-accent/5 pl-3 py-2 rounded-r-lg -ml-3' : ''}`}>
                     <div className="text-sm font-medium text-nexora-dark">{item.title}</div>
                     <div className="text-sm text-nexora-dark/60 mt-1">{item.message}</div>
                     <div className="text-xs text-nexora-dark/40 mt-1">{new Date(item.created_at).toLocaleString()}</div>

@@ -1,116 +1,86 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BadgeCheck, MessageSquare, Star } from 'lucide-react';
-import { categoryLabels, communityApi, FeedbackItem, statusLabels } from '../api/community';
-import { useAuth } from '../contexts/AuthContext';
+import { communityApi, FeedbackItem, FeedbackStatus } from '../api/community';
+import FeedbackCard from '../components/FeedbackCard';
+import { Plus } from 'lucide-react';
 
-const statusClass: Record<string, string> = {
-  waiting: 'bg-gray-100 text-gray-700',
-  under_review: 'bg-blue-50 text-blue-700',
-  planned: 'bg-nexora-accent/10 text-nexora-accent',
-  implemented: 'bg-green-50 text-green-700',
-  closed: 'bg-gray-100 text-gray-500',
-  duplicate: 'bg-amber-50 text-amber-700',
-};
+const filters: { label: string; value: FeedbackStatus | 'all' }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Waiting', value: 'waiting' },
+  { label: 'Under Review', value: 'under_review' },
+  { label: 'Planned', value: 'planned' },
+  { label: 'Implemented', value: 'implemented' },
+  { label: 'Closed', value: 'closed' },
+];
 
 export default function MyFeedbackPage() {
-  const { user } = useAuth();
-  const [items, setItems] = useState<FeedbackItem[]>([]);
+  const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<FeedbackStatus | 'all'>('all');
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
     communityApi.getMyFeedback()
-      .then(setItems)
-      .catch(() => setItems([]))
+      .then(setFeedback)
+      .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user]);
+  }, []);
 
-  if (!user) return <div className="text-center py-20">Please log in to view your feedback.</div>;
+  const filtered = activeFilter === 'all'
+    ? feedback
+    : feedback.filter(item => item.status === activeFilter);
+
+  const handleUpdate = (updated: FeedbackItem) => {
+    setFeedback(current => current.map(item => item.id === updated.id ? updated : item));
+  };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <div className="flex items-center justify-between gap-4 mb-8">
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
         <div>
           <p className="text-sm font-semibold text-nexora-accent mb-2">Community</p>
           <h1 className="text-3xl font-bold text-gray-900">My Feedback</h1>
-          <p className="text-gray-500 mt-2">Track admin replies, stars, badges, and implementation progress.</p>
+          <p className="text-gray-500 mt-2">Track your submitted feedback, admin replies, stars, and badges.</p>
         </div>
-        <Link to="/feedback/new" className="btn-primary py-2 px-4 text-sm">Submit Feedback</Link>
+        <Link to="/feedback/new" className="btn-primary py-2.5 px-5 flex items-center gap-2 text-sm">
+          <Plus size={16} /> Submit Feedback
+        </Link>
       </div>
 
-      <div className="space-y-4">
-        {loading ? (
-          <div className="glass rounded-2xl p-8 text-center text-gray-400">Loading feedback...</div>
-        ) : items.length === 0 ? (
-          <div className="glass rounded-2xl p-8 text-center text-gray-500">
-            No feedback yet. <Link to="/feedback/new" className="text-nexora-accent hover:underline">Submit your first idea</Link>.
-          </div>
-        ) : items.map((item) => (
-          <article key={item.id} className="glass rounded-2xl p-5 hover:bg-white/80 transition-colors">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusClass[item.status]}`}>{statusLabels[item.status]}</span>
-                  <span className="text-xs text-gray-400">{categoryLabels[item.category]}</span>
-                  <span className="text-xs text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
-                </div>
-                <h2 className="font-semibold text-gray-900">{item.title}</h2>
-                <p className="text-sm text-gray-600 mt-2 line-clamp-2">{item.description}</p>
-              </div>
-              <div className="flex flex-wrap gap-3 text-sm text-gray-500 md:justify-end">
-                <span className="inline-flex items-center gap-1"><MessageSquare size={15} /> {item.admin_replies?.length || 0} replies</span>
-                <span className="inline-flex items-center gap-1"><Star size={15} className="text-nexora-accent" /> {item.stars || 0}</span>
-                {item.badge_awarded && <span className="inline-flex items-center gap-1 text-nexora-accent"><BadgeCheck size={15} /> {item.badge_awarded}</span>}
-              </div>
-            </div>
-
-            {/* Reactions Row */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {[
-                { key: 'helpful', label: 'Helpful' },
-                { key: 'interesting', label: 'Interesting' },
-                { key: 'needs_more_info', label: 'Needs More Info' },
-                { key: 'agree', label: 'Agree' },
-                { key: 'research_worthy', label: 'Research Worthy' }
-              ].map(reaction => {
-                const count = item.reactions?.[reaction.key]?.length || 0;
-                const hasReacted = user && item.reactions?.[reaction.key]?.includes(user.uid);
-                return (
-                  <button
-                    key={reaction.key}
-                    onClick={() => {
-                      if (!user) return;
-                      communityApi.react(item.id, reaction.key).then(updated => {
-                        setItems(current => current.map(curr => curr.id === updated.id ? updated : curr));
-                      });
-                    }}
-                    className={`px-2 py-1 text-xs rounded-lg border flex items-center gap-1 transition-colors ${
-                      hasReacted 
-                        ? 'border-nexora-accent bg-nexora-accent/10 text-nexora-accent'
-                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                    }`}
-                  >
-                    <span>{reaction.label}</span>
-                    {count > 0 && <span className="font-medium">{count}</span>}
-                  </button>
-                );
-              })}
-            </div>
-
-            {item.admin_replies && item.admin_replies.length > 0 && (
-              <div className="mt-4 border-t border-gray-100 pt-4 space-y-2">
-                {item.admin_replies.slice(-2).map((reply) => (
-                  <p key={reply.id} className="text-sm text-gray-600"><span className="font-medium text-gray-900">Admin:</span> {reply.message}</p>
-                ))}
-              </div>
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {filters.map(f => (
+          <button
+            key={f.value}
+            onClick={() => setActiveFilter(f.value)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              activeFilter === f.value
+                ? 'bg-nexora-accent/10 text-nexora-accent'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            {f.label}
+            {f.value !== 'all' && (
+              <span className="ml-1.5 text-xs opacity-60">
+                {feedback.filter(item => item.status === f.value).length}
+              </span>
             )}
-          </article>
+          </button>
         ))}
       </div>
+
+      {loading ? (
+        <div className="glass rounded-2xl p-12 text-center text-gray-400">Loading your feedback...</div>
+      ) : filtered.length === 0 ? (
+        <div className="glass rounded-2xl p-12 text-center">
+          <p className="text-gray-400">No feedback found.</p>
+          <Link to="/feedback/new" className="text-nexora-accent text-sm hover:underline mt-2 inline-block">Submit your first feedback</Link>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filtered.map(item => (
+            <FeedbackCard key={item.id} feedback={item} onUpdate={handleUpdate} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

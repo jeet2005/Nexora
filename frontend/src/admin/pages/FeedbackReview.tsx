@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MessageSquare, Pin, Star } from 'lucide-react';
+import { MessageSquare, Pin, Star, Paperclip, StickyNote } from 'lucide-react';
 import { adminFeedbackApi, categoryLabels, FeedbackAnalytics, FeedbackItem, FeedbackPriority, FeedbackStatus, statusLabels } from '../../api/community';
 
 const statuses: FeedbackStatus[] = ['waiting', 'under_review', 'planned', 'implemented', 'closed', 'duplicate'];
@@ -10,6 +10,7 @@ export function FeedbackReview() {
   const [items, setItems] = useState<FeedbackItem[]>([]);
   const [analytics, setAnalytics] = useState<FeedbackAnalytics | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   const load = () => {
@@ -110,6 +111,15 @@ export function FeedbackReview() {
                 <h2 className="font-semibold text-gray-900">{item.title}</h2>
                 <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{item.description}</p>
                 {item.suggestion && <p className="text-sm text-gray-500 mt-2"><span className="font-medium text-gray-700">Suggestion:</span> {item.suggestion}</p>}
+                {item.attachments && item.attachments.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {item.attachments.map((att, idx) => (
+                      <a key={idx} href={att.url || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-600 hover:border-nexora-accent/40">
+                        <Paperclip size={12} /> {att.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-1 text-nexora-accent"><Star size={16} /> {item.stars}</div>
             </div>
@@ -127,6 +137,18 @@ export function FeedbackReview() {
               </label>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              <label className="text-xs text-gray-500 flex flex-col gap-1">
+                Assigned To
+                <input value={(item as any).assigned_to || ''} onChange={(e) => update(item.id, { assigned_to: e.target.value } as any)} placeholder="Admin username or email" className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
+              </label>
+              <label className="text-xs text-gray-500 flex flex-col gap-1">
+                Duplicate Of
+                <input value={item.duplicate_of || ''} onChange={(e) => update(item.id, { duplicate_of: e.target.value || null })} placeholder="Original feedback ID" className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
+              </label>
+            </div>
+
+
             {item.admin_replies && item.admin_replies.length > 0 && (
               <div className="border-t border-gray-100 pt-3 space-y-2">
                 {item.admin_replies.map((entry) => (
@@ -135,8 +157,16 @@ export function FeedbackReview() {
               </div>
             )}
 
+            <div className="border-t border-gray-100 pt-3">
+              <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2"><StickyNote size={12} /> Internal Note</div>
+              <div className="flex gap-2">
+                <input value={noteDrafts[item.id] ?? (item as any).internal_note ?? ''} onChange={(event) => setNoteDrafts((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Private admin note (not visible to user)" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
+                <button type="button" onClick={() => { const note = noteDrafts[item.id]?.trim(); if (note !== undefined) update(item.id, { internal_note: note } as any); }} className="btn-outline py-2 px-3 text-sm">Save</button>
+              </div>
+            </div>
+
             <div className="flex gap-3">
-              <input value={replyDrafts[item.id] || ''} onChange={(event) => setReplyDrafts((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Reply to this feedback" className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
+              <input value={replyDrafts[item.id] || ''} onChange={(event) => setReplyDrafts((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Reply to this feedback (sends notification)" className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20" />
               <button type="button" onClick={() => reply(item.id)} className="btn-primary py-2 px-4 flex items-center gap-2"><MessageSquare size={15} /> Reply</button>
             </div>
           </article>

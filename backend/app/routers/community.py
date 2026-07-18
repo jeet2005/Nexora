@@ -485,6 +485,46 @@ async def upload_files(
     return {"attachments": stored}
 
 
+class ShowcaseUpdate(BaseModel):
+    pinned_achievement: str | None = None
+    best_dataset: str | None = None
+    best_feedback: str | None = None
+    favorite_model: str | None = None
+    latest_badge: str | None = None
+
+
+@feedback_router.get("/profile/{user_id}/showcase")
+def get_user_showcase(user_id: str):
+    return _serialize(_showcase_for_user(user_id))
+
+
+@feedback_router.post("/profile/{user_id}/showcase")
+def update_user_showcase(
+    user_id: str, payload: ShowcaseUpdate, token: dict = Depends(get_current_user)
+):
+    if _current_user_id(token) != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return _serialize(_save_showcase(user_id, payload.dict(exclude_unset=True)))
+
+
+@feedback_router.post("/follow/{user_id}")
+def follow_user(user_id: str, token: dict = Depends(get_current_user)):
+    follower_id = _current_user_id(token)
+    doc = {
+        "follower_id": follower_id,
+        "following_id": user_id,
+        "created_at": datetime.utcnow(),
+    }
+    return _serialize(_save_follow(doc))
+
+
+@feedback_router.delete("/follow/{user_id}")
+def unfollow_user(user_id: str, token: dict = Depends(get_current_user)):
+    follower_id = _current_user_id(token)
+    _delete_follow(follower_id, user_id)
+    return {"status": "unfollowed"}
+
+
 @feedback_router.post("/feedback")
 def submit_feedback(payload: FeedbackCreate, token: dict = Depends(get_current_user)):
     category = payload.category.lower().replace(" ", "_")

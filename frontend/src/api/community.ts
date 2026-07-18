@@ -161,6 +161,26 @@ export const communityApi = {
     const { data } = await communityClient.post(`/community/feedback/${feedbackId}/reactions`, { reaction });
     return data;
   },
+  getHeatmap: async (userId: string): Promise<{ date: string; count: number }[]> => {
+    const { data } = await communityClient.get(`/community/profile/${userId}/heatmap`);
+    return data;
+  },
+  markNotificationsRead: async (): Promise<{ success: boolean }> => {
+    const { data } = await communityClient.post('/community/notifications/read');
+    return data;
+  },
+  getPublicFeedback: async (query = '', category = '', status = ''): Promise<FeedbackItem[]> => {
+    const { data } = await communityClient.get('/community/feedback/public', { params: { query, category, status } });
+    return data;
+  },
+  getShowcase: async (userId: string): Promise<Record<string, unknown>> => {
+    const { data } = await communityClient.get(`/community/profile/${userId}/showcase`);
+    return data;
+  },
+  updateShowcase: async (userId: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    const { data } = await communityClient.post(`/community/profile/${userId}/showcase`, payload);
+    return data;
+  },
 };
 
 export const adminFeedbackApi = {
@@ -172,7 +192,7 @@ export const adminFeedbackApi = {
     const { data } = await communityClient.get('/admin/feedback/analytics', { withCredentials: true });
     return data;
   },
-  update: async (feedbackId: string, payload: Partial<Pick<FeedbackItem, 'status' | 'priority' | 'pinned' | 'duplicate_of' | 'stars' | 'badge_awarded'>>): Promise<FeedbackItem> => {
+  update: async (feedbackId: string, payload: Partial<Pick<FeedbackItem, 'status' | 'priority' | 'pinned' | 'duplicate_of' | 'stars' | 'badge_awarded'> & { internal_note?: string; assigned_to?: string }>): Promise<FeedbackItem> => {
     const { data } = await communityClient.patch(`/admin/feedback/${feedbackId}`, payload, { withCredentials: true });
     return data;
   },

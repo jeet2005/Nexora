@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import LoginModal from './LoginModal';
 import { useEffect, useState } from 'react';
 import { userApi } from '../api/users';
+import { communityApi } from '../api/community';
 
 export default function Layout() {
   const location = useLocation();
@@ -13,15 +14,21 @@ export default function Layout() {
   const { user, signOut } = useAuth();
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!user) {
       setAvatarUrl(null);
+      setUnreadCount(0);
       return;
     }
     userApi.getMe()
       .then((profile) => setAvatarUrl(profile.avatar_url ?? null))
       .catch(() => setAvatarUrl(null));
+
+    communityApi.getNotifications()
+      .then(notes => setUnreadCount(notes.filter(n => !n.read).length))
+      .catch(() => setUnreadCount(0));
   }, [user]);
 
   return (
@@ -111,11 +118,16 @@ export default function Layout() {
             </Link>
             <Link
               to="/notifications"
-              className="w-9 h-9 rounded-lg border border-nexora-border text-nexora-dark/60 hover:text-nexora-accent hover:border-nexora-accent/40 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-lg border border-nexora-border text-nexora-dark/60 hover:text-nexora-accent hover:border-nexora-accent/40 flex items-center justify-center transition-colors relative"
               aria-label="Notifications"
               title="Notifications"
             >
               <Bell size={16} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
             
             {user ? (
