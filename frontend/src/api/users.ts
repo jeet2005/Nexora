@@ -30,6 +30,12 @@ export interface UserProfile {
   login_history?: Array<{ at: string; method: string; user_agent?: string; ip?: string }>;
   links?: Record<string, { url: string; is_visible: boolean; verified?: boolean }>;
   created_at: string;
+  followers?: string[];
+  following?: string[];
+  pinned_achievements?: string[];
+  best_dataset?: string;
+  best_feedback?: string;
+  favorite_model?: string;
 }
 
 export function fallbackProfileFromFirebaseUser(): UserProfile | null {
@@ -46,6 +52,7 @@ export function fallbackProfileFromFirebaseUser(): UserProfile | null {
     created_at: new Date().toISOString(),
   };
 }
+
 export interface UserProfileUpdate {
   name?: string;
   username?: string;
@@ -54,6 +61,10 @@ export interface UserProfileUpdate {
   is_public?: boolean;
   requires_2fa?: boolean;
   links?: Record<string, { url: string; is_visible: boolean }>;
+  pinned_achievements?: string[];
+  best_dataset?: string;
+  best_feedback?: string;
+  favorite_model?: string;
 }
 
 export const userApi = {
@@ -75,6 +86,14 @@ export const userApi = {
   },
   getPublicProfile: async (username: string): Promise<UserProfile> => {
     const { data } = await userClient.get(`/users/profile/${username}`);
+    return data;
+  },
+  followUser: async (username: string): Promise<{ success: boolean }> => {
+    const { data } = await userClient.post(`/users/profile/${username}/follow`);
+    return data;
+  },
+  unfollowUser: async (username: string): Promise<{ success: boolean }> => {
+    const { data } = await userClient.post(`/users/profile/${username}/unfollow`);
     return data;
   },
   getMyDatasets: async () => {

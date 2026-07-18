@@ -133,6 +133,14 @@ export const communityApi = {
     const { data } = await communityClient.post('/community/feedback', payload);
     return data;
   },
+  uploadFiles: async (files: File[]): Promise<{ attachments: FeedbackAttachment[] }> => {
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+    const { data } = await communityClient.post('/community/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  },
   getMyFeedback: async (): Promise<FeedbackItem[]> => {
     const { data } = await communityClient.get('/community/feedback/me');
     return data;

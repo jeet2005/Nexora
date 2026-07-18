@@ -31,7 +31,20 @@ export default function SubmitFeedbackPage() {
     setError('');
     setMessage('');
     try {
-      await communityApi.submitFeedback({ title, category, description, priority, suggestion, attachments });
+      let finalAttachments: FeedbackAttachment[] = [];
+      if (files.length > 0) {
+        const uploadRes = await communityApi.uploadFiles(files);
+        finalAttachments = uploadRes.attachments;
+      }
+      
+      await communityApi.submitFeedback({ 
+        title, 
+        category, 
+        description, 
+        priority, 
+        suggestion, 
+        attachments: finalAttachments 
+      });
       setTitle('');
       setDescription('');
       setSuggestion('');

@@ -458,9 +458,11 @@ async def get_public_profile(username: str):
 
 
 @router.post("/profile/{username}/follow")
-async def follow_user(username: str, req: Request, token: dict = Depends(get_current_user)):
+async def follow_user(
+    username: str, req: Request, token: dict = Depends(get_current_user)
+):
     user_id = _current_user_id(token)
-    
+
     users_col = collection("users")
     if users_col is not None:
         target_user = users_col.find_one({"username": username})
@@ -468,14 +470,12 @@ async def follow_user(username: str, req: Request, token: dict = Depends(get_cur
             raise HTTPException(status_code=404, detail="User not found")
         if target_user["user_id"] == user_id:
             raise HTTPException(status_code=400, detail="Cannot follow yourself")
-            
+
         users_col.update_one(
-            {"user_id": target_user["user_id"]}, 
-            {"$addToSet": {"followers": user_id}}
+            {"user_id": target_user["user_id"]}, {"$addToSet": {"followers": user_id}}
         )
         users_col.update_one(
-            {"user_id": user_id}, 
-            {"$addToSet": {"following": target_user["user_id"]}}
+            {"user_id": user_id}, {"$addToSet": {"following": target_user["user_id"]}}
         )
     else:
         target_user = _find_local_user(username=username)
@@ -483,53 +483,57 @@ async def follow_user(username: str, req: Request, token: dict = Depends(get_cur
             raise HTTPException(status_code=404, detail="User not found")
         if target_user["user_id"] == user_id:
             raise HTTPException(status_code=400, detail="Cannot follow yourself")
-            
+
         target_followers = set(target_user.get("followers") or [])
         target_followers.add(user_id)
-        _upsert_local_user(target_user["user_id"], {"followers": list(target_followers)})
-        
+        _upsert_local_user(
+            target_user["user_id"], {"followers": list(target_followers)}
+        )
+
         current_user = _find_local_user(user_id=user_id)
         if current_user:
             current_following = set(current_user.get("following") or [])
             current_following.add(target_user["user_id"])
             _upsert_local_user(user_id, {"following": list(current_following)})
-            
+
     return {"success": True}
 
 
 @router.post("/profile/{username}/unfollow")
-async def unfollow_user(username: str, req: Request, token: dict = Depends(get_current_user)):
+async def unfollow_user(
+    username: str, req: Request, token: dict = Depends(get_current_user)
+):
     user_id = _current_user_id(token)
-    
+
     users_col = collection("users")
     if users_col is not None:
         target_user = users_col.find_one({"username": username})
         if not target_user:
             raise HTTPException(status_code=404, detail="User not found")
-            
+
         users_col.update_one(
-            {"user_id": target_user["user_id"]}, 
-            {"$pull": {"followers": user_id}}
+            {"user_id": target_user["user_id"]}, {"$pull": {"followers": user_id}}
         )
         users_col.update_one(
-            {"user_id": user_id}, 
-            {"$pull": {"following": target_user["user_id"]}}
+            {"user_id": user_id}, {"$pull": {"following": target_user["user_id"]}}
         )
     else:
         target_user = _find_local_user(username=username)
         if not target_user:
             raise HTTPException(status_code=404, detail="User not found")
-            
+
         target_followers = set(target_user.get("followers") or [])
         target_followers.discard(user_id)
-        _upsert_local_user(target_user["user_id"], {"followers": list(target_followers)})
-        
+        _upsert_local_user(
+            target_user["user_id"], {"followers": list(target_followers)}
+        )
+
         current_user = _find_local_user(user_id=user_id)
         if current_user:
             current_following = set(current_user.get("following") or [])
             current_following.discard(target_user["user_id"])
             _upsert_local_user(user_id, {"following": list(current_following)})
-            
+
     return {"success": True}
 
 

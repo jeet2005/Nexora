@@ -468,12 +468,12 @@ def contribution_heatmap(user_id: str):
         created = _sort_datetime(item.get("created_at"))
         date_str = created.strftime("%Y-%m-%d")
         heatmap[date_str] = heatmap.get(date_str, 0) + 1
-        
+
         for reply in item.get("admin_replies") or []:
             reply_created = _sort_datetime(reply.get("created_at"))
             reply_date = reply_created.strftime("%Y-%m-%d")
             heatmap[reply_date] = heatmap.get(reply_date, 0) + 1
-            
+
     return [{"date": k, "count": v} for k, v in heatmap.items()]
 
 
@@ -609,13 +609,15 @@ def mark_notifications_read(token: dict = Depends(get_current_user)):
 
 
 @feedback_router.get("/feedback/public")
-def public_feedback(
-    query: str = "", category: str = "", status: str = ""
-):
+def public_feedback(query: str = "", category: str = "", status: str = ""):
     rows = _all_feedback()
     filtered = []
     for item in rows:
-        if query and query.lower() not in item.get("title", "").lower() and query.lower() not in item.get("description", "").lower():
+        if (
+            query
+            and query.lower() not in item.get("title", "").lower()
+            and query.lower() not in item.get("description", "").lower()
+        ):
             continue
         if category and item.get("category") != category:
             continue
