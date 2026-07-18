@@ -99,6 +99,50 @@ def _current_user_id(token: dict) -> str:
     return user_id
 
 
+def _default_user_from_token(token: dict, request: Request | None = None) -> dict:
+    user_id = _current_user_id(token)
+    providers = _auth_providers_from_token(token)
+    now = datetime.utcnow()
+    name = token.get("name") or token.get("email") or "Nexora User"
+    avatar_url = token.get("picture")
+    if avatar_url not in VALID_AVATARS:
+        avatar_url = f"/avatars/users/u{random.randint(1, 20)}.png"
+    return {
+        "user_id": user_id,
+        "email": token.get("email"),
+        "name": name,
+        "username": None,
+        "bio": None,
+        "avatar_url": avatar_url,
+        "role": "user",
+        "is_public": True,
+        "requires_2fa": False,
+        "links": None,
+        "auth_providers": providers,
+        "last_login": now,
+        "login_history": [
+            {
+                "at": now,
+                "method": providers[0] if providers else "unknown",
+                "user_agent": request.headers.get("user-agent") if request else None,
+                "ip": request.client.host if request and request.client else None,
+            }
+        ],
+        "created_at": now,
+    }
+
+
+def _create_default_user(token: dict, request: Request | None = None) -> dict:
+    user = _default_user_from_token(token, request)
+    users_col = collection("users")
+    if users_col is not None:
+        existing = users_col.find_one({"user_id": user["user_id"]})
+        if existing:
+            return existing
+        users_col.insert_one(user)
+        return users_col.find_one({"user_id": user["user_id"]}) or user
+    return _upsert_local_user(user["user_id"], user)
+
 def _record_local_login(user_id: str, token: dict, request: Request) -> dict | None:
     user = _find_local_user(user_id=user_id)
     if not user:
@@ -222,6 +266,10 @@ async def register_user(
             return users_col.find_one({"user_id": user_data.user_id})
         return _record_local_login(user_data.user_id, token, request) or existing
 
+    if not user_data.email:
+        user_data.email = token.get("email")
+    if not user_data.name:
+        user_data.name = token.get("name") or user_data.email or "Nexora User"
     if not user_data.avatar_url or user_data.avatar_url not in VALID_AVATARS:
         user_data.avatar_url = f"/avatars/users/u{random.randint(1, 20)}.png"
 
@@ -247,7 +295,7 @@ async def register_user(
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_my_profile(token: dict = Depends(get_current_user)):
+async def get_my_profile(request: Request, token: dict = Depends(get_current_user)):
     users_col = collection("users")
     user_id = _current_user_id(token)
     user = (
@@ -256,7 +304,7 @@ async def get_my_profile(token: dict = Depends(get_current_user)):
         else _find_local_user(user_id=user_id)
     )
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        user = _create_default_user(token, request)
 
     return user
 
@@ -304,16 +352,16 @@ async def update_my_profile(
         return user
 
     if users_col is not None:
+        if users_col.find_one({"user_id": user_id}) is None:
+            _create_default_user(token)
         users_col.update_one({"user_id": user_id}, {"$set": update_dict})
         return users_col.find_one({"user_id": user_id})
-    user = _find_local_user(user_id=user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    user = _find_local_user(user_id=user_id) or _create_default_user(token)
     return _upsert_local_user(user_id, {**user, **update_dict})
 
 
 @router.get("/me/activity", response_model=ActivityResponse)
-async def get_my_activity(token: dict = Depends(get_current_user)):
+async def get_my_activity(request: Request, token: dict = Depends(get_current_user)):
     users_col = collection("users")
 
     user_id = _current_user_id(token)
@@ -323,7 +371,7 @@ async def get_my_activity(token: dict = Depends(get_current_user)):
         else _find_local_user(user_id=user_id)
     )
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        user = _create_default_user(token, request)
 
     history = user.get("login_history") or []
     return ActivityResponse(

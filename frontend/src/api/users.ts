@@ -17,7 +17,7 @@ userClient.interceptors.request.use(async (config) => {
 
 export interface UserProfile {
   user_id: string;
-  email: string;
+  email?: string | null;
   name?: string;
   username?: string;
   bio?: string;
@@ -32,6 +32,20 @@ export interface UserProfile {
   created_at: string;
 }
 
+export function fallbackProfileFromFirebaseUser(): UserProfile | null {
+  const user = auth.currentUser;
+  if (!user) return null;
+  return {
+    user_id: user.uid,
+    email: user.email,
+    name: user.displayName || 'Nexora User',
+    avatar_url: user.photoURL || undefined,
+    role: 'user',
+    is_public: true,
+    requires_2fa: false,
+    created_at: new Date().toISOString(),
+  };
+}
 export interface UserProfileUpdate {
   name?: string;
   username?: string;

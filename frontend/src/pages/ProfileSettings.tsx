@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { userApi, UserProfile } from '../api/users';
+import { fallbackProfileFromFirebaseUser, userApi, UserProfile } from '../api/users';
 import { USER_AVATARS } from '../constants/avatars';
 import {
   Save, Check, Globe, Lock, Github, Linkedin, ExternalLink, Download, Trash2, Eye,
@@ -32,15 +32,33 @@ export const ProfileSettings: React.FC = () => {
   const [info, setInfo] = useState('');
 
   useEffect(() => {
-    if (user) {
-      Promise.all([userApi.getMe(), userApi.getActivity()])
-        .then(([p, a]) => {
-          setProfile(p);
-          setActivity(a);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    }
+    if (!user) return;
+
+    let cancelled = false;
+    setLoading(true);
+    Promise.allSettled([userApi.getMe(), userApi.getActivity()])
+      .then(([profileResult, activityResult]) => {
+        if (cancelled) return;
+        if (profileResult.status === 'fulfilled') {
+          setProfile(profileResult.value);
+        } else {
+          console.error(profileResult.reason);
+          setProfile(fallbackProfileFromFirebaseUser());
+        }
+        if (activityResult.status === 'fulfilled') {
+          setActivity(activityResult.value);
+        } else {
+          console.error(activityResult.reason);
+          setActivity(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const updateField = (field: keyof UserProfile, value: unknown) => {

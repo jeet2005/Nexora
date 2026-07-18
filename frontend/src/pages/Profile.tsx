@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { userApi, UserProfile } from '../api/users';
+import { fallbackProfileFromFirebaseUser, userApi, UserProfile } from '../api/users';
 import { Database, Cpu, Clock, Settings, Github, Linkedin, ExternalLink, BadgeCheck } from 'lucide-react';
 
 export const Profile: React.FC = () => {
@@ -12,16 +12,39 @@ export const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      Promise.all([userApi.getMe(), userApi.getMyDatasets(), userApi.getActivity()])
-        .then(([p, datasets, act]) => {
-          setProfile(p);
-          setHistory(datasets);
-          setActivity(act);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    }
+    if (!user) return;
+
+    let cancelled = false;
+    setLoading(true);
+    Promise.allSettled([userApi.getMe(), userApi.getMyDatasets(), userApi.getActivity()])
+      .then(([profileResult, datasetsResult, activityResult]) => {
+        if (cancelled) return;
+        if (profileResult.status === 'fulfilled') {
+          setProfile(profileResult.value);
+        } else {
+          console.error(profileResult.reason);
+          setProfile(fallbackProfileFromFirebaseUser());
+        }
+        if (datasetsResult.status === 'fulfilled') {
+          setHistory(datasetsResult.value);
+        } else {
+          console.error(datasetsResult.reason);
+          setHistory([]);
+        }
+        if (activityResult.status === 'fulfilled') {
+          setActivity(activityResult.value);
+        } else {
+          console.error(activityResult.reason);
+          setActivity(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   if (!user) {

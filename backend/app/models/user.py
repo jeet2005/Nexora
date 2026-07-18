@@ -18,7 +18,7 @@ class LoginEvent(BaseModel):
 
 class UserBase(BaseModel):
     user_id: str
-    email: str
+    email: str | None = None
     name: str | None = None
     username: str | None = None
     bio: str | None = None
