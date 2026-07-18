@@ -33,6 +33,9 @@ async def run_explainability(dataset_id: str, model_id: str | None = None):
     target_model_id = model_id or training_result.best_model.model_id
     problem_type = session.problem_type or "classification"
 
+    if not session.target_column:
+        raise HTTPException(status_code=400, detail="Target column must be specified.")
+
     # Run in a thread to avoid blocking the event loop
     from app.services.explainability_engine import run_explainability as _run_explain
 
@@ -91,7 +94,7 @@ async def generate_report(dataset_id: str, include_shap: bool = True):
 
     # Optionally run SHAP
     explainability_dict = None
-    if include_shap and training_result.best_model:
+    if include_shap and training_result.best_model and session.target_column:
         df = load_processed_df(dataset_id)
         if df is not None:
             from app.services.explainability_engine import (
@@ -117,7 +120,7 @@ async def generate_report(dataset_id: str, include_shap: bool = True):
 
     loop = asyncio.get_event_loop()
     try:
-        pdf_path = await loop.run_in_executor(
+        _ = await loop.run_in_executor(
             None,
             lambda: save_pdf_report(
                 dataset_id,

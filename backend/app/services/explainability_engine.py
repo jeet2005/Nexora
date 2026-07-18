@@ -8,8 +8,6 @@ import warnings
 from typing import Any
 
 import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -19,6 +17,9 @@ from sklearn.model_selection import train_test_split
 
 from app.config import settings
 from app.services.model_registry import ModelSpec, get_models_for_problem
+
+matplotlib.use("Agg")
+
 
 warnings.filterwarnings("ignore")
 
