@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app.config import settings
@@ -31,10 +31,31 @@ BADGE_DEFINITIONS = {
     "Power User": "Earned strong contribution reputation.",
 }
 
-STATUS_VALUES = {"waiting", "under_review", "planned", "implemented", "closed", "duplicate"}
-CATEGORY_VALUES = {"bug", "feature", "dataset", "research", "ui", "performance", "other"}
+STATUS_VALUES = {
+    "waiting",
+    "under_review",
+    "planned",
+    "implemented",
+    "closed",
+    "duplicate",
+}
+CATEGORY_VALUES = {
+    "bug",
+    "feature",
+    "dataset",
+    "research",
+    "ui",
+    "performance",
+    "other",
+}
 PRIORITY_VALUES = {"low", "normal", "high", "urgent"}
-REACTION_VALUES = {"helpful", "interesting", "needs_more_info", "agree", "research_worthy"}
+REACTION_VALUES = {
+    "helpful",
+    "interesting",
+    "needs_more_info",
+    "agree",
+    "research_worthy",
+}
 
 
 class Attachment(BaseModel):
@@ -146,7 +167,14 @@ def _all_feedback() -> list[dict]:
 def _find_feedback(feedback_id: str) -> dict | None:
     feedback_col = _feedback_collection()
     if feedback_col is None:
-        return next((item for item in _load_local("community_feedback") if item.get("id") == feedback_id), None)
+        return next(
+            (
+                item
+                for item in _load_local("community_feedback")
+                if item.get("id") == feedback_id
+            ),
+            None,
+        )
     doc = feedback_col.find_one({"id": feedback_id})
     return _strip_id(doc) if doc else None
 
@@ -166,7 +194,6 @@ def _save_feedback(doc: dict) -> dict:
     feedback_col.update_one({"id": doc["id"]}, {"$set": doc}, upsert=True)
     saved = feedback_col.find_one({"id": doc["id"]}) or doc
     return _strip_id(saved)
-
 
 
 def _public_upload_url(path: Path) -> str:
@@ -192,7 +219,9 @@ async def _store_uploads(files: list[UploadFile]) -> list[dict]:
             {
                 "name": file.filename,
                 "url": _public_upload_url(target),
-                "kind": "screenshot" if (file.content_type or "").startswith("image/") else "file",
+                "kind": "screenshot"
+                if (file.content_type or "").startswith("image/")
+                else "file",
                 "content_type": file.content_type,
                 "size": len(data),
             }
@@ -201,7 +230,9 @@ async def _store_uploads(files: list[UploadFile]) -> list[dict]:
 
 
 def _reaction_counts(doc: dict) -> dict:
-    return {key: len(value or []) for key, value in (doc.get("reactions") or {}).items()}
+    return {
+        key: len(value or []) for key, value in (doc.get("reactions") or {}).items()
+    }
 
 
 def _period_start(period: str) -> datetime | None:
@@ -230,18 +261,36 @@ def _all_follows() -> list[dict]:
 def _save_follow(doc: dict) -> dict:
     follows_col = _follow_collection()
     if follows_col is None:
-        rows = [item for item in _load_local("community_follows") if not (item.get("follower_id") == doc["follower_id"] and item.get("following_id") == doc["following_id"])]
+        rows = [
+            item
+            for item in _load_local("community_follows")
+            if not (
+                item.get("follower_id") == doc["follower_id"]
+                and item.get("following_id") == doc["following_id"]
+            )
+        ]
         rows.append(doc)
         _save_local("community_follows", rows)
         return doc
-    follows_col.update_one({"follower_id": doc["follower_id"], "following_id": doc["following_id"]}, {"$set": doc}, upsert=True)
+    follows_col.update_one(
+        {"follower_id": doc["follower_id"], "following_id": doc["following_id"]},
+        {"$set": doc},
+        upsert=True,
+    )
     return doc
 
 
 def _delete_follow(follower_id: str, following_id: str) -> None:
     follows_col = _follow_collection()
     if follows_col is None:
-        rows = [item for item in _load_local("community_follows") if not (item.get("follower_id") == follower_id and item.get("following_id") == following_id)]
+        rows = [
+            item
+            for item in _load_local("community_follows")
+            if not (
+                item.get("follower_id") == follower_id
+                and item.get("following_id") == following_id
+            )
+        ]
         _save_local("community_follows", rows)
         return
     follows_col.delete_one({"follower_id": follower_id, "following_id": following_id})
@@ -250,7 +299,14 @@ def _delete_follow(follower_id: str, following_id: str) -> None:
 def _showcase_for_user(user_id: str) -> dict:
     showcase_col = _showcase_collection()
     if showcase_col is None:
-        return next((item for item in _load_local("community_showcases") if item.get("user_id") == user_id), {"user_id": user_id})
+        return next(
+            (
+                item
+                for item in _load_local("community_showcases")
+                if item.get("user_id") == user_id
+            ),
+            {"user_id": user_id},
+        )
     doc = showcase_col.find_one({"user_id": user_id})
     return _strip_id(doc) if doc else {"user_id": user_id}
 
@@ -259,7 +315,11 @@ def _save_showcase(user_id: str, payload: dict) -> dict:
     doc = {"user_id": user_id, **payload, "updated_at": datetime.utcnow()}
     showcase_col = _showcase_collection()
     if showcase_col is None:
-        rows = [item for item in _load_local("community_showcases") if item.get("user_id") != user_id]
+        rows = [
+            item
+            for item in _load_local("community_showcases")
+            if item.get("user_id") != user_id
+        ]
         rows.append(doc)
         _save_local("community_showcases", rows)
         return doc
@@ -281,7 +341,10 @@ def _heatmap(rows: list[dict]) -> list[dict]:
             daily[key] = daily.get(key, 0) + 1
     return [{"date": key, "count": daily[key]} for key in sorted(daily)]
 
-def _add_notification(user_id: str, title: str, message: str, kind: str, feedback_id: str | None = None) -> None:
+
+def _add_notification(
+    user_id: str, title: str, message: str, kind: str, feedback_id: str | None = None
+) -> None:
     note = {
         "id": str(uuid4()),
         "user_id": user_id,
@@ -301,7 +364,6 @@ def _add_notification(user_id: str, title: str, message: str, kind: str, feedbac
     notes_col.insert_one(note)
 
 
-
 def _sort_datetime(value: object) -> datetime:
     if isinstance(value, datetime):
         return value
@@ -311,22 +373,43 @@ def _sort_datetime(value: object) -> datetime:
         except ValueError:
             return datetime.min
     return datetime.min
+
+
 def _badge_objects(names: list[str]) -> list[dict]:
-    return [{"name": name, "reason": BADGE_DEFINITIONS.get(name, "Earned through Nexora community activity.")} for name in names]
+    return [
+        {
+            "name": name,
+            "reason": BADGE_DEFINITIONS.get(
+                name, "Earned through Nexora community activity."
+            ),
+        }
+        for name in names
+    ]
 
 
 def _stats_for_user(user_id: str) -> dict:
     rows = [item for item in _all_feedback() if item.get("user_id") == user_id]
     stars = sum(int(item.get("stars") or 0) for item in rows)
     replies = sum(len(item.get("admin_replies") or []) for item in rows)
-    badges = sorted({str(item["badge_awarded"]) for item in rows if item.get("badge_awarded")})
+    badges = sorted(
+        {str(item["badge_awarded"]) for item in rows if item.get("badge_awarded")}
+    )
     bugs = sum(1 for item in rows if item.get("category") == "bug")
     features = sum(1 for item in rows if item.get("category") == "feature")
-    accepted = sum(1 for item in rows if item.get("status") in {"planned", "implemented"})
+    accepted = sum(
+        1 for item in rows if item.get("status") in {"planned", "implemented"}
+    )
     implemented = sum(1 for item in rows if item.get("status") == "implemented")
     research = sum(1 for item in rows if item.get("category") == "research")
     datasets = sum(1 for item in rows if item.get("category") == "dataset")
-    score = len(rows) * 10 + accepted * 20 + implemented * 40 + replies * 5 + stars * 25 + len(badges) * 30
+    score = (
+        len(rows) * 10
+        + accepted * 20
+        + implemented * 40
+        + replies * 5
+        + stars * 25
+        + len(badges) * 30
+    )
     earned = set(badges)
     if rows:
         earned.add("Early Adopter")
@@ -363,7 +446,14 @@ def _stats_for_user(user_id: str) -> dict:
         "implemented_suggestions": implemented,
         "level": level,
         "badges": _badge_objects(sorted(str(name) for name in earned)),
-        "recent_feedback": [_serialize(item) for item in sorted(rows, key=lambda item: _sort_datetime(item.get("created_at")), reverse=True)[:5]],
+        "recent_feedback": [
+            _serialize(item)
+            for item in sorted(
+                rows,
+                key=lambda item: _sort_datetime(item.get("created_at")),
+                reverse=True,
+            )[:5]
+        ],
     }
 
 
@@ -398,7 +488,9 @@ def submit_feedback(payload: FeedbackCreate, token: dict = Depends(get_current_u
         "updated_at": now,
     }
     if not doc["title"] or not doc["description"]:
-        raise HTTPException(status_code=400, detail="Title and description are required")
+        raise HTTPException(
+            status_code=400, detail="Title and description are required"
+        )
     return _serialize(_save_feedback(doc))
 
 
@@ -411,7 +503,9 @@ def my_feedback(token: dict = Depends(get_current_user)):
 
 
 @feedback_router.post("/feedback/{feedback_id}/reactions")
-def react_to_feedback(feedback_id: str, payload: ReactionCreate, token: dict = Depends(get_current_user)):
+def react_to_feedback(
+    feedback_id: str, payload: ReactionCreate, token: dict = Depends(get_current_user)
+):
     reaction = payload.reaction.lower().replace(" ", "_")
     if reaction not in REACTION_VALUES:
         raise HTTPException(status_code=400, detail="Invalid reaction")
@@ -449,7 +543,9 @@ def leaderboard(period: str = "all"):
             },
         )
         entry.update(_stats_for_user(user_id))
-    rows = sorted(users.values(), key=lambda item: item.get("contribution_score", 0), reverse=True)
+    rows = sorted(
+        users.values(), key=lambda item: item.get("contribution_score", 0), reverse=True
+    )
     return rows[:50]
 
 
@@ -458,7 +554,11 @@ def list_notifications(token: dict = Depends(get_current_user)):
     user_id = _current_user_id(token)
     notes_col = _notification_collection()
     if notes_col is None:
-        rows = [item for item in _load_local("notifications") if item.get("user_id") == user_id]
+        rows = [
+            item
+            for item in _load_local("notifications")
+            if item.get("user_id") == user_id
+        ]
     else:
         rows = [_strip_id(item) for item in notes_col.find({"user_id": user_id})]
     rows.sort(key=lambda item: _sort_datetime(item.get("created_at")), reverse=True)
@@ -468,7 +568,13 @@ def list_notifications(token: dict = Depends(get_current_user)):
 @admin_router.get("")
 def admin_list_feedback():
     rows = _all_feedback()
-    rows.sort(key=lambda item: (bool(item.get("pinned")), _sort_datetime(item.get("updated_at"))), reverse=True)
+    rows.sort(
+        key=lambda item: (
+            bool(item.get("pinned")),
+            _sort_datetime(item.get("updated_at")),
+        ),
+        reverse=True,
+    )
     return [_serialize(item) for item in rows]
 
 
@@ -477,25 +583,35 @@ def admin_feedback_analytics():
     rows = _all_feedback()
     implemented = sum(1 for item in rows if item.get("status") == "implemented")
     closed = sum(1 for item in rows if item.get("status") in {"closed", "duplicate"})
-    open_count = sum(1 for item in rows if item.get("status") not in {"closed", "duplicate", "implemented"})
+    open_count = sum(
+        1
+        for item in rows
+        if item.get("status") not in {"closed", "duplicate", "implemented"}
+    )
     categories: dict[str, int] = {}
     for item in rows:
         category = item.get("category") or "other"
         categories[category] = categories.get(category, 0) + 1
-    top_categories = sorted(categories.items(), key=lambda item: item[1], reverse=True)[:5]
+    top_categories = sorted(categories.items(), key=lambda item: item[1], reverse=True)[
+        :5
+    ]
     return {
         "submitted": len(rows),
         "open": open_count,
         "closed": closed,
         "implemented": implemented,
         "average_response_time_hours": 0,
-        "most_requested_features": [{"category": key, "count": value} for key, value in top_categories],
+        "most_requested_features": [
+            {"category": key, "count": value} for key, value in top_categories
+        ],
         "top_contributors": leaderboard()[:5],
     }
 
 
 @admin_router.patch("/{feedback_id}")
-def admin_update_feedback(feedback_id: str, payload: FeedbackAdminUpdate, admin: dict = Depends(require_admin)):
+def admin_update_feedback(
+    feedback_id: str, payload: FeedbackAdminUpdate, admin: dict = Depends(require_admin)
+):
     doc = _find_feedback(feedback_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Feedback not found")
@@ -534,7 +650,7 @@ def admin_update_feedback(feedback_id: str, payload: FeedbackAdminUpdate, admin:
         _add_notification(
             doc["user_id"],
             "Badge earned",
-            f'You earned the {updates["badge_awarded"]} badge.',
+            f"You earned the {updates['badge_awarded']} badge.",
             "badge",
             feedback_id,
         )
@@ -543,7 +659,9 @@ def admin_update_feedback(feedback_id: str, payload: FeedbackAdminUpdate, admin:
 
 
 @admin_router.post("/{feedback_id}/replies")
-def admin_reply_feedback(feedback_id: str, payload: FeedbackReplyCreate, admin: dict = Depends(require_admin)):
+def admin_reply_feedback(
+    feedback_id: str, payload: FeedbackReplyCreate, admin: dict = Depends(require_admin)
+):
     doc = _find_feedback(feedback_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Feedback not found")
@@ -557,7 +675,9 @@ def admin_reply_feedback(feedback_id: str, payload: FeedbackReplyCreate, admin: 
         "created_at": datetime.utcnow(),
     }
     doc["admin_replies"] = [*(doc.get("admin_replies") or []), reply]
-    doc["status"] = "under_review" if doc.get("status") == "waiting" else doc.get("status")
+    doc["status"] = (
+        "under_review" if doc.get("status") == "waiting" else doc.get("status")
+    )
     doc["updated_at"] = datetime.utcnow()
     _add_notification(doc["user_id"], "Admin replied", message, "reply", feedback_id)
     return _serialize(_save_feedback(doc))
