@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, Navigate, useNavigate, NavLink } from 'react-router-dom';
 import { adminApi } from '../api/admin';
 import NexoraLogo from '../components/NexoraLogo';
-import { LayoutDashboard, Key, Database, Activity, FileText, LogOut, ShieldAlert, Users, ScrollText } from 'lucide-react';
+import { LayoutDashboard, Key, Database, Activity, FileText, LogOut, ShieldAlert, Users, ScrollText, MessageSquare } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -40,6 +40,7 @@ export const AdminLayout: React.FC = () => {
     { to: '/admin/keys', icon: <Key size={20} />, label: 'API Keys' },
     { to: '/admin/datasets', icon: <Database size={20} />, label: 'Datasets & Training' },
     { to: '/admin/users', icon: <Users size={20} />, label: 'Users' },
+    { to: '/admin/feedback', icon: <MessageSquare size={20} />, label: 'Feedback' },
     { to: '/admin/drift', icon: <ShieldAlert size={20} />, label: 'Drift Alerts' },
     { to: '/admin/health', icon: <Activity size={20} />, label: 'System Health' },
     { to: '/admin/content', icon: <FileText size={20} />, label: 'Content' },

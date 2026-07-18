@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { userApi, UserProfile } from '../api/users';
+import { communityApi, ReputationSummary, statusLabels } from '../api/community';
 import { Github, Linkedin, ExternalLink, BadgeCheck } from 'lucide-react';
 
 export default function PublicProfilePage() {
@@ -8,11 +9,15 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [reputation, setReputation] = useState<ReputationSummary | null>(null);
 
   useEffect(() => {
     if (!username) return;
     userApi.getPublicProfile(username)
-      .then(setProfile)
+      .then((data) => {
+        setProfile(data);
+        communityApi.getReputation(data.user_id).then(setReputation).catch(() => setReputation(null));
+      })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Profile not found');
       })
@@ -70,6 +75,37 @@ export default function PublicProfilePage() {
           )}
         </div>
       </div>
+
+      {reputation && (
+        <div className="glass rounded-2xl p-6 mt-6 space-y-5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-gray-900">Community Contributions</h2>
+              <p className="text-sm text-gray-500">Level {reputation.level} · {reputation.contribution_score} points · {reputation.administrator_stars} admin stars</p>
+            </div>
+            <div className="text-sm text-gray-500">{reputation.implemented_suggestions} implemented suggestions</div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {reputation.badges.map((badge) => (
+              <span key={badge.name} title={badge.reason} className="px-3 py-1.5 rounded-full border border-nexora-accent/20 bg-nexora-accent/10 text-nexora-accent text-sm font-medium">{badge.name}</span>
+            ))}
+            {reputation.badges.length === 0 && <span className="text-sm text-gray-400">No badges earned yet.</span>}
+          </div>
+          {reputation.recent_feedback.length > 0 && (
+            <div className="border-t border-gray-100 pt-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Recent Feedback</h3>
+              <div className="space-y-2">
+                {reputation.recent_feedback.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-gray-700 truncate">{item.title}</span>
+                    <span className="text-xs text-gray-400 whitespace-nowrap">{statusLabels[item.status]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       <p className="text-center text-sm text-gray-400 mt-6">
         <Link to="/" className="hover:text-nexora-accent">Back to Nexora</Link>
       </p>

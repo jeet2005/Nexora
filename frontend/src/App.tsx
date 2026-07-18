@@ -9,6 +9,9 @@ const DatasetDashboard = lazy(() => import('./pages/DatasetDashboard'));
 const Home = lazy(() => import('./pages/Home'));
 const CyberShieldPage = lazy(() => import('./pages/CyberShieldPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const SubmitFeedbackPage = lazy(() => import('./pages/SubmitFeedbackPage'));
+const MyFeedbackPage = lazy(() => import('./pages/MyFeedbackPage'));
+const CommunityLeaderboardPage = lazy(() => import('./pages/CommunityLeaderboardPage'));
 import { AdminLayout } from './admin/AdminLayout';
 import { AdminLogin } from './admin/pages/AdminLogin';
 import { Profile } from './pages/Profile';
@@ -25,6 +28,7 @@ const AdminContent = lazy(() => import('./admin/pages/Content').then(m => ({ def
 const AdminSystemHealth = lazy(() => import('./admin/pages/SystemHealth').then(m => ({ default: m.SystemHealth })));
 const AdminDriftAlerts = lazy(() => import('./admin/pages/DriftAlerts').then(m => ({ default: m.DriftAlerts })));
 const AdminAuditLog = lazy(() => import('./admin/pages/AuditLog').then(m => ({ default: m.AuditLog })));
+const AdminFeedbackReview = lazy(() => import('./admin/pages/FeedbackReview').then(m => ({ default: m.FeedbackReview })));
 
 
 export default function App() {
@@ -38,7 +42,7 @@ export default function App() {
           <Route path="/dataset/:datasetId" element={<DatasetDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/settings" element={<ProfileSettings />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />`r`n          <Route path="/feedback" element={<MyFeedbackPage />} />`r`n          <Route path="/feedback/new" element={<SubmitFeedbackPage />} />`r`n          <Route path="/community" element={<CommunityLeaderboardPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
         </Route>
@@ -58,7 +62,7 @@ export default function App() {
           <Route path="drift" element={<AdminDriftAlerts />} />
           <Route path="health" element={<AdminSystemHealth />} />
           <Route path="content" element={<AdminContent />} />
-          <Route path="audit" element={<AdminAuditLog />} />
+          <Route path="audit" element={<AdminAuditLog />} />`r`n          <Route path="feedback" element={<AdminFeedbackReview />} />
         </Route>
       </Routes>
     </Suspense>

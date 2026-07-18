@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bell, Shield, User } from 'lucide-react';
+import { Bell, MessageSquare, Shield, Trophy, User } from 'lucide-react';
 import NexoraLogo from './NexoraLogo';
 import { useAuth } from '../contexts/AuthContext';
 import LoginModal from './LoginModal';
@@ -79,6 +79,20 @@ export default function Layout() {
             >
               <Shield size={15} />
               CyberShield
+            </Link>
+            <Link
+              to="/feedback"
+              className="flex items-center gap-1.5 hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium"
+            >
+              <MessageSquare size={15} />
+              Feedback
+            </Link>
+            <Link
+              to="/community"
+              className="flex items-center gap-1.5 hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium"
+            >
+              <Trophy size={15} />
+              Community
             </Link>
             <Link
               to="/notifications"

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fallbackProfileFromFirebaseUser, userApi, UserProfile } from '../api/users';
+import { communityApi, ReputationSummary } from '../api/community';
 import { Database, Cpu, Clock, Settings, Github, Linkedin, ExternalLink, BadgeCheck } from 'lucide-react';
 
 export const Profile: React.FC = () => {
@@ -10,6 +11,7 @@ export const Profile: React.FC = () => {
   const [history, setHistory] = useState<Record<string, unknown>[]>([]);
   const [activity, setActivity] = useState<Awaited<ReturnType<typeof userApi.getActivity>> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reputation, setReputation] = useState<ReputationSummary | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -21,9 +23,12 @@ export const Profile: React.FC = () => {
         if (cancelled) return;
         if (profileResult.status === 'fulfilled') {
           setProfile(profileResult.value);
+          communityApi.getReputation(profileResult.value.user_id).then(setReputation).catch(() => setReputation(null));
         } else {
           console.error(profileResult.reason);
-          setProfile(fallbackProfileFromFirebaseUser());
+          const fallback = fallbackProfileFromFirebaseUser();
+          setProfile(fallback);
+          if (fallback) communityApi.getReputation(fallback.user_id).then(setReputation).catch(() => setReputation(null));
         }
         if (datasetsResult.status === 'fulfilled') {
           setHistory(datasetsResult.value);
@@ -106,6 +111,34 @@ export const Profile: React.FC = () => {
         )}
       </div>
 
+      {reputation && (
+        <div className="glass rounded-2xl p-6 mb-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Community Reputation</h2>
+              <p className="text-sm text-gray-500">Level {reputation.level} · {reputation.contribution_score} contribution points</p>
+            </div>
+            <Link to="/feedback/new" className="btn-outline py-2 px-4 text-sm">Submit Feedback</Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-5">
+            <MiniStat label="Accepted" value={reputation.feedback_accepted} />
+            <MiniStat label="Features" value={reputation.features_suggested} />
+            <MiniStat label="Bugs" value={reputation.bugs_reported} />
+            <MiniStat label="Replies" value={reputation.replies_received} />
+            <MiniStat label="Badges" value={reputation.badges_earned} />
+            <MiniStat label="Stars" value={reputation.administrator_stars} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {reputation.badges.length === 0 ? (
+              <span className="text-sm text-gray-400">Badges appear here as admins recognize your contributions.</span>
+            ) : reputation.badges.map((badge) => (
+              <span key={badge.name} title={badge.reason} className="px-3 py-1.5 rounded-full border border-nexora-accent/20 bg-nexora-accent/10 text-nexora-accent text-sm font-medium">
+                {badge.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div className="glass rounded-2xl p-6 flex items-center gap-4">
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
@@ -205,3 +238,11 @@ export const Profile: React.FC = () => {
     </div>
   );
 };
+function MiniStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white/70 p-3">
+      <div className="text-xs text-gray-400">{label}</div>
+      <div className="text-lg font-semibold text-gray-900">{value}</div>
+    </div>
+  );
+}

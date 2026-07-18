@@ -315,6 +315,11 @@ export const ProfileSettings: React.FC = () => {
         )}
         <input
           type="email"
+          name="nexora-new-email"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
           placeholder="New email address"
@@ -322,6 +327,8 @@ export const ProfileSettings: React.FC = () => {
         />
         <input
           type="password"
+          name="nexora-email-change-passcode"
+          autoComplete="new-password"
           value={emailPassword}
           onChange={(e) => setEmailPassword(e.target.value)}
           placeholder="Current password to confirm"
@@ -337,6 +344,8 @@ export const ProfileSettings: React.FC = () => {
         <h2 className="font-semibold text-gray-900">Change Password</h2>
         <input
           type="password"
+          name="nexora-current-passcode"
+          autoComplete="new-password"
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           placeholder="Current password"
@@ -344,6 +353,8 @@ export const ProfileSettings: React.FC = () => {
         />
         <input
           type="password"
+          name="nexora-new-passcode"
+          autoComplete="new-password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           placeholder="New password (min 6 chars)"

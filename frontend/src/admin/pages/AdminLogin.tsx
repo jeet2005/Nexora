@@ -52,12 +52,17 @@ export const AdminLogin: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4" autoComplete="off">
           <div>
             <label className="block text-sm font-medium text-nexora-dark/80 mb-1.5">Email</label>
             <input 
               type="email" 
               required
+              name="nexora-admin-email"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
               className="w-full bg-white border border-nexora-border rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-nexora-accent/50 transition-shadow"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -68,6 +73,8 @@ export const AdminLogin: React.FC = () => {
             <input 
               type="password" 
               required
+              name="nexora-admin-passcode"
+              autoComplete="new-password"
               className="w-full bg-white border border-nexora-border rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-nexora-accent/50 transition-shadow"
               value={password}
               onChange={e => setPassword(e.target.value)}

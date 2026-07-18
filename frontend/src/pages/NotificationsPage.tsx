@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Bell, CheckCircle2, Mail, Megaphone } from 'lucide-react';
 import { getPublicContent } from '../api/users';
+import { communityApi, CommunityNotification } from '../api/community';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Announcement {
   value?: string;
@@ -10,13 +12,20 @@ interface Announcement {
 }
 
 export default function NotificationsPage() {
+  const { user } = useAuth();
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
+  const [communityNotifications, setCommunityNotifications] = useState<CommunityNotification[]>([]);
 
   useEffect(() => {
     getPublicContent('announcement_banner')
       .then((res) => setAnnouncement(res ?? null))
       .catch(() => setAnnouncement(null));
-  }, []);
+    if (user) {
+      communityApi.getNotifications()
+        .then(setCommunityNotifications)
+        .catch(() => setCommunityNotifications([]));
+    }
+  }, [user]);
 
   return (
     <div className="min-h-[calc(100vh-8rem)] bg-white">
@@ -30,7 +39,7 @@ export default function NotificationsPage() {
             Platform updates and account alerts
           </h1>
           <p className="text-nexora-dark/60 max-w-2xl">
-            Review current announcements and the account events Nexora can send by email.
+            Review current announcements, feedback updates, and the account events Nexora can send by email.
           </p>
         </div>
       </section>
@@ -61,6 +70,28 @@ export default function NotificationsPage() {
                     ` on ${new Date(announcement.updated_at).toLocaleDateString()}`}
                 </p>
               )}
+            </div>
+          </div>
+        </div>
+
+        <div className="border border-nexora-border rounded-lg p-5">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-lg bg-nexora-accent/10 text-nexora-accent flex items-center justify-center">
+              <Bell className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-semibold text-nexora-dark">Community notifications</h2>
+              <div className="mt-3 space-y-3">
+                {communityNotifications.length === 0 ? (
+                  <p className="text-sm text-nexora-dark/60">No feedback replies, stars, badges, or implementation updates yet.</p>
+                ) : communityNotifications.map((item) => (
+                  <div key={item.id} className="border-t border-nexora-border pt-3 first:border-t-0 first:pt-0">
+                    <div className="text-sm font-medium text-nexora-dark">{item.title}</div>
+                    <div className="text-sm text-nexora-dark/60 mt-1">{item.message}</div>
+                    <div className="text-xs text-nexora-dark/40 mt-1">{new Date(item.created_at).toLocaleString()}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

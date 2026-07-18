@@ -21,6 +21,7 @@ from app.routers import (
     advanced,
     auth,
     chat,
+    community,
     content,
     cyber_stream,
     datasets,
@@ -96,6 +97,8 @@ app.include_router(pipeline.router)
 app.include_router(training.router)
 app.include_router(training.public_router)
 app.include_router(chat.router)
+app.include_router(community.feedback_router)
+app.include_router(community.admin_router)
 app.include_router(explainability.router)
 app.include_router(advanced.router)
 app.include_router(cyber_stream.router)

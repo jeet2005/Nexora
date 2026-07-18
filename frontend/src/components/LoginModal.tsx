@@ -173,12 +173,14 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                 </button>
               )}
               
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
                 {mode === 'signup' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
                     <input 
                       type="text" required
+                      name="nexora-display-name"
+                      autoComplete="off"
                       value={name} onChange={e => setName(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20 focus:border-nexora-accent"
                     />
@@ -190,6 +192,11 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   <input 
                     type="email"
                     required
+                    name="nexora-user-email"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     value={email} onChange={e => setEmail(e.target.value)}
                     className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20 focus:border-nexora-accent"
                   />
@@ -200,6 +207,8 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                     <input 
                       type="password" required minLength={6}
+                      name="nexora-user-passcode"
+                      autoComplete="new-password"
                       value={password} onChange={e => setPassword(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexora-accent/20 focus:border-nexora-accent"
                     />
