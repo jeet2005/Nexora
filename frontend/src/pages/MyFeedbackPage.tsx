@@ -67,6 +67,40 @@ export default function MyFeedbackPage() {
                 {item.badge_awarded && <span className="inline-flex items-center gap-1 text-nexora-accent"><BadgeCheck size={15} /> {item.badge_awarded}</span>}
               </div>
             </div>
+
+            {/* Reactions Row */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                { key: 'helpful', label: 'Helpful' },
+                { key: 'interesting', label: 'Interesting' },
+                { key: 'needs_more_info', label: 'Needs More Info' },
+                { key: 'agree', label: 'Agree' },
+                { key: 'research_worthy', label: 'Research Worthy' }
+              ].map(reaction => {
+                const count = item.reactions?.[reaction.key]?.length || 0;
+                const hasReacted = user && item.reactions?.[reaction.key]?.includes(user.uid);
+                return (
+                  <button
+                    key={reaction.key}
+                    onClick={() => {
+                      if (!user) return;
+                      communityApi.react(item.id, reaction.key).then(updated => {
+                        setItems(current => current.map(curr => curr.id === updated.id ? updated : curr));
+                      });
+                    }}
+                    className={`px-2 py-1 text-xs rounded-lg border flex items-center gap-1 transition-colors ${
+                      hasReacted 
+                        ? 'border-nexora-accent bg-nexora-accent/10 text-nexora-accent'
+                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    <span>{reaction.label}</span>
+                    {count > 0 && <span className="font-medium">{count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+
             {item.admin_replies && item.admin_replies.length > 0 && (
               <div className="mt-4 border-t border-gray-100 pt-4 space-y-2">
                 {item.admin_replies.slice(-2).map((reply) => (

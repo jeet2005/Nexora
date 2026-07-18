@@ -45,12 +45,52 @@ export function FeedbackReview() {
         <p className="text-sm text-nexora-dark/60 mt-1">Review community ideas, reward helpful reports, and move suggestions through implementation.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Stat label="Submitted" value={analytics?.submitted ?? 0} />
         <Stat label="Open" value={analytics?.open ?? 0} />
         <Stat label="Implemented" value={analytics?.implemented ?? 0} />
         <Stat label="Closed" value={analytics?.closed ?? 0} />
+        <Stat label="Avg Response (hrs)" value={analytics?.average_response_time_hours ?? 0} />
       </div>
+
+      {analytics && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="glass p-5 rounded-2xl">
+            <h3 className="font-semibold text-sm text-nexora-dark mb-3">Most Requested Features</h3>
+            <div className="space-y-2">
+              {analytics.most_requested_features?.map(f => (
+                <div key={f.category} className="flex justify-between text-sm">
+                  <span className="text-gray-600 capitalize">{f.category}</span>
+                  <span className="font-medium">{f.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="glass p-5 rounded-2xl">
+            <h3 className="font-semibold text-sm text-nexora-dark mb-3">Trending Research Topics</h3>
+            <div className="space-y-2">
+              {analytics.trending_research_topics?.map(t => (
+                <div key={t.topic} className="flex justify-between text-sm">
+                  <span className="text-gray-600">{t.topic}</span>
+                  <span className="font-medium">{t.count}</span>
+                </div>
+              ))}
+              {!analytics.trending_research_topics?.length && <div className="text-sm text-gray-400">Not enough data</div>}
+            </div>
+          </div>
+          <div className="glass p-5 rounded-2xl">
+            <h3 className="font-semibold text-sm text-nexora-dark mb-3">Top Contributors</h3>
+            <div className="space-y-2">
+              {analytics.top_contributors?.map(c => (
+                <div key={c.user_id} className="flex justify-between text-sm">
+                  <span className="text-gray-600">{c.name}</span>
+                  <span className="font-medium text-nexora-accent">{c.contribution_score} pts</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         {loading ? (

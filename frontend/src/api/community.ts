@@ -97,7 +97,9 @@ export interface FeedbackAnalytics {
   implemented: number;
   average_response_time_hours: number;
   most_requested_features: Array<{ category: string; count: number }>;
+  trending_research_topics: Array<{ topic: string; count: number }>;
   top_contributors: LeaderboardEntry[];
+  most_active_users: LeaderboardEntry[];
 }
 
 export const statusLabels: Record<FeedbackStatus, string> = {

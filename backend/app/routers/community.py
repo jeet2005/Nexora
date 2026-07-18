@@ -589,22 +589,49 @@ def admin_feedback_analytics():
         if item.get("status") not in {"closed", "duplicate", "implemented"}
     )
     categories: dict[str, int] = {}
+    research_topics: dict[str, int] = {}
+    response_times = []
+    
     for item in rows:
         category = item.get("category") or "other"
         categories[category] = categories.get(category, 0) + 1
-    top_categories = sorted(categories.items(), key=lambda item: item[1], reverse=True)[
-        :5
-    ]
+        
+        if category == "research":
+            # Very simple topic extraction from title for trending research
+            words = item.get("title", "").lower().split()
+            for word in words:
+                if len(word) > 4 and word not in {"about", "using", "with", "from", "could", "would"}:
+                    research_topics[word] = research_topics.get(word, 0) + 1
+
+        if item.get("admin_replies"):
+            first_reply = item["admin_replies"][0]
+            try:
+                created = _sort_datetime(item.get("created_at"))
+                replied = _sort_datetime(first_reply.get("created_at"))
+                if replied > created:
+                    response_times.append((replied - created).total_seconds() / 3600.0)
+            except Exception:
+                pass
+
+    top_categories = sorted(categories.items(), key=lambda item: item[1], reverse=True)[:5]
+    top_research = sorted(research_topics.items(), key=lambda item: item[1], reverse=True)[:5]
+    
+    avg_response = sum(response_times) / len(response_times) if response_times else 0.0
+
     return {
         "submitted": len(rows),
         "open": open_count,
         "closed": closed,
         "implemented": implemented,
-        "average_response_time_hours": 0,
+        "average_response_time_hours": round(avg_response, 1),
         "most_requested_features": [
             {"category": key, "count": value} for key, value in top_categories
         ],
+        "trending_research_topics": [
+            {"topic": key.capitalize(), "count": value} for key, value in top_research
+        ],
         "top_contributors": leaderboard()[:5],
+        "most_active_users": leaderboard()[:5], # Using leaderboard as proxy for active users
     }
 
 

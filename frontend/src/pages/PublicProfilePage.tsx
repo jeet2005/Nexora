@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { userApi, UserProfile } from '../api/users';
 import { communityApi, ReputationSummary, statusLabels } from '../api/community';
+import { useAuth } from '../contexts/AuthContext';
 import { Github, Linkedin, ExternalLink, BadgeCheck } from 'lucide-react';
 
 export default function PublicProfilePage() {
+  const { user } = useAuth();
   const { username } = useParams<{ username: string }>();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState('');
@@ -96,9 +98,49 @@ export default function PublicProfilePage() {
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Recent Feedback</h3>
               <div className="space-y-2">
                 {reputation.recent_feedback.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="text-gray-700 truncate">{item.title}</span>
-                    <span className="text-xs text-gray-400 whitespace-nowrap">{statusLabels[item.status]}</span>
+                  <div key={item.id} className="p-3 rounded-xl border border-gray-100 bg-white shadow-sm flex flex-col gap-2 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-700 font-medium truncate">{item.title}</span>
+                      <span className="text-xs text-gray-400 whitespace-nowrap">{statusLabels[item.status]}</span>
+                    </div>
+                    {/* Reactions Row */}
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {[
+                        { key: 'helpful', label: 'Helpful' },
+                        { key: 'interesting', label: 'Interesting' },
+                        { key: 'needs_more_info', label: 'Needs More' },
+                        { key: 'agree', label: 'Agree' },
+                        { key: 'research_worthy', label: 'Research' }
+                      ].map(reaction => {
+                        const count = item.reactions?.[reaction.key]?.length || 0;
+                        const hasReacted = user && item.reactions?.[reaction.key]?.includes(user.uid);
+                        return (
+                          <button
+                            key={reaction.key}
+                            onClick={() => {
+                              if (!user) return;
+                              communityApi.react(item.id, reaction.key).then(updated => {
+                                setReputation(current => {
+                                  if (!current) return current;
+                                  return {
+                                    ...current,
+                                    recent_feedback: current.recent_feedback.map(f => f.id === updated.id ? updated : f)
+                                  };
+                                });
+                              });
+                            }}
+                            className={`px-2 py-0.5 text-[11px] rounded border flex items-center gap-1 transition-colors ${
+                              hasReacted 
+                                ? 'border-nexora-accent bg-nexora-accent/10 text-nexora-accent'
+                                : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
+                            }`}
+                          >
+                            <span>{reaction.label}</span>
+                            {count > 0 && <span className="font-medium">{count}</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>

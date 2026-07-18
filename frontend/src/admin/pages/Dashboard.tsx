@@ -112,6 +112,10 @@ export const Dashboard: React.FC = () => {
               <div className="font-semibold text-nexora-dark">View All Users</div>
               <div className="text-sm text-nexora-dark/60 mt-1">Browse registered users and their activity.</div>
             </Link>
+            <Link to="/admin/feedback" className="block p-4 rounded-xl border border-nexora-border hover:border-nexora-accent/50 hover:bg-white/50 transition-all">
+              <div className="font-semibold text-nexora-dark">Review Feedback</div>
+              <div className="text-sm text-nexora-dark/60 mt-1">Review community ideas, report bugs, and assign badges.</div>
+            </Link>
           </div>
         </div>
 
