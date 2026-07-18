@@ -4,12 +4,9 @@ import { adminApi } from '../../api/admin';
 import NexoraLogo from '../../components/NexoraLogo';
 import { Lock } from 'lucide-react';
 
-const DEFAULT_ADMIN_EMAIL = 'jeet@nexora.admin';
-const DEFAULT_ADMIN_PASSWORD = 'Jeet@Nexora2026!';
-
 export const AdminLogin: React.FC = () => {
-  const [email, setEmail] = useState(DEFAULT_ADMIN_EMAIL);
-  const [password, setPassword] = useState(DEFAULT_ADMIN_PASSWORD);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
