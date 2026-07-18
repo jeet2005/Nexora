@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 // Simple heatmap placeholder using area chart

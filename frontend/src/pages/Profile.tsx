@@ -7,12 +7,7 @@ import { communityApi, ReputationSummary } from '../api/community';
 import { Database, Cpu, Clock, Settings, Github, Linkedin, ExternalLink, BadgeCheck } from 'lucide-react';
 import HeatmapChart from '../components/HeatmapChart';
 
-const MiniStat = ({ label, value }: { label: string; value: number }) => (
-  <div className="bg-white/50 border border-gray-100 rounded-lg p-3 text-center">
-    <div className="text-xl font-bold text-gray-900">{value}</div>
-    <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">{label}</div>
-  </div>
-);
+
 
 export const Profile: React.FC = () => {
   const { user } = useAuth();

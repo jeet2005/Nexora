@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { FeedbackItem, categoryLabels, statusLabels, communityApi } from '../api/community';
 import { Star, BadgeCheck, MessageSquare, ThumbsUp, Lightbulb, HelpCircle, CheckCircle, FlaskConical } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
