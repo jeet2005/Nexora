@@ -1,9 +1,9 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app.config import settings
@@ -59,6 +59,8 @@ class FeedbackAdminUpdate(BaseModel):
     duplicate_of: str | None = None
     stars: int | None = None
     badge_awarded: str | None = None
+    assigned_to: str | None = None
+    internal_note: str | None = None
 
 
 class FeedbackReplyCreate(BaseModel):
@@ -126,6 +128,14 @@ def _notification_collection():
     return collection("notifications")
 
 
+def _follow_collection():
+    return collection("community_follows")
+
+
+def _showcase_collection():
+    return collection("community_showcases")
+
+
 def _all_feedback() -> list[dict]:
     feedback_col = _feedback_collection()
     if feedback_col is None:
@@ -158,6 +168,119 @@ def _save_feedback(doc: dict) -> dict:
     return _strip_id(saved)
 
 
+
+def _public_upload_url(path: Path) -> str:
+    try:
+        return f"/uploads/{path.relative_to(settings.upload_dir).as_posix()}"
+    except ValueError:
+        return f"/uploads/community/{path.name}"
+
+
+async def _store_uploads(files: list[UploadFile]) -> list[dict]:
+    stored = []
+    upload_root = settings.upload_dir / "community"
+    upload_root.mkdir(parents=True, exist_ok=True)
+    for file in files:
+        if not file.filename:
+            continue
+        suffix = Path(file.filename).suffix
+        safe_name = f"{uuid4()}{suffix}"
+        target = upload_root / safe_name
+        data = await file.read()
+        target.write_bytes(data)
+        stored.append(
+            {
+                "name": file.filename,
+                "url": _public_upload_url(target),
+                "kind": "screenshot" if (file.content_type or "").startswith("image/") else "file",
+                "content_type": file.content_type,
+                "size": len(data),
+            }
+        )
+    return stored
+
+
+def _reaction_counts(doc: dict) -> dict:
+    return {key: len(value or []) for key, value in (doc.get("reactions") or {}).items()}
+
+
+def _period_start(period: str) -> datetime | None:
+    now = datetime.utcnow()
+    if period == "weekly":
+        return now - timedelta(days=7)
+    if period == "monthly":
+        return now - timedelta(days=30)
+    return None
+
+
+def _filter_period(rows: list[dict], period: str) -> list[dict]:
+    start = _period_start(period)
+    if not start:
+        return rows
+    return [item for item in rows if (item.get("created_at") or datetime.min) >= start]
+
+
+def _all_follows() -> list[dict]:
+    follows_col = _follow_collection()
+    if follows_col is None:
+        return _load_local("community_follows")
+    return [_strip_id(doc) for doc in follows_col.find({})]
+
+
+def _save_follow(doc: dict) -> dict:
+    follows_col = _follow_collection()
+    if follows_col is None:
+        rows = [item for item in _load_local("community_follows") if not (item.get("follower_id") == doc["follower_id"] and item.get("following_id") == doc["following_id"])]
+        rows.append(doc)
+        _save_local("community_follows", rows)
+        return doc
+    follows_col.update_one({"follower_id": doc["follower_id"], "following_id": doc["following_id"]}, {"$set": doc}, upsert=True)
+    return doc
+
+
+def _delete_follow(follower_id: str, following_id: str) -> None:
+    follows_col = _follow_collection()
+    if follows_col is None:
+        rows = [item for item in _load_local("community_follows") if not (item.get("follower_id") == follower_id and item.get("following_id") == following_id)]
+        _save_local("community_follows", rows)
+        return
+    follows_col.delete_one({"follower_id": follower_id, "following_id": following_id})
+
+
+def _showcase_for_user(user_id: str) -> dict:
+    showcase_col = _showcase_collection()
+    if showcase_col is None:
+        return next((item for item in _load_local("community_showcases") if item.get("user_id") == user_id), {"user_id": user_id})
+    doc = showcase_col.find_one({"user_id": user_id})
+    return _strip_id(doc) if doc else {"user_id": user_id}
+
+
+def _save_showcase(user_id: str, payload: dict) -> dict:
+    doc = {"user_id": user_id, **payload, "updated_at": datetime.utcnow()}
+    showcase_col = _showcase_collection()
+    if showcase_col is None:
+        rows = [item for item in _load_local("community_showcases") if item.get("user_id") != user_id]
+        rows.append(doc)
+        _save_local("community_showcases", rows)
+        return doc
+    showcase_col.update_one({"user_id": user_id}, {"$set": doc}, upsert=True)
+    return _strip_id(showcase_col.find_one({"user_id": user_id}) or doc)
+
+
+def _heatmap(rows: list[dict]) -> list[dict]:
+    daily: dict[str, int] = {}
+    for item in rows:
+        created = item.get("created_at")
+        if isinstance(created, str):
+            try:
+                created = datetime.fromisoformat(created)
+            except ValueError:
+                created = None
+        if isinstance(created, datetime):
+            key = created.strftime("%Y-%m-%d")
+            daily[key] = daily.get(key, 0) + 1
+    return [{"date": key, "count": daily[key]} for key in sorted(daily)]
+
 def _add_notification(user_id: str, title: str, message: str, kind: str, feedback_id: str | None = None) -> None:
     note = {
         "id": str(uuid4()),
@@ -178,6 +301,16 @@ def _add_notification(user_id: str, title: str, message: str, kind: str, feedbac
     notes_col.insert_one(note)
 
 
+
+def _sort_datetime(value: object) -> datetime:
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return datetime.min
+    return datetime.min
 def _badge_objects(names: list[str]) -> list[dict]:
     return [{"name": name, "reason": BADGE_DEFINITIONS.get(name, "Earned through Nexora community activity.")} for name in names]
 
@@ -186,7 +319,7 @@ def _stats_for_user(user_id: str) -> dict:
     rows = [item for item in _all_feedback() if item.get("user_id") == user_id]
     stars = sum(int(item.get("stars") or 0) for item in rows)
     replies = sum(len(item.get("admin_replies") or []) for item in rows)
-    badges = sorted({item.get("badge_awarded") for item in rows if item.get("badge_awarded")})
+    badges = sorted({str(item["badge_awarded"]) for item in rows if item.get("badge_awarded")})
     bugs = sum(1 for item in rows if item.get("category") == "bug")
     features = sum(1 for item in rows if item.get("category") == "feature")
     accepted = sum(1 for item in rows if item.get("status") in {"planned", "implemented"})
@@ -229,8 +362,8 @@ def _stats_for_user(user_id: str) -> dict:
         "administrator_stars": stars,
         "implemented_suggestions": implemented,
         "level": level,
-        "badges": _badge_objects(sorted(earned)),
-        "recent_feedback": [_serialize(item) for item in sorted(rows, key=lambda item: item.get("created_at") or datetime.min, reverse=True)[:5]],
+        "badges": _badge_objects(sorted(str(name) for name in earned)),
+        "recent_feedback": [_serialize(item) for item in sorted(rows, key=lambda item: _sort_datetime(item.get("created_at")), reverse=True)[:5]],
     }
 
 
@@ -243,7 +376,7 @@ def submit_feedback(payload: FeedbackCreate, token: dict = Depends(get_current_u
     if priority not in PRIORITY_VALUES:
         raise HTTPException(status_code=400, detail="Invalid priority")
     now = datetime.utcnow()
-    doc = {
+    doc: dict = {
         "id": str(uuid4()),
         "user_id": _current_user_id(token),
         "user_email": token.get("email"),
@@ -273,7 +406,7 @@ def submit_feedback(payload: FeedbackCreate, token: dict = Depends(get_current_u
 def my_feedback(token: dict = Depends(get_current_user)):
     user_id = _current_user_id(token)
     rows = [item for item in _all_feedback() if item.get("user_id") == user_id]
-    rows.sort(key=lambda item: item.get("created_at") or datetime.min, reverse=True)
+    rows.sort(key=lambda item: _sort_datetime(item.get("created_at")), reverse=True)
     return [_serialize(item) for item in rows]
 
 
@@ -328,14 +461,14 @@ def list_notifications(token: dict = Depends(get_current_user)):
         rows = [item for item in _load_local("notifications") if item.get("user_id") == user_id]
     else:
         rows = [_strip_id(item) for item in notes_col.find({"user_id": user_id})]
-    rows.sort(key=lambda item: item.get("created_at") or datetime.min, reverse=True)
+    rows.sort(key=lambda item: _sort_datetime(item.get("created_at")), reverse=True)
     return [_serialize(item) for item in rows[:50]]
 
 
 @admin_router.get("")
 def admin_list_feedback():
     rows = _all_feedback()
-    rows.sort(key=lambda item: (bool(item.get("pinned")), item.get("updated_at") or datetime.min), reverse=True)
+    rows.sort(key=lambda item: (bool(item.get("pinned")), _sort_datetime(item.get("updated_at"))), reverse=True)
     return [_serialize(item) for item in rows]
 
 

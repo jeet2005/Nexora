@@ -39,7 +39,7 @@ An autonomous predictive analytics platform that profiles datasets, builds optim
 
 Data scientists and developers often spend hours writing repetitive code for data profiling, exploratory analysis, preprocessing, model benchmarking, and production endpoint deployments. Nexora bridges this gap by serving as a unified prediction engine. 
 
-By uploading a single dataset (supporting CSV, Excel, Parquet, JSON, JSONL, TSV, HTML, XML, Feather, ORC, Stata, SAS, SPSS, SQL, Pickles, HDF5, and 100+ more formats), developers can instantly audit dataset health, clean features, benchmark leading machine learning models side-by-side, analyze SHAP explainability insights, download compiled PDF reports, converse with a grounded AI dataset assistant, export trained models (.joblib), and deploy production-ready prediction API endpoints secured by unique API keys. Nexora also includes a structured community feedback and research contribution system for students, researchers, testers, and administrators. See [COMMUNITY_FEEDBACK_SYSTEM.md](COMMUNITY_FEEDBACK_SYSTEM.md).
+By uploading a single dataset (supporting CSV, Excel, Parquet, JSON, JSONL, TSV, HTML, XML, Feather, ORC, Stata, SAS, SPSS, SQL, Pickles, HDF5, and 100+ more formats), developers can instantly audit dataset health, clean features, benchmark leading machine learning models side-by-side, analyze SHAP explainability insights, download compiled PDF reports, converse with a grounded AI dataset assistant, export trained models (.joblib), and deploy production-ready prediction API endpoints secured by unique API keys. Nexora also includes a structured community feedback and research contribution system for students, researchers, testers, and administrators. See [COMMUNITY_GUIDELINES.md](COMMUNITY_GUIDELINES.md).
 
 ---
 
@@ -176,7 +176,7 @@ graph TD
 * **Admin Review Workflow** - Admins can reply, star, pin, prioritize, mark duplicate, award badges, and move feedback through review states.
 * **Community Leaderboard** - Contributor rankings surface top testers, researchers, feedback authors, and bug reporters.
 
-Detailed documentation is available in [COMMUNITY_FEEDBACK_SYSTEM.md](COMMUNITY_FEEDBACK_SYSTEM.md).
+Community participation standards are available in [COMMUNITY_GUIDELINES.md](COMMUNITY_GUIDELINES.md).
 
 ---
 
