@@ -2,6 +2,7 @@ import asyncio
 
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     File,
     Form,
     Header,
@@ -30,6 +31,7 @@ from app.models.schemas import (
     RegistryStatsResponse,
     TrainingStartRequest,
 )
+from app.services import job_events
 from app.services.deployed_model_service import (
     batch_output_path,
     create_deployment,
@@ -48,13 +50,7 @@ from app.services.deployed_model_service import (
 from app.services.experiment_service import compare_experiments, list_experiments
 from app.services.model_registry import registry_stats
 from app.services.session_store import load_session
-from app.services.training_manager import (
-    get_job,
-    load_training_result,
-    start_training,
-    subscribe,
-    unsubscribe,
-)
+from app.services.training_manager import get_job, load_training_result, start_training
 
 router = APIRouter(prefix="/api", tags=["training"])
 public_router = APIRouter(tags=["public-prediction"])
@@ -260,11 +256,16 @@ async def get_training(dataset_id: str):
 
 
 @router.post("/datasets/{dataset_id}/training/start")
-async def start_training_job(dataset_id: str, body: TrainingStartRequest | None = None):
+async def start_training_job(
+    dataset_id: str,
+    background_tasks: BackgroundTasks,
+    body: TrainingStartRequest | None = None,
+):
     body = body or TrainingStartRequest()
     try:
         out = start_training(
             dataset_id,
+            background_tasks,
             max_models=body.max_models,
             test_split=body.test_split,
             cv_folds=body.cv_folds,
@@ -279,7 +280,18 @@ async def start_training_job(dataset_id: str, body: TrainingStartRequest | None 
 @router.websocket("/ws/training/{dataset_id}")
 async def training_websocket(websocket: WebSocket, dataset_id: str):
     await websocket.accept()
-    queue = subscribe(dataset_id)
+
+    # Training runs via BackgroundTasks, and progress events are stored in
+    # MongoDB. We poll MongoDB (job_events.subscribe) and bridge that 
+    # async generator into a local queue so the polling loop below — which 
+    # also needs to notice the client disconnecting — can stay unchanged.
+    queue: asyncio.Queue = asyncio.Queue()
+
+    async def _bridge_mongo_to_queue() -> None:
+        async for event in job_events.subscribe(dataset_id):
+            await queue.put(event)
+
+    bridge_task = asyncio.create_task(_bridge_mongo_to_queue())
 
     session = load_session(dataset_id)
     if session and session.training_result:
@@ -310,4 +322,4 @@ async def training_websocket(websocket: WebSocket, dataset_id: str):
     except WebSocketDisconnect:
         pass
     finally:
-        unsubscribe(dataset_id, queue)
+        bridge_task.cancel()
