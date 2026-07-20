@@ -38,10 +38,7 @@ def get_job(dataset_id: str) -> dict[str, Any] | None:
 def publish_event(dataset_id: str, event: dict[str, Any]) -> None:
     coll = collection("jobs")
     if coll is not None:
-        coll.update_one(
-            {"dataset_id": dataset_id},
-            {"$push": {"events": event}}
-        )
+        coll.update_one({"dataset_id": dataset_id}, {"$push": {"events": event}})
 
 
 async def subscribe(dataset_id: str) -> AsyncIterator[dict[str, Any]]:
@@ -57,4 +54,3 @@ async def subscribe(dataset_id: str) -> AsyncIterator[dict[str, Any]]:
             if job.get("status") in ("completed", "failed"):
                 break
         await asyncio.sleep(1.0)
-

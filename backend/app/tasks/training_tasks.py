@@ -32,14 +32,18 @@ def run_benchmark_task(
     if not session or session.status != "preprocessed" or not session.target_column:
         error = "Dataset must be preprocessed with a target column before training."
         job_events.update_job(dataset_id, status="failed", error=error)
-        job_events.publish_event(dataset_id, {"event": "training_failed", "error": error})
+        job_events.publish_event(
+            dataset_id, {"event": "training_failed", "error": error}
+        )
         return {"status": "failed", "error": error}
 
     df = load_processed_df(dataset_id)
     if df is None:
         error = "Processed dataset not found."
         job_events.update_job(dataset_id, status="failed", error=error)
-        job_events.publish_event(dataset_id, {"event": "training_failed", "error": error})
+        job_events.publish_event(
+            dataset_id, {"event": "training_failed", "error": error}
+        )
         return {"status": "failed", "error": error}
 
     problem_type = session.problem_type or "classification"
@@ -110,6 +114,8 @@ def run_benchmark_task(
         return {"status": "completed"}
     except Exception as e:
         job_events.update_job(dataset_id, status="failed", error=str(e))
-        job_events.publish_event(dataset_id, {"event": "training_failed", "error": str(e)})
+        job_events.publish_event(
+            dataset_id, {"event": "training_failed", "error": str(e)}
+        )
         # BackgroundTask will just finish.
         raise
