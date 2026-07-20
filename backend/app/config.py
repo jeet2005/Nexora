@@ -55,7 +55,6 @@ class Settings(BaseSettings):
     model_timeout_sec: int = 45
     max_parallel_models: int = 1
     random_seed: int = 42
-
     # Persistence / auth integrations. MongoDB is used by default for this deployment.
     persistence_backend: str = "mongodb"
     mongodb_uri: str | None = None
