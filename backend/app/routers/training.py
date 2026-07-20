@@ -282,8 +282,8 @@ async def training_websocket(websocket: WebSocket, dataset_id: str):
     await websocket.accept()
 
     # Training runs via BackgroundTasks, and progress events are stored in
-    # MongoDB. We poll MongoDB (job_events.subscribe) and bridge that 
-    # async generator into a local queue so the polling loop below — which 
+    # MongoDB. We poll MongoDB (job_events.subscribe) and bridge that
+    # async generator into a local queue so the polling loop below — which
     # also needs to notice the client disconnecting — can stay unchanged.
     queue: asyncio.Queue = asyncio.Queue()
 

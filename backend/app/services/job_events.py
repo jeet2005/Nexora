@@ -16,12 +16,14 @@ def set_job(dataset_id: str, job: dict[str, Any]) -> None:
             job["events"] = []
         coll.update_one({"dataset_id": dataset_id}, {"$set": job}, upsert=True)
 
+
 def update_job(dataset_id: str, **fields: Any) -> dict[str, Any] | None:
     coll = collection("jobs")
     if coll is not None:
         coll.update_one({"dataset_id": dataset_id}, {"$set": fields})
         return get_job(dataset_id)
     return None
+
 
 def get_job(dataset_id: str) -> dict[str, Any] | None:
     coll = collection("jobs")
@@ -32,6 +34,7 @@ def get_job(dataset_id: str) -> dict[str, Any] | None:
             return doc
     return None
 
+
 def publish_event(dataset_id: str, event: dict[str, Any]) -> None:
     coll = collection("jobs")
     if coll is not None:
@@ -39,6 +42,7 @@ def publish_event(dataset_id: str, event: dict[str, Any]) -> None:
             {"dataset_id": dataset_id},
             {"$push": {"events": event}}
         )
+
 
 async def subscribe(dataset_id: str) -> AsyncIterator[dict[str, Any]]:
     """Yield decoded progress events for a dataset by polling MongoDB."""
