@@ -19,7 +19,7 @@ seaborn==0.13.2
 pymongo==4.13.2
 firebase-admin==6.6.0
 geoip2==5.1.0
-PyJWT==2.10.1
+PyJWT==2.13.0
 bcrypt==4.2.1
 psutil==7.2.2
 email-validator==2.3.0
