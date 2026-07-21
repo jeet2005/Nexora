@@ -549,7 +549,7 @@ async def explain_error_with_ollama(
             "available": False,
         }
 
-    prompt = f"""You are Nexora's Senior AI Debugging Expert. 
+    prompt = f"""You are Nexora's Senior AI Debugging Expert.
 An error occurred during dataset processing, machine learning training, or data cleaning.
 
 ERROR MESSAGE:
@@ -583,7 +583,7 @@ Keep the response friendly, actionable, and formatted in clean Markdown.
             if resp.status_code == 200:
                 explanation = resp.json().get("response", "").strip()
                 return {"explanation": explanation, "available": True}
-    except Exception as e:
+    except Exception:
         pass
 
     return {

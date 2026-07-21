@@ -175,7 +175,7 @@ export default function Download() {
       <section className="mb-20">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-display font-bold text-gray-900 mb-3">What Makes Desktop Special</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">Features that require local hardware access and aren't available on the web version.</p>
+          <p className="text-gray-500 max-w-xl mx-auto">Features that require local hardware access and aren&apos;t available on the web version.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {DESKTOP_FEATURES.map((f, i) => (

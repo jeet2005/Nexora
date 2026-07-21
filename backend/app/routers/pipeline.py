@@ -159,25 +159,27 @@ async def run_preprocess(dataset_id: str, body: PreprocessRequest | None = None)
         drop_id_columns=body.drop_id_columns,
     )
 
+    target_col = session.target_column or str(df.columns[-1])
+
     processed, steps_raw, meta_raw = preprocess(
         df,
-        session.target_column,
+        target_col,
         session.problem_type or "classification",
         config,
     )
 
     save_processed_df(dataset_id, processed)
 
-    feature_cols = [c for c in processed.columns if c != session.target_column]
+    feature_cols = [c for c in processed.columns if c != target_col]
     raw_features = (
         session.feature_selection.feature_columns
         if session.feature_selection
-        else [c for c in df.columns if c != session.target_column]
+        else [c for c in df.columns if c != target_col]
     )
     insights_raw = generate_insights(
         processed,
         df,
-        session.target_column,
+        target_col,
         session.problem_type or "classification",
         feature_cols,
         steps_raw,

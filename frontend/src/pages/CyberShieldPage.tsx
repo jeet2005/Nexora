@@ -162,7 +162,7 @@ export default function CyberShieldPage() {
             <strong style={{ color: '#fef08a', display: 'block', marginBottom: '2px', fontSize: '14px' }}>
               CyberShield Status
             </strong>
-            We'll be back soon... Our people are working on it so take a chill pill! ☕
+            We&apos;ll be back soon... Our people are working on it so take a chill pill! ☕
           </div>
         </motion.div>
 
