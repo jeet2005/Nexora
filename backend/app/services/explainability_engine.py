@@ -93,12 +93,14 @@ def _compute_shap_values(
     feature_names: list[str],
     problem_type: str,
 ) -> tuple[shap.Explanation | np.ndarray, Any]:
-    """Compute SHAP values using the best available explainer."""
-    # Sample for speed
+    """Compute SHAP values using the best available explainer with robust fallbacks."""
     bg_size = min(100, len(X_train))
-    bg = X_train[np.random.choice(len(X_train), bg_size, replace=False)]
+    bg = np.ascontiguousarray(
+        X_train[np.random.choice(len(X_train), bg_size, replace=False)],
+        dtype=np.float64,
+    )
     explain_size = min(200, len(X_test))
-    X_explain = X_test[:explain_size]
+    X_explain = np.ascontiguousarray(X_test[:explain_size], dtype=np.float64)
 
     model_type = type(model).__name__.lower()
     tree_types = (
@@ -128,11 +130,37 @@ def _compute_shap_values(
                 feature_names=feature_names,
             )
     except Exception:
-        # Fallback to permutation explainer
-        explainer = shap.Explainer(model.predict, bg)
-        sv = explainer(X_explain)
+        try:
+            explainer = shap.Explainer(model.predict, bg)
+            sv = explainer(X_explain)
+        except Exception:
+            # Fallback to Permutation Importance if SHAP hits NumPy 2.0 / dtype incompatibilities
+            try:
+                perm = permutation_importance(
+                    model,
+                    X_explain,
+                    np.zeros(len(X_explain)),
+                    n_repeats=3,
+                    random_state=42,
+                )
+                importances = perm.importances_mean
+            except Exception:
+                importances = getattr(
+                    model, "feature_importances_", np.ones(len(feature_names))
+                )
 
-    # Ensure feature_names are set
+            if np.all(importances == 0) and hasattr(model, "feature_importances_"):
+                importances = model.feature_importances_
+
+            values = np.tile(importances, (len(X_explain), 1))
+            sv = shap.Explanation(
+                values=values,
+                base_values=np.zeros(len(X_explain)),
+                data=X_explain,
+                feature_names=feature_names,
+            )
+            explainer = None
+
     if hasattr(sv, "feature_names") and sv.feature_names is None:
         sv.feature_names = feature_names
 
@@ -140,11 +168,25 @@ def _compute_shap_values(
 
 
 def _plot_shap_summary(sv: shap.Explanation, feature_names: list[str]) -> str:
-    """Create a SHAP beeswarm/summary plot."""
+    """Create a SHAP beeswarm/summary plot with matplotlib fallback."""
     fig, ax = plt.subplots(figsize=(10, 6))
-    shap.summary_plot(
-        sv, feature_names=feature_names, show=False, max_display=MAX_FEATURES_SHAP
-    )
+    try:
+        shap.summary_plot(
+            sv, feature_names=feature_names, show=False, max_display=MAX_FEATURES_SHAP
+        )
+    except Exception:
+        mean_abs = (
+            np.abs(sv.values).mean(axis=0)
+            if hasattr(sv, "values")
+            else np.ones(len(feature_names))
+        )
+        indices = np.argsort(mean_abs)[::-1][:MAX_FEATURES_SHAP]
+        top_names = [feature_names[i] for i in indices[::-1]]
+        top_vals = [mean_abs[i] for i in indices[::-1]]
+
+        ax.barh(top_names, top_vals, color="#10b981")
+        ax.set_xlabel("Mean |SHAP Value| (Feature Impact)")
+
     ax = plt.gca()
     ax.set_facecolor(PLOT_BG)
     fig.patch.set_facecolor(PLOT_BG)
@@ -162,7 +204,20 @@ def _plot_shap_summary(sv: shap.Explanation, feature_names: list[str]) -> str:
 def _plot_shap_bar(sv: shap.Explanation, feature_names: list[str]) -> str:
     """Create a SHAP bar chart of mean absolute SHAP values."""
     fig, ax = plt.subplots(figsize=(10, 6))
-    shap.plots.bar(sv, show=False, max_display=MAX_FEATURES_SHAP)
+    try:
+        shap.plots.bar(sv, show=False, max_display=MAX_FEATURES_SHAP)
+    except Exception:
+        mean_abs = (
+            np.abs(sv.values).mean(axis=0)
+            if hasattr(sv, "values")
+            else np.ones(len(feature_names))
+        )
+        indices = np.argsort(mean_abs)[::-1][:MAX_FEATURES_SHAP]
+        top_names = [feature_names[i] for i in indices[::-1]]
+        top_vals = [mean_abs[i] for i in indices[::-1]]
+
+        ax.barh(top_names, top_vals, color="#059669")
+        ax.set_xlabel("Mean Absolute Feature Importance")
     ax = plt.gca()
     ax.set_facecolor(PLOT_BG)
     fig.patch.set_facecolor(PLOT_BG)

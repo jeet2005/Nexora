@@ -22,14 +22,28 @@ def load_dataframe(content: bytes, filename: str) -> pd.DataFrame:
     try:
         if ext == "csv":
             df = None
-            for encoding in ("utf-8", "utf-8-sig", "latin-1", "cp1252"):
-                try:
-                    df = pd.read_csv(
-                        io.BytesIO(content), encoding=encoding, low_memory=False
-                    )
+            for encoding in ("utf-8", "utf-8-sig", "latin-1", "cp1252", "iso-8859-1"):
+                for sep in [",", ";", "\t", "|", None]:
+                    try:
+                        kwargs = {
+                            "encoding": encoding,
+                            "low_memory": False,
+                            "on_bad_lines": "skip",
+                        }
+                        if sep is not None:
+                            kwargs["sep"] = sep
+                        else:
+                            kwargs["engine"] = "python"
+                        temp_df = pd.read_csv(io.BytesIO(content), **kwargs)
+                        if temp_df is not None and len(temp_df.columns) > 1:
+                            df = temp_df
+                            break
+                        elif temp_df is not None and df is None:
+                            df = temp_df
+                    except Exception:
+                        continue
+                if df is not None and len(df.columns) > 1:
                     break
-                except UnicodeDecodeError:
-                    continue
             if df is None:
                 raise DatasetValidationError(
                     "Unsupported or corrupted file encoding.", "encoding_error"

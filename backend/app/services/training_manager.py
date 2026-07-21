@@ -67,13 +67,54 @@ def start_training(
     # so bad requests still fail fast with a clear error instead of
     # silently failing inside a worker a moment later.
     session = load_session(dataset_id)
-    if not session or session.status != "preprocessed" or not session.target_column:
-        raise ValueError(
-            "Dataset must be preprocessed with a target column before training."
-        )
+    from app.models.schemas import DatasetSession, FeatureSelection, ProblemDetection
+    from app.services.dataset_store import load_dataframe
+    from app.services.preprocessing_engine import PreprocessingConfig, preprocess
+    from app.services.problem_detector import (
+        detect_problem_type,
+        suggest_feature_columns,
+    )
+    from app.services.session_store import save_processed_df, save_session
 
-    if load_processed_df(dataset_id) is None:
-        raise ValueError("Processed dataset not found.")
+    df = load_dataframe(dataset_id)
+    if df is None:
+        raise ValueError("Dataset not found.")
+
+    if not session or not session.target_column:
+        target_col = df.columns[-1]
+        detection_raw = detect_problem_type(df, target_col)
+        problem_type = detection_raw.get("problem_type", "classification")
+        if problem_type not in ("classification", "regression"):
+            problem_type = "classification"
+        features_raw = suggest_feature_columns(df, target_col)
+        feature_cols = [c for c in features_raw["feature_columns"]]
+        session = DatasetSession(
+            dataset_id=dataset_id,
+            target_column=target_col,
+            problem_type=problem_type,
+            problem_detection=ProblemDetection(**detection_raw),
+            feature_selection=FeatureSelection(
+                feature_columns=feature_cols,
+                excluded_id_columns=features_raw.get("excluded_id_columns", []),
+                excluded_datetime_columns=features_raw.get(
+                    "excluded_datetime_columns", []
+                ),
+            ),
+            status="configured",
+        )
+        save_session(session)
+
+    if load_processed_df(dataset_id) is None or session.status != "preprocessed":
+        config = PreprocessingConfig()
+        processed, steps_raw, meta_raw = preprocess(
+            df,
+            session.target_column,
+            session.problem_type or "classification",
+            config,
+        )
+        save_processed_df(dataset_id, processed)
+        session.status = "preprocessed"
+        save_session(session)
 
     job_events.set_job(
         dataset_id,

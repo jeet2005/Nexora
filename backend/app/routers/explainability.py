@@ -13,28 +13,89 @@ from app.services.training_manager import load_training_result
 router = APIRouter(prefix="/api/datasets", tags=["explainability"])
 
 
+def _ensure_dataset_trained(dataset_id: str):
+    from app.models.schemas import (
+        DatasetSession,
+        FeatureSelection,
+        ProblemDetection,
+        TrainingResult,
+    )
+    from app.services.dataset_store import load_dataframe
+    from app.services.preprocessing_engine import PreprocessingConfig, preprocess
+    from app.services.problem_detector import (
+        detect_problem_type,
+        suggest_feature_columns,
+    )
+    from app.services.session_store import save_processed_df, save_session
+    from app.services.training_engine import run_training
+    from app.services.training_manager import save_training_result
+
+    df = load_dataframe(dataset_id)
+    if df is None:
+        raise HTTPException(status_code=404, detail="Dataset not found.")
+
+    session = load_session(dataset_id)
+    if not session or not session.target_column:
+        target_col = df.columns[-1]
+        detection_raw = detect_problem_type(df, target_col)
+        problem_type = detection_raw.get("problem_type", "classification")
+        if problem_type not in ("classification", "regression"):
+            problem_type = "classification"
+        features_raw = suggest_feature_columns(df, target_col)
+        session = DatasetSession(
+            dataset_id=dataset_id,
+            target_column=target_col,
+            problem_type=problem_type,
+            problem_detection=ProblemDetection(**detection_raw),
+            feature_selection=FeatureSelection(
+                feature_columns=features_raw["feature_columns"],
+                excluded_id_columns=features_raw.get("excluded_id_columns", []),
+                excluded_datetime_columns=features_raw.get(
+                    "excluded_datetime_columns", []
+                ),
+            ),
+            status="configured",
+        )
+        save_session(session)
+
+    processed_df = load_processed_df(dataset_id)
+    if processed_df is None or session.status not in ("preprocessed", "trained"):
+        config = PreprocessingConfig()
+        processed_df, _, _ = preprocess(
+            df,
+            session.target_column,
+            session.problem_type or "classification",
+            config,
+        )
+        save_processed_df(dataset_id, processed_df)
+        session.status = "preprocessed"
+        save_session(session)
+
+    training_result = load_training_result(dataset_id)
+    if not training_result or session.status != "trained":
+        summary = run_training(
+            processed_df,
+            session.target_column,
+            session.problem_type or "classification",
+            max_models=5,
+        )
+        training_result = TrainingResult(**summary)
+        save_training_result(dataset_id, training_result)
+        session.status = "trained"
+        save_session(session)
+
+    return session, processed_df, training_result
+
+
 @router.post("/{dataset_id}/explain")
 async def run_explainability(dataset_id: str, model_id: str | None = None):
     """Run SHAP explainability on the best (or specified) model."""
-    session = load_session(dataset_id)
-    if not session or session.status != "trained":
-        raise HTTPException(
-            status_code=400, detail="Model training must be completed first."
-        )
-
-    training_result = load_training_result(dataset_id)
+    session, df, training_result = _ensure_dataset_trained(dataset_id)
     if not training_result or not training_result.best_model:
         raise HTTPException(status_code=400, detail="No training results available.")
 
-    df = load_processed_df(dataset_id)
-    if df is None:
-        raise HTTPException(status_code=404, detail="Processed dataset not found.")
-
     target_model_id = model_id or training_result.best_model.model_id
     problem_type = session.problem_type or "classification"
-
-    if not session.target_column:
-        raise HTTPException(status_code=400, detail="Target column must be specified.")
 
     # Run in a thread to avoid blocking the event loop
     from app.services.explainability_engine import run_explainability as _run_explain
@@ -60,11 +121,7 @@ async def run_explainability(dataset_id: str, model_id: str | None = None):
 @router.post("/{dataset_id}/report/generate")
 async def generate_report(dataset_id: str, include_shap: bool = True):
     """Generate a comprehensive PDF report for the dataset."""
-    session = load_session(dataset_id)
-    if not session or session.status != "trained":
-        raise HTTPException(
-            status_code=400, detail="Complete training before generating a report."
-        )
+    session, _, training_result = _ensure_dataset_trained(dataset_id)
 
     analysis = load_analysis(dataset_id)
     if not analysis:

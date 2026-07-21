@@ -1,9 +1,66 @@
 {
   "name": "nexora",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An autonomous predictive analytics platform that profiles datasets, builds optimized preprocessing pipelines, trains reproducible model registries, runs batch predictions, monitors feature drift, and provides grounded AI educational interactive chats from a single CSV upload.",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "electron:start": "electron .",
+    "electron:pack": "electron-builder --dir",
+    "electron:build": "electron-builder -w"
+  },
+  "build": {
+    "appId": "com.nexora.app",
+    "productName": "Nexora",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "jeet2005",
+        "repo": "Nexora"
+      }
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "index.js",
+      "frontend/dist/**/*",
+      "frontend/public/favicon.png",
+      "frontend/public/favicon.ico",
+      "backend/**/*",
+      "!backend/.venv/**/Include/**",
+      "!backend/.tmpvenv/**",
+      "!backend/.mypy_cache/**",
+      "!backend/.pytest_cache/**",
+      "!backend/.ruff_cache/**",
+      "!backend/catboost_info/**",
+      "!backend/tests/**",
+      "!backend/.github/**",
+      "!backend/node_modules/**",
+      "!backend/uploads/**",
+      "!backend/**/__pycache__/**"
+    ],
+    "asarUnpack": [
+      "backend/**/*"
+    ],
+    "mac": {
+      "target": ["dmg"]
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Nexora"
+    },
+    "linux": {
+      "target": ["AppImage"]
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jeet2005/Nexora.git"
@@ -19,6 +76,8 @@
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
+    "electron": "^33.2.1",
+    "electron-builder": "^26.15.3",
     "ffmpeg-static": "^5.3.0",
     "gif-encoder": "^0.7.2",
     "playwright-video": "^2.4.0",

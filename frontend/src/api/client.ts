@@ -28,6 +28,24 @@ const api = axios.create({
   timeout: 120_000,
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+    if (
+      config &&
+      !config._retry &&
+      error.response &&
+      (error.response.status === 502 || error.response.status === 503)
+    ) {
+      config._retry = true;
+      await new Promise((res) => setTimeout(res, 1200));
+      return api(config);
+    }
+    return Promise.reject(error);
+  },
+);
+
 export { api };
 
 export async function uploadDataset(file: File, onProgress?: (pct: number) => void) {
@@ -182,16 +200,23 @@ export async function runProductionPrediction(
 
 export function trainingWebSocketUrl(datasetId: string) {
   const configured = import.meta.env.VITE_API_BASE_URL as string | undefined;
-  if (configured?.startsWith('http')) {
-    const url = new URL(configured);
-    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    url.pathname = `/api/ws/training/${datasetId}`;
-    url.search = '';
-    return url.toString();
+  let targetUrl: URL;
+
+  if (configured && configured.trim() !== '' && configured !== '/api') {
+    if (configured.startsWith('http')) {
+      targetUrl = new URL(configured);
+    } else {
+      targetUrl = new URL(configured, window.location.href);
+    }
+  } else {
+    targetUrl = new URL('/api', window.location.href);
   }
-  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const host = window.location.host;
-  return `${proto}//${host}/api/ws/training/${datasetId}`;
+
+  const proto = targetUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+  const basePath = targetUrl.pathname.replace(/\/+$/, '');
+  const apiPath = basePath.endsWith('/api') ? basePath : `${basePath}/api`;
+
+  return `${proto}//${targetUrl.host}${apiPath}/ws/training/${datasetId}`;
 }
 
 export async function getChatStatus(datasetId: string) {
@@ -208,6 +233,20 @@ export async function sendChatMessage(datasetId: string, message: string, histor
     },
     { timeout: 300_000 },
   );
+  return data;
+}
+
+export async function explainError(
+  errorMessage: string,
+  datasetId?: string,
+  contextInfo?: string,
+) {
+  const url = datasetId ? `/datasets/${datasetId}/explain-error` : '/explain-error';
+  const { data } = await api.post<{ explanation: string; available: boolean }>(url, {
+    error_message: errorMessage,
+    dataset_id: datasetId,
+    context_info: contextInfo,
+  });
   return data;
 }
 

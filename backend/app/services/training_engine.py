@@ -20,6 +20,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 from app.config import settings
 from app.services.model_registry import ModelSpec, filter_models, get_models_for_problem
@@ -35,10 +36,52 @@ def _prepare_xy(
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
     if target not in df.columns:
         raise ValueError(f"Target '{target}' not in dataframe.")
-    feature_cols = [c for c in df.columns if c != target]
-    X = df[feature_cols].values
-    y = df[target].values
-    return X, y, feature_cols
+
+    work_df = df.copy()
+
+    # 1. Encode Target y if it contains strings / objects
+    y_raw = work_df[target].values
+    if work_df[target].dtype == "object" or (
+        len(y_raw) > 0 and isinstance(y_raw[0], str)
+    ):
+        le_y = LabelEncoder()
+        y = le_y.fit_transform(y_raw.astype(str))
+    else:
+        y = y_raw
+
+    # 2. Encode Feature columns X and filter out high-cardinality ID/UUID noise columns
+    feature_cols = [c for c in work_df.columns if c != target]
+    X_df = work_df[feature_cols].copy()
+    valid_cols = []
+
+    for col in X_df.columns:
+        n_unique = X_df[col].nunique(dropna=True)
+        total_rows = len(X_df)
+        is_string = X_df[col].dtype == "object" or X_df[col].dtype.name == "category"
+
+        # Drop ID/UUID noise columns (>80% unique text or >1000 unique categories)
+        if is_string and (
+            (total_rows >= 50 and n_unique / total_rows > 0.8) or n_unique > 1000
+        ):
+            continue
+
+        if is_string:
+            le = LabelEncoder()
+            X_df[col] = le.fit_transform(X_df[col].astype(str))
+        else:
+            X_df[col] = pd.to_numeric(X_df[col], errors="coerce")
+
+        valid_cols.append(col)
+
+    if not valid_cols:
+        valid_cols = feature_cols
+        X_df = work_df[valid_cols].copy()
+        for col in valid_cols:
+            X_df[col] = pd.to_numeric(X_df[col], errors="coerce").fillna(0)
+
+    X_clean = X_df[valid_cols].fillna(0)
+    X = X_clean.values.astype(float)
+    return X, y, valid_cols
 
 
 def _metric_label(problem_type: str) -> str:
@@ -159,6 +202,14 @@ def run_training(
 ) -> dict[str, Any]:
     X, y, feature_cols = _prepare_xy(df, target_column)
     n = len(y)
+
+    # For large datasets (>15,000 rows), subsample for fast benchmark training
+    if n > 15_000:
+        rng = np.random.RandomState(seed or 42)
+        sample_indices = rng.choice(n, size=15_000, replace=False)
+        X = X[sample_indices]
+        y = y[sample_indices]
+        n = len(y)
 
     all_specs = get_models_for_problem(problem_type)
     skip_slow = n > 10_000

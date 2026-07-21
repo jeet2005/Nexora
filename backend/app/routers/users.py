@@ -541,13 +541,24 @@ async def unfollow_user(
 async def get_my_datasets(token: dict = Depends(get_current_user)):
     user_id = _current_user_id(token)
     datasets_col = collection("datasets")
-    if datasets_col is None:
-        return {"datasets": []}
-    docs = list(
-        datasets_col.find({"user_id": user_id}, {"_id": 0})
-        .sort("updated_at", -1)
-        .limit(50)
-    )
+    docs = []
+    if datasets_col is not None:
+        try:
+            docs = list(
+                datasets_col.find({"user_id": user_id}, {"_id": 0})
+                .sort("updated_at", -1)
+                .limit(50)
+            )
+        except Exception:
+            docs = []
+
+    # Fallback to local disk history items if MongoDB returns empty or is unavailable
+    if not docs:
+        from app.services.history_service import list_history
+
+        all_local = list_history(include_archived=False)
+        docs = [item.model_dump() for item in all_local]
+
     return {"datasets": docs}
 
 
@@ -565,7 +576,16 @@ async def export_my_data(token: dict = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="User not found")
     datasets = []
     if datasets_col is not None:
-        datasets = list(datasets_col.find({"user_id": user_id}, {"_id": 0}))
+        try:
+            datasets = list(datasets_col.find({"user_id": user_id}, {"_id": 0}))
+        except Exception:
+            datasets = []
+
+    if not datasets:
+        from app.services.history_service import list_history
+
+        datasets = [item.model_dump() for item in list_history(include_archived=True)]
+
     return {
         "exported_at": datetime.utcnow().isoformat(),
         "profile": user,

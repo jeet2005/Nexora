@@ -5,6 +5,7 @@ import { getTimingEstimates, runPreprocess } from '../api/client';
 import type { PreprocessResponse } from '../types/pipeline';
 import { formatDuration } from '../utils/formatDuration';
 import PreprocessSteps from './PreprocessSteps';
+import GodErrorModal from './GodErrorModal';
 
 interface Props {
   datasetId: string;
@@ -119,10 +120,30 @@ export default function PreprocessPanel({ datasetId, onComplete }: Props) {
         pending
       />
 
+      <GodErrorModal
+        isOpen={Boolean(error)}
+        onClose={() => setError(null)}
+        title="Preprocessing Error"
+        errorMessage={error || ''}
+        datasetId={datasetId}
+        contextInfo="Data Preprocessing & Cleaning Pipeline"
+        onRetry={handleRun}
+        category="Preprocessing"
+      />
+
       {error && (
-        <motion.div className="flex items-center gap-2 text-red-500 text-sm mt-4">
-          <AlertCircle className="w-4 h-4" />
-          {error}
+        <motion.div className="flex items-center justify-between gap-3 text-red-500 text-sm mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setError(error)}
+            className="px-2.5 py-1 rounded bg-red-100 text-red-700 text-xs font-medium hover:bg-red-200 transition-colors"
+          >
+            View AI Diagnostic
+          </button>
         </motion.div>
       )}
 

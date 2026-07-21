@@ -19,6 +19,7 @@ import ProfileSettings from './pages/ProfileSettings';
 import LoginPage from './pages/LoginPage';
 import PublicProfilePage from './pages/PublicProfilePage';
 import ErrorPage from './pages/ErrorPage';
+const Download = lazy(() => import('./pages/Download'));
 
 const AdminDashboard = lazy(() => import('./admin/pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const AdminApiKeys = lazy(() => import('./admin/pages/ApiKeys').then(m => ({ default: m.ApiKeys })));
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/notifications" element={<NotificationsPage />} />`r`n          <Route path="/feedback" element={<MyFeedbackPage />} />`r`n          <Route path="/feedback/new" element={<SubmitFeedbackPage />} />`r`n          <Route path="/community" element={<CommunityLeaderboardPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
+          <Route path="/download" element={<Download />} />
         </Route>
         {/* CyberShield has its own full-page dark layout */}
         <Route path="/cybershield" element={<CyberShieldPage />} />

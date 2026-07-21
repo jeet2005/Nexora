@@ -5,7 +5,6 @@ import { fallbackProfileFromFirebaseUser, userApi, UserProfile } from '../api/us
 import { communityApi, ReputationSummary } from '../api/community';
 
 import { Database, Cpu, Clock, Settings, Github, Linkedin, ExternalLink, BadgeCheck } from 'lucide-react';
-import HeatmapChart from '../components/HeatmapChart';
 
 
 
@@ -13,34 +12,26 @@ export const Profile: React.FC = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [history, setHistory] = useState<Record<string, unknown>[]>([]);
-  const [activity, setActivity] = useState<Awaited<ReturnType<typeof userApi.getActivity>> | null>(null);
   const [loading, setLoading] = useState(true);
   const [reputation, setReputation] = useState<ReputationSummary | null>(null);
-  const [heatmap, setHeatmap] = useState<{ date: string; contributions: number }[]>([]);
 
   useEffect(() => {
     if (!user) return;
 
     let cancelled = false;
     setLoading(true);
-    Promise.allSettled([userApi.getMe(), userApi.getMyDatasets(), userApi.getActivity()])
-      .then(([profileResult, datasetsResult, activityResult]) => {
+    Promise.allSettled([userApi.getMe(), userApi.getMyDatasets()])
+      .then(([profileResult, datasetsResult]) => {
         if (cancelled) return;
         if (profileResult.status === 'fulfilled') {
           setProfile(profileResult.value);
           communityApi.getReputation(profileResult.value.user_id).then(setReputation).catch(() => setReputation(null));
-          communityApi.getHeatmap(profileResult.value.user_id).then(data => {
-            setHeatmap(data.map(d => ({ date: d.date, contributions: d.count })));
-          }).catch(() => setHeatmap([]));
         } else {
           console.error(profileResult.reason);
           const fallback = fallbackProfileFromFirebaseUser();
           setProfile(fallback);
           if (fallback) {
             communityApi.getReputation(fallback.user_id).then(setReputation).catch(() => setReputation(null));
-            communityApi.getHeatmap(fallback.user_id).then(data => {
-              setHeatmap(data.map(d => ({ date: d.date, contributions: d.count })));
-            }).catch(() => setHeatmap([]));
           }
         }
         if (datasetsResult.status === 'fulfilled') {
@@ -48,12 +39,6 @@ export const Profile: React.FC = () => {
         } else {
           console.error(datasetsResult.reason);
           setHistory([]);
-        }
-        if (activityResult.status === 'fulfilled') {
-          setActivity(activityResult.value);
-        } else {
-          console.error(activityResult.reason);
-          setActivity(null);
         }
       })
       .finally(() => {
@@ -156,11 +141,6 @@ export const Profile: React.FC = () => {
           </div>
         </div>
       )}
-{/* Heatmap */}
-<div className="glass rounded-2xl p-6 mb-12">
-  <h2 className="text-lg font-bold text-gray-900 mb-4">Contribution Heatmap</h2>
-  <HeatmapChart data={heatmap} />
-</div>
 
 {(profile?.best_dataset || profile?.favorite_model || (profile?.pinned_achievements && profile.pinned_achievements.length > 0)) && (
   <div className="glass rounded-2xl p-6 mb-12">
@@ -187,7 +167,7 @@ export const Profile: React.FC = () => {
     </div>
   </div>
 )}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <div className="glass rounded-2xl p-6 flex items-center gap-4">
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
             <Database size={24} />
@@ -208,34 +188,9 @@ export const Profile: React.FC = () => {
             </p>
           </div>
         </div>
-        <div className="glass rounded-2xl p-6 flex items-center gap-4">
-          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
-            <Clock size={24} />
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Last Login</p>
-            <p className="text-lg font-bold text-gray-900">
-              {activity?.last_login
-                ? new Date(activity.last_login).toLocaleString()
-                : '—'}
-            </p>
-          </div>
-        </div>
       </div>
 
-      {activity?.login_history && activity.login_history.length > 0 && (
-        <div className="glass rounded-2xl p-6 mb-12">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Recent Sign-ins</h2>
-          <div className="space-y-2">
-            {activity.login_history.slice(0, 5).map((entry: { at: string; method: string; user_agent?: string; ip?: string }, i: number) => (
-              <div key={i} className="text-sm text-gray-600 flex justify-between">
-                <span>{entry.method} · {entry.user_agent?.slice(0, 40) || 'Unknown device'}</span>
-                <span className="text-gray-400">{new Date(entry.at).toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>

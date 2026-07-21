@@ -138,6 +138,34 @@ export default function CyberShieldPage() {
           </div>
         </header>
 
+        {/* ═══ Maintenance / Update Banner ═══ */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            margin: '0 0 24px 0',
+            padding: '14px 20px',
+            borderRadius: '12px',
+            background: 'rgba(245, 158, 11, 0.12)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
+            color: '#fbbf24',
+            fontSize: '13.5px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <span style={{ fontSize: '20px' }}>☕</span>
+          <div>
+            <strong style={{ color: '#fef08a', display: 'block', marginBottom: '2px', fontSize: '14px' }}>
+              CyberShield Status
+            </strong>
+            We'll be back soon... Our people are working on it so take a chill pill! ☕
+          </div>
+        </motion.div>
+
         {/* ═══ Stats Cards ═══ */}
         <div className="cyber-stats-grid">
           <StatCard

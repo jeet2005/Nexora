@@ -16,6 +16,7 @@ uploads/
 # Node
 node_modules/
 dist/
+release/
 .vite/
 *.tsbuildinfo
 

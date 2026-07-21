@@ -523,3 +523,76 @@ async def check_ollama_status() -> dict[str, Any]:
             "configured_model": settings.ollama_model,
             "model_ready": False,
         }
+
+
+async def explain_error_with_ollama(
+    error_message: str, dataset_id: str | None = None, context_info: str | None = None
+) -> dict[str, Any]:
+    status = await check_ollama_status()
+    dataset_ctx = ""
+    if dataset_id:
+        try:
+            dataset_ctx = _build_dataset_context(dataset_id)
+        except Exception:
+            dataset_ctx = ""
+
+    if not status.get("available"):
+        return {
+            "explanation": (
+                "### 🔍 Diagnostic Summary\n\n"
+                f"**Error Details:**\n```\n{error_message[:300]}\n```\n\n"
+                "### 🛠️ Actionable Tips:\n"
+                "1. **Check Target Column:** Ensure a valid target column is selected in Preprocess settings.\n"
+                "2. **Inspect CSV Structure:** Verify your CSV has valid headers and non-empty rows.\n"
+                "3. **Local Engine:** Local Python backend will auto-clean and format categorical variables.\n"
+            ),
+            "available": False,
+        }
+
+    prompt = f"""You are Nexora's Senior AI Debugging Expert. 
+An error occurred during dataset processing, machine learning training, or data cleaning.
+
+ERROR MESSAGE:
+{error_message}
+
+CONTEXT LOCATION:
+{context_info or "General Nexora Platform Operation"}
+
+DATASET SUMMARY:
+{dataset_ctx[:1000] if dataset_ctx else "No active dataset context"}
+
+Explain this error to the user in 3 short, clear sections:
+1. 💡 **What went wrong** (in simple plain English)
+2. 🛠️ **How to fix it** (step-by-step actionable advice)
+3. ⚡ **Quick Tip** (how to prevent this error next time)
+
+Keep the response friendly, actionable, and formatted in clean Markdown.
+"""
+
+    try:
+        async with httpx.AsyncClient(timeout=25.0) as client:
+            resp = await client.post(
+                f"{settings.ollama_base_url.rstrip('/')}/api/generate",
+                json={
+                    "model": settings.ollama_model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {"max_tokens": 450, "temperature": 0.3},
+                },
+            )
+            if resp.status_code == 200:
+                explanation = resp.json().get("response", "").strip()
+                return {"explanation": explanation, "available": True}
+    except Exception as e:
+        pass
+
+    return {
+        "explanation": (
+            "### 🔍 AI Diagnostic Summary\n\n"
+            f"**Recorded Exception:** `{error_message[:200]}`\n\n"
+            "### 🛠️ Recommended Action:\n"
+            "• Verify dataset headers and data types.\n"
+            "• Auto-preprocessing will automatically drop high-cardinality noise columns.\n"
+        ),
+        "available": False,
+    }

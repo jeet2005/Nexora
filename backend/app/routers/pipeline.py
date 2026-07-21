@@ -126,10 +126,28 @@ async def run_preprocess(dataset_id: str, body: PreprocessRequest | None = None)
     session = load_session(dataset_id)
 
     if not session or not session.target_column:
-        raise HTTPException(
-            status_code=400,
-            detail="Configure a target column before preprocessing.",
+        target_col = df.columns[-1]
+        detection_raw = detect_problem_type(df, target_col)
+        problem_type = detection_raw.get("problem_type", "classification")
+        if problem_type not in ("classification", "regression"):
+            problem_type = "classification"
+        features_raw = suggest_feature_columns(df, target_col)
+        feature_cols = [c for c in features_raw["feature_columns"]]
+        session = DatasetSession(
+            dataset_id=dataset_id,
+            target_column=target_col,
+            problem_type=problem_type,
+            problem_detection=ProblemDetection(**detection_raw),
+            feature_selection=FeatureSelection(
+                feature_columns=feature_cols,
+                excluded_id_columns=features_raw.get("excluded_id_columns", []),
+                excluded_datetime_columns=features_raw.get(
+                    "excluded_datetime_columns", []
+                ),
+            ),
+            status="configured",
         )
+        save_session(session)
 
     config = PreprocessingConfig(
         missing_strategy=body.missing_strategy,

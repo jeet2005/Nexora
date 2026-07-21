@@ -56,6 +56,21 @@ def set_archived(dataset_id: str, archived: bool) -> None:
         upsert("datasets", {"dataset_id": dataset_id}, record.model_dump())
 
 
+def _user_path(dataset_id: str) -> Path:
+    return settings.upload_dir / f"{dataset_id}.user.json"
+
+
+def _read_user_id(dataset_id: str) -> str | None:
+    path = _user_path(dataset_id)
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data.get("user_id")
+    except (OSError, ValueError):
+        return None
+
+
 def history_item(
     dataset_id: str, user_id: str | None = None
 ) -> DatasetHistoryItem | None:
@@ -63,9 +78,31 @@ def history_item(
     if not analysis:
         return None
 
-    session = load_session(dataset_id)
-    training = load_training_result(dataset_id)
-    production = load_production_status(dataset_id)
+    if user_id:
+        try:
+            _user_path(dataset_id).write_text(
+                json.dumps({"dataset_id": dataset_id, "user_id": user_id}),
+                encoding="utf-8",
+            )
+        except OSError:
+            pass
+    else:
+        user_id = _read_user_id(dataset_id)
+
+    try:
+        session = load_session(dataset_id)
+    except Exception:
+        session = None
+
+    try:
+        training = load_training_result(dataset_id)
+    except Exception:
+        training = None
+
+    try:
+        production = load_production_status(dataset_id)
+    except Exception:
+        production = None
     meta_path = settings.upload_dir / f"{dataset_id}.meta.json"
     report_path = settings.upload_dir / f"{dataset_id}_report.pdf"
     stat = meta_path.stat() if meta_path.exists() else None
@@ -106,11 +143,14 @@ def history_item(
     return item
 
 
-def list_history(include_archived: bool = False) -> list[DatasetHistoryItem]:
+def list_history(
+    include_archived: bool = False, user_id: str | None = None
+) -> list[DatasetHistoryItem]:
     # Try MongoDB first
     from app.services.persistence_service import find
 
-    db_items = find("datasets")
+    query = {"user_id": user_id} if user_id else {}
+    db_items = find("datasets", query)
     if db_items:
         out = []
         for doc in db_items:
@@ -122,14 +162,16 @@ def list_history(include_archived: bool = False) -> list[DatasetHistoryItem]:
             except Exception:
                 continue
         if out:
-            # Sort by updated_at or created_at desc
             out.sort(key=lambda x: x.updated_at or x.created_at or "", reverse=True)
             return out
 
-    # Local fallback
+    # Local disk fallback
     items: list[DatasetHistoryItem] = []
     for path in _metadata_paths():
         dataset_id = path.name.replace(".meta.json", "")
+        item_user_id = _read_user_id(dataset_id)
+        if user_id and item_user_id != user_id:
+            continue
         item = history_item(dataset_id)
         if not item:
             continue

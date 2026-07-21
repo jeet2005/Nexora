@@ -1,7 +1,7 @@
 import { motion, Variants } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import {
   Brain,
-  Bell,
   Zap,
   BarChart3,
   MessageSquare,
@@ -229,18 +229,14 @@ export default function LandingPage() {
               <Upload className="w-5 h-5 transition-transform group-hover:-translate-y-0.5" />
               Start Analyzing
             </a>
-            <a href="#how-it-works" className="btn-outline text-base px-6 py-3.5 group">
-              How It Works
+            <Link to="/download" className="btn-outline text-base px-6 py-3.5 group">
+              Download App
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </a>
-            <a href="/home" className="btn-outline text-base px-6 py-3.5 group">
+            </Link>
+            <Link to="/home" className="btn-outline text-base px-6 py-3.5 group">
               Deep-Dive (Home of Nexora)
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </a>
-            <a href="/notifications" className="btn-outline text-base px-6 py-3.5 group">
-              <Bell className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
-              Notifications
-            </a>
+            </Link>
           </motion.div>
 
           <motion.a

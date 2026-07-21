@@ -12,7 +12,6 @@ export default function PublicProfilePage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [reputation, setReputation] = useState<ReputationSummary | null>(null);
-  const [heatmap, setHeatmap] = useState<{ date: string; count: number }[]>([]);
   const [following, setFollowing] = useState(false);
 
   useEffect(() => {
@@ -26,12 +25,6 @@ export default function PublicProfilePage() {
           setFollowing(true);
         }
         communityApi.getReputation(data.user_id).then(r => isSubscribed && setReputation(r)).catch(() => isSubscribed && setReputation(null));
-        
-        // Fetch heatmap (assuming it's a GET to /community/profile/{user_id}/heatmap)
-        fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/community/profile/${data.user_id}/heatmap`)
-          .then(res => res.json())
-          .then(data => isSubscribed && setHeatmap(data))
-          .catch(() => isSubscribed && setHeatmap([]));
       })
       .catch((err: unknown) => {
         if (isSubscribed) setError(err instanceof Error ? err.message : 'Profile not found');
@@ -152,31 +145,7 @@ export default function PublicProfilePage() {
               )}
             </div>
 
-            {/* Heatmap Placeholder (Mock rendering) */}
-            <div className="border-t border-gray-100 pt-4 mt-4">
-               <h3 className="text-sm font-semibold text-gray-900 mb-3">Activity</h3>
-               <div className="flex flex-wrap gap-1">
-                 {/* Generate 30 days of empty boxes, fill in dates if match */}
-                 {Array.from({ length: 90 }).map((_, i) => {
-                   const d = new Date();
-                   d.setDate(d.getDate() - (89 - i));
-                   const dateStr = d.toISOString().split('T')[0];
-                   const count = heatmap.find(h => h.date === dateStr)?.count || 0;
-                   return (
-                     <div 
-                       key={i} 
-                       className={`w-3 h-3 rounded-sm ${
-                         count === 0 ? 'bg-gray-100' :
-                         count === 1 ? 'bg-nexora-accent/40' :
-                         count === 2 ? 'bg-nexora-accent/70' :
-                         'bg-nexora-accent'
-                       }`}
-                       title={`${dateStr}: ${count} contributions`}
-                     />
-                   );
-                 })}
-               </div>
-            </div>
+
 
           {reputation.recent_feedback.length > 0 && (
             <div className="border-t border-gray-100 pt-4">

@@ -156,6 +156,35 @@ export default function TrainingArena({
   };
 
   useEffect(() => {
+    if (!running) return;
+
+    const interval = setInterval(() => {
+      getTraining(datasetId)
+        .then((d) => {
+          if (d.result) {
+            setResult(d.result);
+            if (d.result.leaderboard && d.result.leaderboard.length > 0) {
+              setLeaderboard(d.result.leaderboard);
+              setCompleted(d.result.total_completed ?? d.result.leaderboard.length);
+              setProgress(
+                d.result.total_attempted > 0
+                  ? (d.result.total_completed / d.result.total_attempted) * 100
+                  : 100,
+              );
+            }
+            if (d.result.best_model && d.result.total_completed >= (d.result.total_attempted || 1)) {
+              setRunning(false);
+              onComplete?.(d.result);
+            }
+          }
+        })
+        .catch(() => {});
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [running, datasetId, onComplete]);
+
+  useEffect(() => {
     return () => wsRef.current?.close();
   }, []);
 
